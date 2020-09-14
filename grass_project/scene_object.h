@@ -22,16 +22,21 @@ public:
 	/* Creates the Vertex Array Object and saves 
 	 * positions, colors, indices and normals. 
 	 */
-	unsigned int createVertexArray(const std::vector<float>& positions,
+	unsigned int createVertexArray(
+		const std::vector<float>& positions,
 		const std::vector<float>& colors, const std::vector<unsigned int>& indices, 
 		const std::vector<float>& normals, Shader& shaderProgram);
 
 	/* Creates the Vertex Array Object and saves
 	 * positions, colors, indices, uvs (for the texture) and normals.
 	 */
-	unsigned int createVertexArrayTexture(const std::vector<float>& positions,
-		const std::vector<float>& colors, const std::vector<unsigned int>& indices,
-		const std::vector<float>& uvs, const std::vector<float>& normals, Shader& shaderProgram);
+	unsigned int createVertexArrayTexture(
+		const std::vector<float>& positions,
+		const std::vector<float>& colors,
+		const std::vector<unsigned int>& indices,
+		const std::vector<float>& uvs, 
+		const std::vector<float>& normals, 
+		Shader& shaderProgram);
 
 	/* Creates the Vertex Array Object and saves
 	 * positions.
@@ -43,6 +48,14 @@ private:
 	unsigned int vertexCount;
 	unsigned int createArrayBuffer(const std::vector<float>& array);
 	unsigned int createElementArrayBuffer(const std::vector<unsigned int>& array);
+
+	/* Sets the specified attribute of the vertex shader
+		*/
+	void setVertexShaderAttribute(
+		char *attributeName,
+		const std::vector<float>& data,
+		int dataSize,
+		Shader& shaderProgram);
 };
 
 #endif

@@ -20,25 +20,12 @@ unsigned int SceneObject::createVertexArray(const std::vector<float>& positions,
 	// Bind vertex array object
 	glBindVertexArray(VAO);
 
-	// Set vertex shader attribute "pos"
-	createArrayBuffer(positions);  // Creates and binds the VBO
-	int posAttributeLocation = glGetAttribLocation(shaderProgram.getShaderID(), "pos");
-	glEnableVertexAttribArray(posAttributeLocation);
-	glVertexAttribPointer(posAttributeLocation, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	// Set attributes
+	setVertexShaderAttribute("pos", positions, 3, shaderProgram);
+	setVertexShaderAttribute("color", colors, 4, shaderProgram);
+	setVertexShaderAttribute("normal", normals, 3, shaderProgram);
 
-	// Set vertex shader attribute "color"
-	createArrayBuffer(colors);  // Creates and binds the VBO
-	int colorAttributeLocation = glGetAttribLocation(shaderProgram.getShaderID(), "color");
-	glEnableVertexAttribArray(colorAttributeLocation);
-	glVertexAttribPointer(colorAttributeLocation, 4, GL_FLOAT, GL_FALSE, 0, 0);
-
-	// Set vertex shader attribute "normal"
-	createArrayBuffer(normals);  // Creates and binds the VBO
-	int normalAttributeLocation = glGetAttribLocation(shaderProgram.getShaderID(), "normal");
-	glEnableVertexAttribArray(normalAttributeLocation);
-	glVertexAttribPointer(normalAttributeLocation, 3, GL_FLOAT, GL_FALSE, 0, 0);
-
-	// Creates and binds the EBO
+	// Create and bind the EBO
 	createElementArrayBuffer(indices);
 
 	vertexCount = indices.size();
@@ -117,4 +104,14 @@ unsigned int SceneObject::createElementArrayBuffer(const std::vector<unsigned in
 	GLCall(glBufferData(GL_ELEMENT_ARRAY_BUFFER, array.size() * sizeof(unsigned int), &array[0], GL_STATIC_DRAW));
 
 	return EBO;
+}
+
+/* Sets the specified attribute of the vertex shader
+	*/
+void SceneObject::setVertexShaderAttribute(char *attributeName,
+	const std::vector<float>& data, int dataSize, Shader& shaderProgram) {
+	createArrayBuffer(data);  // Creates and binds the VBO
+	int attributeLocation = glGetAttribLocation(shaderProgram.getShaderID(), attributeName);
+	glEnableVertexAttribArray(attributeLocation);
+	glVertexAttribPointer(attributeLocation, dataSize, GL_FLOAT, GL_FALSE, 0, 0);
 }

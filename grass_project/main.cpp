@@ -68,7 +68,9 @@ float lastY = (float)SCR_HEIGHT / 2.0;
 float deltaTime = 0.0f;	// Time between current frame and last frame
 float lastFrame = 0.0f; // Time of last frame
 
-void setup();
+GLFWwindow* initGLFWWindow();
+void setupShadersAndMeshes();
+void initIMGUI(GLFWwindow* window);
 void drawScene();
 void initPatch();
 void drawPatch(glm::mat4 projection, glm::mat4 view, glm::mat4 model, glm::mat4 rotation = glm::mat4());
@@ -104,33 +106,9 @@ struct Config {
 
 int main()
 {
-    // GLFW: initialize and configure
-    glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	glfwWindowHint(GLFW_SAMPLES, 4);
-
-#ifdef __APPLE__
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // Fix compilation on OS X
-#endif
-
-    // GLFW window creation
-    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Exercise 4", NULL, NULL);
-    if (window == NULL)
-    {
-        std::cout << "Failed to create GLFW window" << std::endl;
-        glfwTerminate();
-        return -1;
-    }
-    glfwMakeContextCurrent(window);
-    glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
-    glfwSetCursorPosCallback(window, cursorInputCallback);
-	// Hide the cursor and capture it
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-	glfwSetKeyCallback(window, keyInputCallback);
+	GLFWwindow* window = initGLFWWindow();
+	assert(window != NULL, "ERROR:: Failed to create GLFW window");
 	
-
     // GLAD: load all OpenGL function pointers
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
@@ -138,8 +116,7 @@ int main()
         return -1;
     }
 
-    setup();
-
+    setupShadersAndMeshes();
 
     // Render loop : render every loopInterval seconds
     float loopInterval = 0.02f;
@@ -150,16 +127,7 @@ int main()
 	// Initialize the random locations of the grass blades 
 	initPatch();
 
-	// IMGUI init
-	IMGUI_CHECKVERSION();
-	ImGui::CreateContext();
-
-	// Setup Dear ImGui style
-	ImGui::StyleColorsDark();
-
-	// Setup Platform/Renderer bindings
-	ImGui_ImplGlfw_InitForOpenGL(window, true);
-	ImGui_ImplOpenGL3_Init("#version 330 core");
+	initIMGUI(window);
 
     while (!glfwWindowShouldClose(window))
     {
@@ -173,7 +141,6 @@ int main()
 		// For correcting the camera input in processInput
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
-		
 
         processInput(window);
 
@@ -211,12 +178,41 @@ int main()
     return 0;
 }
 
+GLFWwindow* initGLFWWindow() {
+	// GLFW: initialize and configure
+	glfwInit();
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	glfwWindowHint(GLFW_SAMPLES, 4);
+
+	#ifdef __APPLE__
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // Fix compilation on OS X
+	#endif
+
+	// GLFW window creation
+	GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "GrassProject", NULL, NULL);
+	if (window == NULL)
+	{
+		std::cout << "Failed to create GLFW window" << std::endl;
+		glfwTerminate();
+		return NULL;
+	}
+	glfwMakeContextCurrent(window);
+	glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
+	glfwSetCursorPosCallback(window, cursorInputCallback);
+	// Hide the cursor and capture it
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetKeyCallback(window, keyInputCallback);
+	return window;
+}
+
 
 /* Initializes shaders. Loads the information about the vertices, colors, normals 
  * and indices (and uvs) from the primitives file. Loads textures. 
  * Sets up the z-buffer. 
  */
-void setup() {
+void setupShadersAndMeshes() {
 	// Initialize shader
 	shaderProgram.initialize("shader.vert", "shader.frag");
 
@@ -254,6 +250,19 @@ void setup() {
 	glEnable(GL_DEPTH_TEST);  // Turn on z-buffer depth test
 	glDepthFunc(GL_LESS);  // Draws fragments that are closer to the screen in NDC
 	glEnable(GL_MULTISAMPLE);
+}
+
+void initIMGUI(GLFWwindow* window) {
+	// IMGUI init
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+
+	// Setup Dear ImGui style
+	ImGui::StyleColorsDark();
+
+	// Setup Platform/Renderer bindings
+	ImGui_ImplGlfw_InitForOpenGL(window, true);
+	ImGui_ImplOpenGL3_Init("#version 330 core");
 }
 
 /* Draws the scene with grass blades. 
