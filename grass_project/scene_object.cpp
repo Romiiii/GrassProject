@@ -9,7 +9,6 @@ void SceneObject::drawSceneObjectArrays() {
 	GLCall(glBindVertexArray(VAO));
 	GLCall(glDrawArrays(GL_TRIANGLES, 0, 36));
 	GLCall(glBindVertexArray(0));
-	GLCall(glDepthFunc(GL_LESS)); // set depth function back to default
 }
 
 /* Creates the Vertex Array Object and saves
@@ -33,7 +32,7 @@ unsigned int SceneObject::createVertexArray(const std::vector<float>& positions,
 	glEnableVertexAttribArray(colorAttributeLocation);
 	glVertexAttribPointer(colorAttributeLocation, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
-	// Set vertex shader attribute "pos"
+	// Set vertex shader attribute "normal"
 	createArrayBuffer(normals);  // Creates and binds the VBO
 	int normalAttributeLocation = glGetAttribLocation(shaderProgram.getShaderID(), "normal");
 	glEnableVertexAttribArray(normalAttributeLocation);

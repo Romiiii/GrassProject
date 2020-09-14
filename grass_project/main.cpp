@@ -9,6 +9,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
+#include <cassert>
 
 #include <vector>
 #include <chrono>
@@ -68,8 +69,7 @@ float deltaTime = 0.0f;	// Time between current frame and last frame
 float lastFrame = 0.0f; // Time of last frame
 
 void setup();
-void drawSceneGrass();
-void drawSceneBillboard();
+void drawScene();
 void initPatch();
 void drawPatch(glm::mat4 projection, glm::mat4 view, glm::mat4 model, glm::mat4 rotation = glm::mat4());
 void drawGrass(glm::mat4 projection, glm::mat4 view, glm::mat4 model);
@@ -143,7 +143,6 @@ int main()
 
     // Render loop : render every loopInterval seconds
     float loopInterval = 0.02f;
-    auto begin = std::chrono::high_resolution_clock::now();
 
 	// Set seed for random numbers
 	srand((unsigned)time(0));
@@ -164,15 +163,17 @@ int main()
 
     while (!glfwWindowShouldClose(window))
     {
+		// Poll events at start so you have the newest inputs
+		glfwPollEvents();
+
+		// Start the Dear ImGui frame
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+
 		// For correcting the camera input in processInput
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
-		lastFrame = currentFrame;
-
-        // Update current time
-        auto frameStart = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<float> appTime = frameStart - begin;
-        currentTime = appTime.count();
+		
 
         processInput(window);
 
@@ -183,29 +184,21 @@ int main()
 
         shaderProgram.use();
 
-		if (config.grassType == 0) {
-			drawSceneGrass();
-		}
-		else if (config.grassType == 1) {
-			drawSceneBillboard();
-		}
-		else {
-			std::cout << "ERROR:: Incorrect grassType, grassType =" << config.grassType << std::endl;
-			return 0;
-		}
+		assert(config.grassType == 0 || config.grassType == 1, "ERROR:: Incorrect grassType"); 
+		drawScene();
 
 		if (isPaused) {
 			drawGui();
 		}
 
         glfwSwapBuffers(window);
-        glfwPollEvents();
 
         // Control render loop frequency
-        std::chrono::duration<float> elapsed = std::chrono::high_resolution_clock::now()-frameStart;
-        while (loopInterval > elapsed.count()) {
-            elapsed = std::chrono::high_resolution_clock::now() - frameStart;
+        float elapsed = deltaTime;
+        while (loopInterval > elapsed) {
+            elapsed = glfwGetTime() - lastFrame;
         }
+		lastFrame = currentFrame;
     }
 
 	// Cleanup
@@ -244,8 +237,10 @@ void setup() {
 	billboardGrassNoise2.loadTexture(billboardGrassFileNameNoise2, false);
 
 	// Load billboard square into openGL
-	billboardSquare.createVertexArrayTexture(billboardSquareVertices, billboardSquareColors,
-		billboardSquareIndices, billboardSquareUVs, billboardSquareNormals, billboardShader);
+	billboardSquare.createVertexArrayTexture(
+		billboardSquareVertices, billboardSquareColors,
+		billboardSquareIndices, billboardSquareUVs,
+		billboardSquareNormals, billboardShader);
 
 	// Setup the Skybox Shaders
 	skyboxShader.initialize("skybox.vert", "skybox.frag");
@@ -257,18 +252,19 @@ void setup() {
 	glDepthRange(-1, 1);  // Make the NDC a right handed coordinate system, 
 						  // with the camera pointing towards -z
 	glEnable(GL_DEPTH_TEST);  // Turn on z-buffer depth test
-	glEnable(GL_MULTISAMPLE);
 	glDepthFunc(GL_LESS);  // Draws fragments that are closer to the screen in NDC
-
+	glEnable(GL_MULTISAMPLE);
 }
 
 /* Draws the scene with grass blades. 
  */
-void drawSceneGrass() {
+void drawScene() {
 	glm::mat4 scale = glm::scale(1.f, 1.f, 1.f);
 	glm::mat4 projection = glm::perspectiveFovRH_NO(70.0f, (float)SCR_WIDTH, 
 		(float)SCR_HEIGHT, .01f, 100.0f);
-	glm::mat4 view = glm::lookAt(camera.getCamPosition(), camera.getCamPosition() + camera.getCamForward(), glm::vec3(0, 1, 0));
+	glm::mat4 view = glm::lookAt(
+		camera.getCamPosition(),
+		camera.getCamPosition() + camera.getCamForward(), glm::vec3(0, 1, 0));
 
 	drawPatch(projection, view, glm::translate(-0.5 * grassPatchVertices[6], 
 		-0.5 * grassPatchVertices[7], -0.5 * grassPatchVertices[8]));
@@ -276,25 +272,6 @@ void drawSceneGrass() {
 	// The rotation of the second patch should be applied twice to the blades/billboards 
 	// (to turn them back in the same direction as those in patch 1), so it is passed seperately
 	drawPatch(projection, view, glm::translate(0.5 * grassPatchVertices[6], 
-		0.5 * grassPatchVertices[7], 0.5 * grassPatchVertices[8]), glm::rotateY(2 * glm::half_pi<float>()));
-	drawSkybox(projection, view);
-}
-
-/* Draws the scene with grass billboards.
- */
-void drawSceneBillboard() {
-	glm::mat4 scale = glm::scale(1.f, 1.f, 1.f);
-	glm::mat4 projection = glm::perspectiveFovRH_NO(70.0f, (float)SCR_WIDTH, 
-		(float)SCR_HEIGHT, .01f, 100.0f);
-	glm::mat4 view = glm::lookAt(camera.getCamPosition(), camera.getCamPosition() + camera.getCamForward(), glm::vec3(0, 1, 0));
-
-	drawPatch(projection, view, glm::translate(-0.5 * grassPatchVertices[6], -0.5 * grassPatchVertices[7],
-		-0.5 * grassPatchVertices[8]) * scale);
-
-	// Fit the other patch triangle to the other one
-	// The rotation of the second patch should be applied twice to the blades/billboards 
-	// (to turn them back in the same direction as those in patch 1), so it is passed seperately
-	drawPatch(projection, view, glm::translate(0.5 * grassPatchVertices[6],
 		0.5 * grassPatchVertices[7], 0.5 * grassPatchVertices[8]), glm::rotateY(2 * glm::half_pi<float>()));
 	drawSkybox(projection, view);
 }
@@ -451,14 +428,12 @@ void drawSkybox(glm::mat4 projection, glm::mat4 view) {
 		skyboxShader.setInt("skybox", cubemapTextureNight.getTextureID());
 	}
 	skybox.drawSceneObjectArrays();
+	GLCall(glDepthFunc(GL_LESS));
 }
 
 /* Draws the GUI that lets the user control the light, skybox, grass and wind.
  */
 void drawGui() {
-	// Start the Dear ImGui frame
-	ImGui_ImplOpenGL3_NewFrame();
-	ImGui_ImplGlfw_NewFrame();
 	// Slider will be 65% of the window width (this is the default)
 
 	ImGui::NewFrame();

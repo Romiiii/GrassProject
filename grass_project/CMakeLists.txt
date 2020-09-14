@@ -1,10 +1,13 @@
 ## set target project
 file(GLOB target_src "*.h" "*.cpp")
-add_executable(${subdir} ${target_src})
+add_executable(grass_project ${target_src})
 ## set link libraries
-target_link_libraries(${subdir} ${libraries})
+
+set(libraries glad glfw imgui)
+
+target_link_libraries(grass_project ${libraries})
 ## add local source directory to include paths
-target_include_directories(${subdir} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(grass_project PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 ## copy shaders to build folder
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/shader.vert DESTINATION ${CMAKE_CURRENT_BINARY_DIR})

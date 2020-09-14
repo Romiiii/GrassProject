@@ -53,4 +53,4 @@ include_directories(
 
 
 # project
-add_subdirectory(${CMAKE_SOURCE_DIR}/grass_project_top)
+add_subdirectory(${CMAKE_SOURCE_DIR}/grass_project)

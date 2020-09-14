@@ -38,12 +38,6 @@ public:
 	 */
 	unsigned int createVertexArrayFromPositions(const std::vector<float>& positions);
 
-	// ADD COMMENTS
-	//void loadTexture(std::string fileName, bool alpha = true);
-
-
-
-
 private:
 	unsigned int VAO;
 	unsigned int vertexCount;
