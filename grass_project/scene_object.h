@@ -17,7 +17,7 @@ class SceneObject {
 public:
 	void drawSceneObject();
 	void drawSceneObjectArrays();
-
+	void drawSceneObjectInstanced(int numSceneObjects, unsigned int instanceVBO);
 
 	/* Creates the Vertex Array Object and saves 
 	 * positions, colors, indices and normals. 
@@ -26,6 +26,9 @@ public:
 		const std::vector<float>& positions,
 		const std::vector<float>& colors, const std::vector<unsigned int>& indices, 
 		const std::vector<float>& normals, Shader& shaderProgram);
+
+	unsigned int SceneObject::createVertexArrayInstanced(
+		const std::vector<float>& positions, const std::vector<float>& colors, const std::vector<unsigned int>& indices, const std::vector<float>& normals, Shader& shaderProgram, unsigned int instanceVBO, const std::vector<float>* uvs = nullptr);
 
 	/* Creates the Vertex Array Object and saves
 	 * positions, colors, indices, uvs (for the texture) and normals.
