@@ -124,29 +124,12 @@ unsigned int SceneObject::createVertexArrayTexture(const std::vector<float>& pos
 	// bind vertex array object
 	glBindVertexArray(VAO);
 
-	// set vertex shader attribute "pos"
-	createArrayBuffer(positions); // creates and bind  the VBO
-	int posAttributeLocation = glGetAttribLocation(shaderProgram.getShaderID(), "pos");
-	glEnableVertexAttribArray(posAttributeLocation);
-	glVertexAttribPointer(posAttributeLocation, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-	// set vertex shader attribute "color"
-	createArrayBuffer(colors); // creates and bind the VBO
-	int colorAttributeLocation = glGetAttribLocation(shaderProgram.getShaderID(), "color");
-	glEnableVertexAttribArray(colorAttributeLocation);
-	glVertexAttribPointer(colorAttributeLocation, 4, GL_FLOAT, GL_FALSE, 0, 0);
-
-	// set vertex shader attribute "uv"
-	createArrayBuffer(uvs); // creates and bind the VBO
-	int uvAttributeLocation = glGetAttribLocation(shaderProgram.getShaderID(), "uv");
-	GLCall(glEnableVertexAttribArray(uvAttributeLocation));
-	GLCall(glVertexAttribPointer(uvAttributeLocation, 2, GL_FLOAT, GL_FALSE, 0, 0));
-
-	// set vertex shader attribute "normal"
-	createArrayBuffer(normals); // creates and bind the VBO
-	int normalAttributeLocation = glGetAttribLocation(shaderProgram.getShaderID(), "normal");
-	glEnableVertexAttribArray(normalAttributeLocation);
-	glVertexAttribPointer(normalAttributeLocation, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	// Set attributes
+	setVertexShaderAttribute("pos", positions, 3, shaderProgram);
+	setVertexShaderAttribute("color", colors, 4, shaderProgram);
+	setVertexShaderAttribute("uv", uvs, 2, shaderProgram);
+	setVertexShaderAttribute("normal", normals, 3, shaderProgram);
 
 	// creates and bind the EBO
 	createElementArrayBuffer(indices);
