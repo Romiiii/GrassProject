@@ -240,6 +240,7 @@ void setupShadersAndMeshes() {
 
 	// Initialize billboard grass texture
 	billboardShader.initialize("billboard.vert", "billboard.frag");
+	//billboardShader.use();
 	std::string billboardGrassFileName = "images/grass_texture.tga";
 	std::string billboardGrassFileNameNoise1 = "images/perlin_noise_1.tga";
 	std::string billboardGrassFileNameNoise2 = "images/perlin_noise_2.tga";
@@ -258,6 +259,7 @@ void setupShadersAndMeshes() {
 
 	// Setup the Skybox Shaders
 	skyboxShader.initialize("skybox.vert", "skybox.frag");
+	//skyboxShader.use();
 	cubemapTextureDay.loadTextureCubeMap(facesDay, false);
 	cubemapTextureNight.loadTextureCubeMap(facesNight);
 	skybox.createVertexArrayFromPositions(skyboxVertices);
@@ -286,7 +288,7 @@ void initIMGUI(GLFWwindow* window) {
 /* Draws the scene with grass blades.
  */
 void drawScene() {
-	glm::mat4 scale = glm::scale(1.f, 1.f, 1.f); // FIX: not every frame
+	//glm::mat4 scale = glm::scale(1.f, 1.f, 1.f); // FIX: not every frame
 	glm::mat4 projection = glm::perspectiveFovRH_NO(70.0f, (float)SCR_WIDTH,
 		(float)SCR_HEIGHT, .01f, 100.0f); // FIX: not every frame
 	glm::mat4 view = glm::lookAt(
@@ -351,17 +353,18 @@ void initPatch() {
 
 		// Add the model matrices for the first patch
 		modelMatrices[x] = patch1Correction * glm::translate(grassCoordinate) * glm::rotateX(grassRotation[0]) * glm::rotateY(grassRotation[1]);
-		modelMatrices[x + MAX_PATCH_DENSITY_BLADES] = patch2Correction * glm::translate(grassCoordinate) * glm::rotateX(grassRotation[0]) * glm::rotateY(grassRotation[1]) * glm::rotateY(2 * glm::half_pi<float>());
+		//modelMatrices[x + MAX_PATCH_DENSITY_BLADES] = patch2Correction * glm::translate(grassCoordinate) * glm::rotateX(grassRotation[0]) * glm::rotateY(grassRotation[1]) * glm::rotateY(2 * glm::half_pi<float>());
+		modelMatrices[x + MAX_PATCH_DENSITY_BLADES] = glm::rotateY(2 * glm::half_pi<float>()) * patch1Correction * glm::translate(grassCoordinate) * glm::rotateX(grassRotation[0]) * glm::rotateY(grassRotation[1]);
 		// Add the model matrices for the second patch
 	}
 
 }
 
 void createInstanceMatrixBuffer(glm::mat4* modelMatrices, const unsigned int numInstances) {
-	glGenBuffers(1, &instanceVBO);
-	glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
-	glBufferData(GL_ARRAY_BUFFER, numInstances * sizeof(glm::mat4), modelMatrices, GL_STATIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	GLCall(glGenBuffers(1, &instanceVBO));
+	GLCall(glBindBuffer(GL_ARRAY_BUFFER, instanceVBO));
+	GLCall(glBufferData(GL_ARRAY_BUFFER, numInstances * sizeof(glm::mat4), modelMatrices, GL_STATIC_DRAW));
+	GLCall(glBindBuffer(GL_ARRAY_BUFFER, 0));
 }
 
 /* Draws a triangular patch of grass with the specified rotation.
@@ -414,7 +417,10 @@ void drawGrass(glm::mat4 projection, glm::mat4 view) {
 	bladesShader.setVec3("lightPos", config.lightPosition);
 	//grass.drawSceneObject();
 
-	grass.drawSceneObjectInstanced(config.patchDensity, instanceVBO);
+	grass.drawSceneObjectInstanced(config.patchDensity, instanceVBO, 0);
+	//grass.drawSceneObjectInstanced(config.patchDensity, instanceVBO, MAX_PATCH_DENSITY_BLADES);
+
+	//grass.drawSceneObjectInstanced(config.patchDensity, instanceVBO);
 	// Only draw single blades when in blades mode 
 	//if (config.grassType == 0) {
 	//	// Distribute the grass blades uniformly within the patch
@@ -523,7 +529,7 @@ void drawGui() {
 		if (ImGui::RadioButton("Blades", config.grassType == 0)) { config.grassType = 0; } ImGui::SameLine();
 		if (ImGui::RadioButton("Billboard", config.grassType == 1)) { config.grassType = 1; }
 		if (config.grassType == 0) {
-			ImGui::SliderInt("Patch density", &config.patchDensity, 1, MAX_PATCH_DENSITY_BLADES);
+			ImGui::SliderInt("Patch density", &config.patchDensity, 1, 2*MAX_PATCH_DENSITY_BLADES);
 		}
 		else if (config.grassType == 1) {
 			ImGui::SliderInt("Patch density", &config.patchDensity, 1, MAX_PATCH_DENSITY_BILLBOARDS);

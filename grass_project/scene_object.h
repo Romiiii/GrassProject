@@ -9,6 +9,7 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include <vector>
+#include <cassert>
 #include "shader.h"
 #include "debug.h"
 #include "texture.h"
@@ -17,7 +18,7 @@ class SceneObject {
 public:
 	void drawSceneObject();
 	void drawSceneObjectArrays();
-	void drawSceneObjectInstanced(int numSceneObjects, unsigned int instanceVBO);
+	void drawSceneObjectInstanced(int numSceneObjects, unsigned int instanceVBO, int offset);
 
 	/* Creates the Vertex Array Object and saves 
 	 * positions, colors, indices and normals. 

@@ -11,11 +11,11 @@ void SceneObject::drawSceneObjectArrays() {
 	GLCall(glBindVertexArray(0));
 }
 
-void SceneObject::drawSceneObjectInstanced(int numSceneObjects, unsigned int instanceVBO) {
+void SceneObject::drawSceneObjectInstanced(int numSceneObjects, unsigned int instanceVBO, int offset) {
 	GLCall(glBindVertexArray(VAO));
 	//glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
 	// Draw numSceneObjects triangles of 3 vertices each
-	GLCall(glDrawArraysInstanced(GL_TRIANGLES, 0, 3, numSceneObjects));
+	GLCall(glDrawArraysInstanced(GL_TRIANGLES, offset, 3, numSceneObjects));
 	GLCall(glBindVertexArray(0));
 }
 
@@ -51,21 +51,21 @@ unsigned int SceneObject::createVertexArrayInstanced(const std::vector<float>& p
 	GLCall(glEnableVertexAttribArray(instanceMatrixAttributeLocation));
 	GLCall(glBindBuffer(GL_ARRAY_BUFFER, instanceVBO)); // this attribute comes from a different vertex buffer
 			// set attribute pointers for matrix (4 times vec4)
-	glEnableVertexAttribArray(instanceMatrixAttributeLocation);
-	glVertexAttribPointer(instanceMatrixAttributeLocation, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)0);
-	glEnableVertexAttribArray(instanceMatrixAttributeLocation+1);
-	glVertexAttribPointer(instanceMatrixAttributeLocation + 1, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(glm::vec4)));
-	glEnableVertexAttribArray(instanceMatrixAttributeLocation+2);
-	glVertexAttribPointer(instanceMatrixAttributeLocation + 2, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(2 * sizeof(glm::vec4)));
-	glEnableVertexAttribArray(instanceMatrixAttributeLocation+3);
-	glVertexAttribPointer(instanceMatrixAttributeLocation + 3, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(3 * sizeof(glm::vec4)));
+	GLCall(glEnableVertexAttribArray(instanceMatrixAttributeLocation));
+	GLCall(glVertexAttribPointer(instanceMatrixAttributeLocation, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)0));
+	GLCall(glEnableVertexAttribArray(instanceMatrixAttributeLocation+1));
+	GLCall(glVertexAttribPointer(instanceMatrixAttributeLocation + 1, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(glm::vec4))));
+	GLCall(glEnableVertexAttribArray(instanceMatrixAttributeLocation+2));
+	GLCall(glVertexAttribPointer(instanceMatrixAttributeLocation + 2, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(2 * sizeof(glm::vec4))));
+	GLCall(glEnableVertexAttribArray(instanceMatrixAttributeLocation+3));
+	GLCall(glVertexAttribPointer(instanceMatrixAttributeLocation + 3, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(3 * sizeof(glm::vec4))));
 
-	glVertexAttribDivisor(instanceMatrixAttributeLocation, 1);
-	glVertexAttribDivisor(instanceMatrixAttributeLocation+1, 1);
-	glVertexAttribDivisor(instanceMatrixAttributeLocation+2, 1);
-	glVertexAttribDivisor(instanceMatrixAttributeLocation+3, 1);
+	GLCall(glVertexAttribDivisor(instanceMatrixAttributeLocation, 1));
+	GLCall(glVertexAttribDivisor(instanceMatrixAttributeLocation+1, 1));
+	GLCall(glVertexAttribDivisor(instanceMatrixAttributeLocation+2, 1));
+	GLCall(glVertexAttribDivisor(instanceMatrixAttributeLocation+3, 1));
 
-	GLCall(glBindVertexArray(0));
+	//GLCall(glBindVertexArray(0));
 
 	/*GLCall(glVertexAttribPointer(
 		instanceMatrixAttributeLocation,
@@ -120,9 +120,9 @@ unsigned int SceneObject::createVertexArrayInstanced(const std::vector<float>& p
 	*/
 unsigned int SceneObject::createVertexArrayTexture(const std::vector<float>& positions, const std::vector<float>& colors, const std::vector<unsigned int>& indices, const std::vector<float>& uvs, const std::vector<float>& normals, Shader& shaderProgram) {
 	shaderProgram.use();
-	glGenVertexArrays(1, &VAO);
+	GLCall(glGenVertexArrays(1, &VAO));
 	// bind vertex array object
-	glBindVertexArray(VAO);
+	GLCall(glBindVertexArray(VAO));
 
 
 	// Set attributes
@@ -176,6 +176,8 @@ void SceneObject::setVertexShaderAttribute(char *attributeName,
 	const std::vector<float>& data, int dataSize, Shader& shaderProgram) {
 	createArrayBuffer(data);  // Creates and binds the VBO
 	int attributeLocation = glGetAttribLocation(shaderProgram.getShaderID(), attributeName);
-	glEnableVertexAttribArray(attributeLocation);
-	glVertexAttribPointer(attributeLocation, dataSize, GL_FLOAT, GL_FALSE, 0, 0);
+	//assert(attributeLocation != -1);
+	//std::cout << attributeLocation << std::endl;
+	GLCall(glEnableVertexAttribArray(attributeLocation));
+	GLCall(glVertexAttribPointer(attributeLocation, dataSize, GL_FLOAT, GL_FALSE, 0, 0));
 }
