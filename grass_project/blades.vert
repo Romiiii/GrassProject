@@ -15,7 +15,7 @@ uniform mat4 model;
 void main()
 {
 	// gl_Position = projection * view * model * vec4(pos, 1.0);
-   gl_Position = projection * view * instanceMatrix * vec4(pos, 1.0);
+   gl_Position = projection * view * model * instanceMatrix * vec4(pos, 1.0);
    Normal = mat3(transpose(inverse(model))) * normal;  
    FragPos = vec3(model * vec4(pos, 1.0));
    vtxColor = color;

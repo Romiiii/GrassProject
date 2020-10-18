@@ -36,7 +36,6 @@ public:
 	 */
 	unsigned int createVertexArrayTexture(
 		const std::vector<float>& positions,
-		const std::vector<float>& colors,
 		const std::vector<unsigned int>& indices,
 		const std::vector<float>& uvs, 
 		const std::vector<float>& normals, 

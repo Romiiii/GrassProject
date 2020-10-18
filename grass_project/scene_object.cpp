@@ -118,7 +118,7 @@ unsigned int SceneObject::createVertexArrayInstanced(const std::vector<float>& p
 /* Creates the Vertex Array Object and saves
 	* positions, colors, indices, uvs (for the texture) and normals.
 	*/
-unsigned int SceneObject::createVertexArrayTexture(const std::vector<float>& positions, const std::vector<float>& colors, const std::vector<unsigned int>& indices, const std::vector<float>& uvs, const std::vector<float>& normals, Shader& shaderProgram) {
+unsigned int SceneObject::createVertexArrayTexture(const std::vector<float>& positions, const std::vector<unsigned int>& indices, const std::vector<float>& uvs, const std::vector<float>& normals, Shader& shaderProgram) {
 	shaderProgram.use();
 	GLCall(glGenVertexArrays(1, &VAO));
 	// bind vertex array object
@@ -127,7 +127,6 @@ unsigned int SceneObject::createVertexArrayTexture(const std::vector<float>& pos
 
 	// Set attributes
 	setVertexShaderAttribute("pos", positions, 3, shaderProgram);
-	setVertexShaderAttribute("color", colors, 4, shaderProgram);
 	setVertexShaderAttribute("uv", uvs, 2, shaderProgram);
 	setVertexShaderAttribute("normal", normals, 3, shaderProgram);
 
@@ -178,6 +177,11 @@ void SceneObject::setVertexShaderAttribute(char *attributeName,
 	int attributeLocation = glGetAttribLocation(shaderProgram.getShaderID(), attributeName);
 	//assert(attributeLocation != -1);
 	//std::cout << attributeLocation << std::endl;
+	if (attributeLocation == -1) {
+
+		std::cout << "\x1B[01;93mWARNING: Attribute: " << attributeName << " - not found" << std::endl;
+		std::cout << "WARNING: Using shader: " << shaderProgram.getFragmentPath() << "\x1B[0m" << std::endl;
+	}
 	GLCall(glEnableVertexAttribArray(attributeLocation));
 	GLCall(glVertexAttribPointer(attributeLocation, dataSize, GL_FLOAT, GL_FALSE, 0, 0));
 }

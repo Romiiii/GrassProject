@@ -47,10 +47,6 @@ std::vector<float> billboardSquareVertices{ 0.5f,  0.5f, 0.0f,  // top right
 std::vector<unsigned int> billboardSquareIndices{	0, 1, 3,  
 													1, 2, 3 };  
 
-std::vector<float> billboardSquareColors{ .0f, .5f, .0f, 1.f,
-								.0f, .5f, .0f, 1.f,
-								.0f, .5f, .0f, 1.f,
-								.0f, .5f, .0f, 1.f };
 
 std::vector<float> billboardSquareUVs{	1.0f, 0.0f,  // bottom right
 										1.0f, 1.0f,  // top right

@@ -10,6 +10,7 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include <cassert>
+#include <algorithm>
 
 #include <vector>
 #include <chrono>
@@ -24,6 +25,7 @@
 #include "camera.h"
 #include "scene_object.h"
 #include "debug.h"
+#include "patch.h"
 
 // Constants
 const unsigned int SCR_WIDTH = 1000;
@@ -34,13 +36,15 @@ const unsigned int MAX_PATCH_DENSITY_BLADES = 40000;
 const unsigned int MAX_PATCH_DENSITY_BILLBOARDS = 1000;
 const unsigned int MAX_PATCHES = 2;
 
+Patch patch;
+PatchInstance patchInstance;
+
 // Global variables used for rendering
 SceneObject grass;
-SceneObject patch;
 SceneObject billboardSquare;
 SceneObject skybox;
 //glm::mat4* modelMatrices;
-glm::mat4 modelMatrices[MAX_PATCH_DENSITY_BLADES];
+//glm::mat4 modelMatrices[MAX_PATCH_DENSITY_BLADES];
 
 
 float currentTime;
@@ -50,10 +54,7 @@ Shader skyboxShader;
 Shader billboardShader;
 unsigned int instanceVBO;
 
-// Array of grass coordinates 
-std::vector<glm::vec3> grassCoordinates;
-std::vector<glm::vec2> grassRotations;
-std::vector<glm::mat4> grassMatrixes;
+
 
 // Textures
 Texture billboardGrassTexture;
@@ -78,7 +79,6 @@ GLFWwindow* initGLFWWindow();
 void setupShadersAndMeshes();
 void initIMGUI(GLFWwindow* window);
 void drawScene();
-void initPatch();
 void createInstanceMatrixBuffer(glm::mat4* modelMatrices, const unsigned int MAX_PATCH_DENSITY_BLADES);
 void drawPatch(glm::mat4 projection, glm::mat4 view, glm::mat4 model, glm::mat4 rotation = glm::mat4());
 void drawGrass(glm::mat4 projection, glm::mat4 view);
@@ -138,10 +138,14 @@ int main()
 		return -1;
 	}
 
-	// Initialize the random locations of the grass blades 
-	initPatch();
 
+
+	patch.init(MAX_PATCH_DENSITY_BLADES, &patchShader);
 	setupShadersAndMeshes();
+	patchInstance.init(patch.createPatchInstance(), glm::mat4(1));
+
+
+
 
 	// Render loop : render every loopInterval seconds
 	float loopInterval = 0.02f;
@@ -243,15 +247,13 @@ void setupShadersAndMeshes() {
 	//grass.createVertexArray(grassVertices, grassColors, grassIndices,
 	//	grassNormals, shaderProgram);
 
-	createInstanceMatrixBuffer(modelMatrices, MAX_PATCH_DENSITY_BLADES);
+	createInstanceMatrixBuffer(patch.getBladeMatrices(), MAX_PATCH_DENSITY_BLADES);
 
 	grass.createVertexArrayInstanced(grassVertices, grassColors, grassIndices,
 		grassNormals, bladesShader, instanceVBO);
 
+
 	patchShader.initialize("patch.vert", "patch.frag");
-	// Load patch mesh into openGL
-	patch.createVertexArray(grassPatchVertices, grassPatchColors,
-		grassPatchIndices, grassPatchNormals, patchShader);
 
 	// Initialize billboard grass texture
 	billboardShader.initialize("billboard.vert", "billboard.frag");
@@ -266,7 +268,6 @@ void setupShadersAndMeshes() {
 	// Load billboard square into openGL
 	billboardSquare.createVertexArrayTexture(
 		billboardSquareVertices,
-		billboardSquareColors,
 		billboardSquareIndices,
 		billboardSquareUVs,
 		billboardSquareNormals,
@@ -310,64 +311,13 @@ void drawScene() {
 		camera.getCamPosition(),
 		camera.getCamPosition() + camera.getCamForward(), glm::vec3(0, 1, 0));
 
-	drawPatch(projection, view, glm::translate(-0.5 * grassPatchVertices[6],
-		-0.5 * grassPatchVertices[7], -0.5 * grassPatchVertices[8]), glm::mat4(1));
+	drawPatch(projection, view, glm::mat4(1), glm::mat4(1));
 	// Fit the other patch triangle to the other one 
 	// The rotation of the second patch should be applied twice to the blades/billboards 
 	// (to turn them back in the same direction as those in patch 1), so it is passed seperately
 	//drawPatch(projection, view, glm::translate(0.5 * grassPatchVertices[6],
 	//	0.5 * grassPatchVertices[7], 0.5 * grassPatchVertices[8]), glm::rotateY(2 * glm::half_pi<float>()));
 	drawSkybox(projection, view);
-}
-
-/* Initializes the patch by calculating the coordinates of the grass/billboards.
- * Coordinates are sampled uniformly. A random rotation of the grass is
- * generated as well.
- */
-void initPatch() {
-	int upperBound = 1000;
-	int lowerBound = 0;
-
-	// Number is divided by 100 at the end to get the float number 
-	int upperBoundRotationX = 6500;
-	int lowerBoundRotationX = 5500;
-
-	int upperBoundRotationY = 3150;
-	int lowerBoundRotationY = 0;
-
-	// Distribute the grass blades uniformly within the patch
-	for (int x = 0; x < MAX_PATCH_DENSITY_BLADES; x += 1) {
-		// Get two random numbers between 0 and 100
-		float r1 = (rand() % ((upperBound - lowerBound) + 1) + lowerBound) / 1000.0f;
-		float r2 = (rand() % ((upperBound - lowerBound) + 1) + lowerBound) / 1000.0f;
-
-		glm::vec3 point = (1 - sqrt(r1)) * glm::vec3(grassPatchVertices[0], grassPatchVertices[1], grassPatchVertices[2]) + (sqrt(r1) * (1 - r2)) *
-			glm::vec3(grassPatchVertices[3], grassPatchVertices[4], grassPatchVertices[5]) + (r2 * sqrt(r1)) *
-			glm::vec3(grassPatchVertices[6], grassPatchVertices[7], grassPatchVertices[8]);
-
-		glm::vec3 grassCoordinate = glm::vec3(point[0], point[1], point[2]);
-		// Add the coordinate to grassCoordinates
-		grassCoordinates.push_back(grassCoordinate);
-
-		// Generate the random x and y rotation
-		float r3 = (rand() % ((upperBoundRotationX - lowerBoundRotationX) + 1) + lowerBoundRotationX) / 1000.0f;
-		float r4 = (rand() % ((upperBoundRotationY - lowerBoundRotationY) + 1) + lowerBoundRotationY) / 1000.0f;
-
-		glm::vec2 grassRotation = glm::vec2(r3, r4);
-		grassRotations.push_back(grassRotation);
-
-		//glm::mat4 patch1Correction = glm::translate(-0.5 * grassPatchVertices[6],
-		//	-0.5 * grassPatchVertices[7], -0.5 * grassPatchVertices[8]);
-		//glm::mat4 patch2Correction = glm::translate(0.5 * grassPatchVertices[6],
-			//0.5 * grassPatchVertices[7], 0.5 * grassPatchVertices[8]);
-
-		// Add the model matrices for the first patch
-		modelMatrices[x] = glm::translate(grassCoordinate) * glm::rotateX(grassRotation[0]) * glm::rotateY(grassRotation[1]);
-		//modelMatrices[x + MAX_PATCH_DENSITY_BLADES] = patch2Correction * glm::translate(grassCoordinate) * glm::rotateX(grassRotation[0]) * glm::rotateY(grassRotation[1]) * glm::rotateY(2 * glm::half_pi<float>());
-	/*	modelMatrices[x + MAX_PATCH_DENSITY_BLADES] = glm::rotateY(2 * glm::half_pi<float>()) * patch1Correction * glm::translate(grassCoordinate) * glm::rotateX(grassRotation[0]) * glm::rotateY(grassRotation[1]);*/
-		// Add the model matrices for the second patch
-	}
-
 }
 
 void createInstanceMatrixBuffer(glm::mat4* modelMatrices, const unsigned int numInstances) {
@@ -385,11 +335,12 @@ void drawPatch(glm::mat4 projection, glm::mat4 view, glm::mat4 model, glm::mat4 
 	patchShader.setMat4("view", view);
 
 	// The rotation is applied to the patch, but not to the blades or billboards on the patch
-	patchShader.setMat4("model", model * rotation);
+	patchShader.setMat4("model", 
+		patchInstance.getPatchMatrix() * rotation);
 	patchShader.setFloat("ambientStrength", config.ambientStrength);
 	patchShader.setVec3("lightPos", config.lightPosition);
 
-	patch.drawSceneObject();
+	patchInstance.getPatchInstance().drawSceneObject();
 
 	if (config.grassType == GrassType::BLADES) {
 		drawGrass(projection, view);
@@ -423,38 +374,11 @@ void drawGrass(glm::mat4 projection, glm::mat4 view) {
 	bladesShader.use();
 	bladesShader.setMat4("projection", projection);
 	bladesShader.setMat4("view", view);
+	bladesShader.setMat4("model", patchInstance.getPatchMatrix());
 	bladesShader.setFloat("ambientStrength", config.ambientStrength);
 	bladesShader.setVec3("lightPos", config.lightPosition);
-	//grass.drawSceneObject();
-	//std::cout << modelMatrices->length << std::endl;
 
 	grass.drawSceneObjectInstanced(config.patchDensity, instanceVBO, 0);
-	//grass.drawSceneObjectInstanced(config.patchDensity, instanceVBO, MAX_PATCH_DENSITY_BLADES);
-
-	//grass.drawSceneObjectInstanced(config.patchDensity, instanceVBO);
-	// Only draw single blades when in blades mode 
-	//if (config.grassType == 0) {
-	//	// Distribute the grass blades uniformly within the patch
-	//	for (int x = 0; x < config.patchDensity; x += 1) {
-	//		if (rotation == glm::mat4()) {
-	//			drawGrass(projection, view, model * glm::translate(grassCoordinates.at(x)) * glm::rotateX(grassRotations.at(x)[0]) * glm::rotateY(grassRotations.at(x)[1]));
-	//		}
-	//		else {
-	//			drawGrass(projection, view, model * rotation * glm::translate(grassCoordinates.at(x)) * glm::rotateX(grassRotations.at(x)[0]) * glm::rotateY(grassRotations.at(x)[1]) * rotation * rotation * rotation);
-	//		}
-	//	}
-	//}
-	//else if (config.grassType == 1) {
-	//	// Distribute the billboards uniformly within the patch
-	//	for (int x = 0; x < config.patchDensity; x += 1) {
-	//		if (rotation == glm::mat4()) {
-	//			drawBillboardCollection(projection, view, model * glm::translate(grassCoordinates.at(x)) * glm::translate(0.0, 0.5, 0.0) * glm::rotateY(grassRotations.at(x)[1]));
-	//		}
-	//		else {
-	//			drawBillboardCollection(projection, view, model * rotation * glm::translate(grassCoordinates.at(x)) * glm::translate(0.0, 0.5, 0.0) * glm::rotateY(grassRotations.at(x)[1]) * rotation);
-	//		}
-	//	}
-	//}
 }
 
 /* Draws a single square of the billboard grass.
@@ -541,9 +465,13 @@ void drawGui() {
 		if (ImGui::RadioButton("Billboard", config.grassType == GrassType::BILLBOARDS)) { config.grassType = GrassType::BILLBOARDS; }
 		if (config.grassType == GrassType::BLADES) {
 			ImGui::SliderInt("Patch density", &config.patchDensity, 1, MAX_PATCH_DENSITY_BLADES);
+			ImGui::InputInt("Patch density value:", &config.patchDensity, 100, 1000);
+			config.patchDensity = glm::clamp(config.patchDensity, 0, (int)MAX_PATCH_DENSITY_BLADES);
 		}
 		else if (config.grassType == GrassType::BILLBOARDS) {
 			ImGui::SliderInt("Patch density", &config.patchDensity, 1, MAX_PATCH_DENSITY_BILLBOARDS);
+			ImGui::InputInt("Patch density value:", &config.patchDensity, 100, 1000);
+			config.patchDensity = glm::clamp(config.patchDensity, 0, (int)MAX_PATCH_DENSITY_BILLBOARDS);
 		}
 
 		if (config.grassType == GrassType::BILLBOARDS) {
