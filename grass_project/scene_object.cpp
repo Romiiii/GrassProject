@@ -1,11 +1,11 @@
 #include "scene_object.h"
 
-void SceneObject::drawSceneObject() {
+void SceneObject::drawSceneObject() const {
 	GLCall(glBindVertexArray(VAO));
 	GLCall(glDrawElements(GL_TRIANGLES, vertexCount, GL_UNSIGNED_INT, 0));
 }
 
-void SceneObject::drawSceneObjectArrays() {
+void SceneObject::drawSceneObjectArrays() const {
 	GLCall(glBindVertexArray(VAO));
 	GLCall(glDrawArrays(GL_TRIANGLES, 0, 36));
 	GLCall(glBindVertexArray(0));

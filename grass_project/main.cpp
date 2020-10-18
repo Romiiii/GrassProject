@@ -29,9 +29,10 @@
 const unsigned int SCR_WIDTH = 1000;
 const unsigned int SCR_HEIGHT = 1000;
 // Maximum amount of grass blades per patch
-const unsigned int MAX_PATCH_DENSITY_BLADES = 20000;
+const unsigned int MAX_PATCH_DENSITY_BLADES = 40000;
 // Maximum amount of billboards per patch
-const unsigned int MAX_PATCH_DENSITY_BILLBOARDS = 500;
+const unsigned int MAX_PATCH_DENSITY_BILLBOARDS = 1000;
+const unsigned int MAX_PATCHES = 2;
 
 // Global variables used for rendering
 SceneObject grass;
@@ -39,7 +40,7 @@ SceneObject patch;
 SceneObject billboardSquare;
 SceneObject skybox;
 //glm::mat4* modelMatrices;
-glm::mat4 modelMatrices[MAX_PATCH_DENSITY_BLADES * 2];
+glm::mat4 modelMatrices[MAX_PATCH_DENSITY_BLADES];
 
 
 float currentTime;
@@ -92,21 +93,36 @@ void processInput(GLFWwindow* window);
 void keyInputCallback(GLFWwindow* window, int button, int other, int action, int mods);
 void cursorInputCallback(GLFWwindow* window, double posX, double posY);
 
+enum class GrassType {
+	BLADES,
+	BILLBOARDS
+};
+
+enum class WindType {
+	TRIG_SIMPLE,
+	TRIG_COMPLEX_1,
+	TRIG_COMPLEX_2,
+	PERLIN
+};
+
+enum class SkyboxType {
+	DAY,
+	NIGHT
+};
+
 /* All variables that can be configured using the GUI
  */
 struct Config {
-	int grassType = 1;	 // Type 0 is seperate blades and type 1 is billboards
+	GrassType grassType = GrassType::BLADES;
 	int patchDensity = 20;
-	int windType = 0;	// Type 0 is simple trigonometric sway,
-						// type 1 and 2 are complex trigonometric sway 
-						// and type 3 is Perlin sway
+	WindType windType = WindType::TRIG_SIMPLE;	
 	float windStrength = 0.1; // Perlin sway can only go upto 0.1
 	float swayReach = 0.1;
 	float perlinSampleScale = 0.05;
 	int perlinTexture = 1;  // Either 1 or 2
 	glm::vec3 lightPosition = glm::vec3(1.0, 3.0, -1.0);
 	float ambientStrength = 0.5f;
-	int skyboxType = 1;  // Type 0 is day, type 1 is night 
+	SkyboxType skyboxType = SkyboxType::NIGHT; 
 } config;
 
 
@@ -158,7 +174,6 @@ int main()
 
 		bladesShader.use();
 
-		assert(config.grassType == 0 || config.grassType == 1, "ERROR:: Incorrect grassType");
 		drawScene();
 
 		if (isPaused) {
@@ -228,7 +243,7 @@ void setupShadersAndMeshes() {
 	//grass.createVertexArray(grassVertices, grassColors, grassIndices,
 	//	grassNormals, shaderProgram);
 
-	createInstanceMatrixBuffer(modelMatrices, MAX_PATCH_DENSITY_BLADES * 2);
+	createInstanceMatrixBuffer(modelMatrices, MAX_PATCH_DENSITY_BLADES);
 
 	grass.createVertexArrayInstanced(grassVertices, grassColors, grassIndices,
 		grassNormals, bladesShader, instanceVBO);
@@ -300,8 +315,8 @@ void drawScene() {
 	// Fit the other patch triangle to the other one 
 	// The rotation of the second patch should be applied twice to the blades/billboards 
 	// (to turn them back in the same direction as those in patch 1), so it is passed seperately
-	drawPatch(projection, view, glm::translate(0.5 * grassPatchVertices[6],
-		0.5 * grassPatchVertices[7], 0.5 * grassPatchVertices[8]), glm::rotateY(2 * glm::half_pi<float>()));
+	//drawPatch(projection, view, glm::translate(0.5 * grassPatchVertices[6],
+	//	0.5 * grassPatchVertices[7], 0.5 * grassPatchVertices[8]), glm::rotateY(2 * glm::half_pi<float>()));
 	drawSkybox(projection, view);
 }
 
@@ -310,11 +325,6 @@ void drawScene() {
  * generated as well.
  */
 void initPatch() {
-	float r1;
-	float r2;
-	float r3;
-	float r4;
-
 	int upperBound = 1000;
 	int lowerBound = 0;
 
@@ -328,8 +338,8 @@ void initPatch() {
 	// Distribute the grass blades uniformly within the patch
 	for (int x = 0; x < MAX_PATCH_DENSITY_BLADES; x += 1) {
 		// Get two random numbers between 0 and 100
-		r1 = (rand() % ((upperBound - lowerBound) + 1) + lowerBound) / 1000.0f;
-		r2 = (rand() % ((upperBound - lowerBound) + 1) + lowerBound) / 1000.0f;
+		float r1 = (rand() % ((upperBound - lowerBound) + 1) + lowerBound) / 1000.0f;
+		float r2 = (rand() % ((upperBound - lowerBound) + 1) + lowerBound) / 1000.0f;
 
 		glm::vec3 point = (1 - sqrt(r1)) * glm::vec3(grassPatchVertices[0], grassPatchVertices[1], grassPatchVertices[2]) + (sqrt(r1) * (1 - r2)) *
 			glm::vec3(grassPatchVertices[3], grassPatchVertices[4], grassPatchVertices[5]) + (r2 * sqrt(r1)) *
@@ -340,21 +350,21 @@ void initPatch() {
 		grassCoordinates.push_back(grassCoordinate);
 
 		// Generate the random x and y rotation
-		r3 = (rand() % ((upperBoundRotationX - lowerBoundRotationX) + 1) + lowerBoundRotationX) / 1000.0f;
-		r4 = (rand() % ((upperBoundRotationY - lowerBoundRotationY) + 1) + lowerBoundRotationY) / 1000.0f;
+		float r3 = (rand() % ((upperBoundRotationX - lowerBoundRotationX) + 1) + lowerBoundRotationX) / 1000.0f;
+		float r4 = (rand() % ((upperBoundRotationY - lowerBoundRotationY) + 1) + lowerBoundRotationY) / 1000.0f;
 
 		glm::vec2 grassRotation = glm::vec2(r3, r4);
 		grassRotations.push_back(grassRotation);
 
-		glm::mat4 patch1Correction = glm::translate(-0.5 * grassPatchVertices[6],
-			-0.5 * grassPatchVertices[7], -0.5 * grassPatchVertices[8]);
-		glm::mat4 patch2Correction = glm::translate(0.5 * grassPatchVertices[6],
-			0.5 * grassPatchVertices[7], 0.5 * grassPatchVertices[8]);
+		//glm::mat4 patch1Correction = glm::translate(-0.5 * grassPatchVertices[6],
+		//	-0.5 * grassPatchVertices[7], -0.5 * grassPatchVertices[8]);
+		//glm::mat4 patch2Correction = glm::translate(0.5 * grassPatchVertices[6],
+			//0.5 * grassPatchVertices[7], 0.5 * grassPatchVertices[8]);
 
 		// Add the model matrices for the first patch
-		modelMatrices[x] = patch1Correction * glm::translate(grassCoordinate) * glm::rotateX(grassRotation[0]) * glm::rotateY(grassRotation[1]);
+		modelMatrices[x] = glm::translate(grassCoordinate) * glm::rotateX(grassRotation[0]) * glm::rotateY(grassRotation[1]);
 		//modelMatrices[x + MAX_PATCH_DENSITY_BLADES] = patch2Correction * glm::translate(grassCoordinate) * glm::rotateX(grassRotation[0]) * glm::rotateY(grassRotation[1]) * glm::rotateY(2 * glm::half_pi<float>());
-		modelMatrices[x + MAX_PATCH_DENSITY_BLADES] = glm::rotateY(2 * glm::half_pi<float>()) * patch1Correction * glm::translate(grassCoordinate) * glm::rotateX(grassRotation[0]) * glm::rotateY(grassRotation[1]);
+	/*	modelMatrices[x + MAX_PATCH_DENSITY_BLADES] = glm::rotateY(2 * glm::half_pi<float>()) * patch1Correction * glm::translate(grassCoordinate) * glm::rotateX(grassRotation[0]) * glm::rotateY(grassRotation[1]);*/
 		// Add the model matrices for the second patch
 	}
 
@@ -381,7 +391,7 @@ void drawPatch(glm::mat4 projection, glm::mat4 view, glm::mat4 model, glm::mat4 
 
 	patch.drawSceneObject();
 
-	if (config.grassType == 0) {
+	if (config.grassType == GrassType::BLADES) {
 		drawGrass(projection, view);
 	}
 	else {
@@ -416,6 +426,7 @@ void drawGrass(glm::mat4 projection, glm::mat4 view) {
 	bladesShader.setFloat("ambientStrength", config.ambientStrength);
 	bladesShader.setVec3("lightPos", config.lightPosition);
 	//grass.drawSceneObject();
+	//std::cout << modelMatrices->length << std::endl;
 
 	grass.drawSceneObjectInstanced(config.patchDensity, instanceVBO, 0);
 	//grass.drawSceneObjectInstanced(config.patchDensity, instanceVBO, MAX_PATCH_DENSITY_BLADES);
@@ -465,7 +476,7 @@ void drawBillboardSquare(glm::mat4 projection, glm::mat4 view, glm::mat4 model) 
 	billboardShader.setMat4("projection", projection);
 	billboardShader.setMat4("view", view);
 	billboardShader.setMat4("model", model);
-	billboardShader.setInt("windType", config.windType);
+	billboardShader.setInt("windType", static_cast<int>(config.windType));
 	billboardShader.setFloat("windStrength", config.windStrength);
 	billboardShader.setFloat("swayReach", config.swayReach);
 	billboardShader.setFloat("perlinSampleScale", config.perlinSampleScale);
@@ -492,11 +503,11 @@ void drawSkybox(glm::mat4 projection, glm::mat4 view) {
 	skyboxShader.use();
 	skyboxShader.setMat4("projection", projection);
 	skyboxShader.setMat4("view", view);
-	if (config.skyboxType == 0) {
+	if (config.skyboxType == SkyboxType::DAY) {
 		cubemapTextureDay.bindTextureCubeMap();
 		skyboxShader.setInt("skybox", cubemapTextureDay.getTextureID());
 	}
-	else if (config.skyboxType == 1) {
+	else if (config.skyboxType == SkyboxType::NIGHT) {
 		cubemapTextureNight.bindTextureCubeMap();
 		skyboxShader.setInt("skybox", cubemapTextureNight.getTextureID());
 	}
@@ -520,30 +531,30 @@ void drawGui() {
 
 		ImGui::Separator();
 		ImGui::Text("Skybox Settings");
-		if (ImGui::RadioButton("Day", config.skyboxType == 0)) { config.skyboxType = 0; } ImGui::SameLine();
-		if (ImGui::RadioButton("Night", config.skyboxType == 1)) { config.skyboxType = 1; }
+		if (ImGui::RadioButton("Day", config.skyboxType == SkyboxType::DAY)) { config.skyboxType = SkyboxType::DAY; } ImGui::SameLine();
+		if (ImGui::RadioButton("Night", config.skyboxType == SkyboxType::NIGHT)) { config.skyboxType = SkyboxType::NIGHT; }
 
 		ImGui::Separator();
 		ImGui::Text("Grass Settings");
 		ImGui::Text("Grass Type: ");
-		if (ImGui::RadioButton("Blades", config.grassType == 0)) { config.grassType = 0; } ImGui::SameLine();
-		if (ImGui::RadioButton("Billboard", config.grassType == 1)) { config.grassType = 1; }
-		if (config.grassType == 0) {
-			ImGui::SliderInt("Patch density", &config.patchDensity, 1, 2*MAX_PATCH_DENSITY_BLADES);
+		if (ImGui::RadioButton("Blades", config.grassType == GrassType::BLADES)) { config.grassType = GrassType::BLADES; } ImGui::SameLine();
+		if (ImGui::RadioButton("Billboard", config.grassType == GrassType::BILLBOARDS)) { config.grassType = GrassType::BILLBOARDS; }
+		if (config.grassType == GrassType::BLADES) {
+			ImGui::SliderInt("Patch density", &config.patchDensity, 1, MAX_PATCH_DENSITY_BLADES);
 		}
-		else if (config.grassType == 1) {
+		else if (config.grassType == GrassType::BILLBOARDS) {
 			ImGui::SliderInt("Patch density", &config.patchDensity, 1, MAX_PATCH_DENSITY_BILLBOARDS);
 		}
 
-		if (config.grassType == 1) {
+		if (config.grassType == GrassType::BILLBOARDS) {
 			ImGui::Separator();
 			ImGui::Text("Wind Settings");
 			ImGui::Text("Wind Type: ");
-			if (ImGui::RadioButton("Simple Trigonometric Sway", config.windType == 0)) { config.windType = 0; } ImGui::SameLine();
-			if (ImGui::RadioButton("Complex Trigonometric Sway 1", config.windType == 1)) { config.windType = 1; }
-			if (ImGui::RadioButton("Complex Trigonometric Sway 2", config.windType == 2)) { config.windType = 2; } ImGui::SameLine();
-			if (ImGui::RadioButton("Perlin Noise Sway", config.windType == 3)) { config.windType = 3; }
-			if (config.windType == 3) {
+			if (ImGui::RadioButton("Simple Trigonometric Sway", config.windType == WindType::TRIG_SIMPLE)) { config.windType = WindType::TRIG_SIMPLE; } ImGui::SameLine();
+			if (ImGui::RadioButton("Complex Trigonometric Sway 1", config.windType == WindType::TRIG_COMPLEX_1)) { config.windType = WindType::TRIG_COMPLEX_1; }
+			if (ImGui::RadioButton("Complex Trigonometric Sway 2", config.windType == WindType::TRIG_COMPLEX_2)) { config.windType = WindType::TRIG_COMPLEX_2; } ImGui::SameLine();
+			if (ImGui::RadioButton("Perlin Noise Sway", config.windType == WindType::PERLIN)) { config.windType = WindType::PERLIN; }
+			if (config.windType == WindType::PERLIN) {
 				ImGui::SliderFloat("Wind Strength", &config.windStrength, 0.0, 0.1);
 				ImGui::SliderFloat("Perlin Sample Scale", &config.perlinSampleScale, 0.05, 1.0);
 				ImGui::Text("Perlin Texture: ");

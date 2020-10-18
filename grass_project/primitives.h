@@ -20,17 +20,21 @@ std::vector<float> grassNormals{ 0.0f, 0.0f, 1.0f,
 								   0.0f, 0.0f, 1.0f,
 								   0.0f, 0.0f, 1.0f };
 
-std::vector<float> grassPatchVertices{ 0.0f, 0.0f, 0.0f,
-								   10.0f, 0.0f, 0.0f,
-								   10.0f, 0.0f, 10.0f };
+std::vector<float> grassPatchVertices{ -5.0f, 0.0f, -5.0f,
+								   5.0f, 0.0f, -5.0f,
+								   5.0f, 0.0f, 5.0f,
+								   -5.0f, 0.0f, 5.0f};
 
-std::vector<unsigned int> grassPatchIndices{ 0, 1, 2};
+std::vector<unsigned int> grassPatchIndices{ 0, 1, 3, 
+											 1, 2, 3};
 
 std::vector<float> grassPatchColors{ .6f, .58f, .27f, 1.f,
+								.6f, .58f, .27f, 1.f,
 								.6f, .58f, .27f, 1.f,
 								.6f, .58f, .27f, 1.f, };
 
 std::vector<float> grassPatchNormals{ 0.0f, 1.0f, 0.0f,
+								   0.0f, 1.0f, 0.0f,
 								   0.0f, 1.0f, 0.0f,
 								   0.0f, 1.0f, 0.0f };
 

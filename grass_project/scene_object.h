@@ -3,7 +3,7 @@
  * objects and draws them on the screen.
  */
 #ifndef SCENE_OBJECT_H
-#define SCENE_OBJECT__H
+#define SCENE_OBJECT_H
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -16,8 +16,8 @@
 
 class SceneObject {
 public:
-	void drawSceneObject();
-	void drawSceneObjectArrays();
+	void drawSceneObject() const;
+	void drawSceneObjectArrays() const;
 	void drawSceneObjectInstanced(int numSceneObjects, unsigned int instanceVBO, int offset);
 
 	/* Creates the Vertex Array Object and saves 
@@ -27,7 +27,7 @@ public:
 		const std::vector<float>& positions,
 		const std::vector<float>& colors, const std::vector<unsigned int>& indices, 
 		const std::vector<float>& normals, Shader& shaderProgram);
-
+	
 	unsigned int SceneObject::createVertexArrayInstanced(
 		const std::vector<float>& positions, const std::vector<float>& colors, const std::vector<unsigned int>& indices, const std::vector<float>& normals, Shader& shaderProgram, unsigned int instanceVBO, const std::vector<float>* uvs = nullptr);
 
