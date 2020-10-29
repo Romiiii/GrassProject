@@ -80,7 +80,7 @@ void setupShadersAndMeshes();
 void initIMGUI(GLFWwindow* window);
 void drawScene();
 void createInstanceMatrixBuffer(glm::mat4* modelMatrices, const unsigned int MAX_PATCH_DENSITY_BLADES);
-void drawPatch(glm::mat4 projection, glm::mat4 view, glm::mat4 model, glm::mat4 rotation = glm::mat4());
+void drawPatch(PatchInstance& patch, glm::mat4 projection, glm::mat4 view);
 void drawGrass(glm::mat4 projection, glm::mat4 view);
 void drawBillboardSquare(glm::mat4 projection, glm::mat4 view, glm::mat4 model);
 void drawBillboardCollection(glm::mat4 projection, glm::mat4 view, glm::mat4 model);
@@ -144,6 +144,10 @@ int main()
 	setupShadersAndMeshes();
 	patchInstance.init(patch.createPatchInstance(), glm::mat4(1));
 
+	camera.camPosition = { -15, 20, 0 };
+	camera.yaw = 0;
+	camera.pitch = -50;
+	camera.updateCameraVectors();
 
 
 
@@ -311,7 +315,7 @@ void drawScene() {
 		camera.getCamPosition(),
 		camera.getCamPosition() + camera.getCamForward(), glm::vec3(0, 1, 0));
 
-	drawPatch(projection, view, glm::mat4(1), glm::mat4(1));
+	drawPatch(patchInstance, projection, view);
 	// Fit the other patch triangle to the other one 
 	// The rotation of the second patch should be applied twice to the blades/billboards 
 	// (to turn them back in the same direction as those in patch 1), so it is passed seperately
@@ -329,14 +333,14 @@ void createInstanceMatrixBuffer(glm::mat4* modelMatrices, const unsigned int num
 
 /* Draws a triangular patch of grass with the specified rotation.
  */
-void drawPatch(glm::mat4 projection, glm::mat4 view, glm::mat4 model, glm::mat4 rotation) {
+void drawPatch(PatchInstance& patchInstance, glm::mat4 projection, glm::mat4 view) {
 	patchShader.use();
 	patchShader.setMat4("projection", projection);
 	patchShader.setMat4("view", view);
 
 	// The rotation is applied to the patch, but not to the blades or billboards on the patch
-	patchShader.setMat4("model", 
-		patchInstance.getPatchMatrix() * rotation);
+	glm::mat4 model = patchInstance.getPatchMatrix();
+	patchShader.setMat4("model", model);
 	patchShader.setFloat("ambientStrength", config.ambientStrength);
 	patchShader.setVec3("lightPos", config.lightPosition);
 
@@ -348,23 +352,12 @@ void drawPatch(glm::mat4 projection, glm::mat4 view, glm::mat4 model, glm::mat4 
 	else {
 		// Distribute the billboards uniformly within the patch
 		for (int x = 0; x < config.patchDensity; x += 1) {
-			if (rotation == glm::mat4()) {
-				drawBillboardCollection(
-					projection,
-					view,
-					model * glm::translate(grassCoordinates.at(x)) *
-					glm::translate(0.0, 0.5, 0.0) *
-					glm::rotateY(grassRotations.at(x)[1]));
-			}
-			else {
-				drawBillboardCollection(
-					projection, 
-					view,
-					model * rotation *
-					glm::translate(grassCoordinates.at(x)) *
-					glm::translate(0.0, 0.5, 0.0) *
-					glm::rotateY(grassRotations.at(x)[1]) * rotation);
-			}
+			drawBillboardCollection(
+				projection,
+				view,
+				model * glm::translate(grassCoordinates.at(x)) *
+				glm::translate(0.0, 0.5, 0.0) *
+				glm::rotateY(grassRotations.at(x)[1]));
 		}
 	}
 }
@@ -496,10 +489,14 @@ void drawGui() {
 		}
 		ImGui::Separator();
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+		ImGui::SliderFloat3("Camera Position", (float*)&camera.camPosition, -50, 50);
+		ImGui::SliderFloat("Yaw", &camera.yaw, -180, 180);
+		ImGui::SliderFloat("Pitch", &camera.pitch, -180, 180);
 		ImGui::End();
 	}
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+	camera.updateCameraVectors();
 }
 
 void cursorInRange(float screenX, float screenY, int screenW, int screenH, float min, float max, float& x, float& y) {

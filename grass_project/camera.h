@@ -74,10 +74,12 @@ public:
 	glm::vec3 getCamForward();
 	glm::vec3 getCamPosition();
 
-private:
 	/* Calculates the forward vector from the Camera's (updated) Euler Angles.
-	 */
+	*/
 	void updateCameraVectors();
+
+
+private:
 };
 
 #endif
