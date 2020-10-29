@@ -34,11 +34,10 @@ const unsigned int SCR_HEIGHT = 1000;
 const unsigned int MAX_PATCH_DENSITY_BLADES = 40000;
 // Maximum amount of billboards per patch
 const unsigned int MAX_PATCH_DENSITY_BILLBOARDS = 1000;
-const unsigned int MAX_PATCHES = 2;
+const unsigned int MAX_PATCHES = 24;
 
 Patch patch;
-PatchInstance patchInstance;
-PatchInstance patchInstance2;
+PatchInstance patchInstances[MAX_PATCHES];
 
 // Global variables used for rendering
 SceneObject grass;
@@ -77,8 +76,10 @@ float deltaTime = 0.0f;	// Time between current frame and last frame
 float lastFrame = 0.0f; // Time of last frame
 
 GLFWwindow* initGLFWWindow();
-void setupShadersAndMeshes();
 void initIMGUI(GLFWwindow* window);
+void setupShadersAndMeshes();
+void initPatchInstances();
+
 void drawScene();
 void createInstanceMatrixBuffer(glm::mat4* modelMatrices, const unsigned int MAX_PATCH_DENSITY_BLADES);
 void drawPatch(PatchInstance& patch, glm::mat4 projection, glm::mat4 view);
@@ -143,8 +144,8 @@ int main()
 
 	patch.init(MAX_PATCH_DENSITY_BLADES, &patchShader);
 	setupShadersAndMeshes();
-	patchInstance.init(patch.createPatchInstance(), glm::mat4(1));
-	patchInstance2.init(patch.createPatchInstance(), glm::translate(15, 0, 0));
+	initPatchInstances();
+	
 
 	camera.camPosition = { -15, 20, 0 };
 	camera.yaw = 0;
@@ -294,6 +295,12 @@ void setupShadersAndMeshes() {
 	glEnable(GL_MULTISAMPLE);
 }
 
+void initPatchInstances() {
+	for (int i = 0; i < MAX_PATCHES; i++) {
+		patchInstances[i].init(patch.createPatchInstance(), glm::translate(i%4*10, 0, i/4*10));
+	}
+}
+
 void initIMGUI(GLFWwindow* window) {
 	// IMGUI init
 	IMGUI_CHECKVERSION();
@@ -317,8 +324,9 @@ void drawScene() {
 		camera.getCamPosition(),
 		camera.getCamPosition() + camera.getCamForward(), glm::vec3(0, 1, 0));
 
-	drawPatch(patchInstance, projection, view);
-	drawPatch(patchInstance2, projection, view);
+	for (int i = 0; i < MAX_PATCHES; i++) {
+		drawPatch(patchInstances[i], projection, view);
+	}
 	// Fit the other patch triangle to the other one 
 	// The rotation of the second patch should be applied twice to the blades/billboards 
 	// (to turn them back in the same direction as those in patch 1), so it is passed seperately
