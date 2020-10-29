@@ -38,6 +38,7 @@ const unsigned int MAX_PATCHES = 2;
 
 Patch patch;
 PatchInstance patchInstance;
+PatchInstance patchInstance2;
 
 // Global variables used for rendering
 SceneObject grass;
@@ -81,7 +82,7 @@ void initIMGUI(GLFWwindow* window);
 void drawScene();
 void createInstanceMatrixBuffer(glm::mat4* modelMatrices, const unsigned int MAX_PATCH_DENSITY_BLADES);
 void drawPatch(PatchInstance& patch, glm::mat4 projection, glm::mat4 view);
-void drawGrass(glm::mat4 projection, glm::mat4 view);
+void drawGrass(glm::mat4 projection, glm::mat4 view, glm::mat4 model);
 void drawBillboardSquare(glm::mat4 projection, glm::mat4 view, glm::mat4 model);
 void drawBillboardCollection(glm::mat4 projection, glm::mat4 view, glm::mat4 model);
 void drawSkybox(glm::mat4 projection, glm::mat4 view);
@@ -143,6 +144,7 @@ int main()
 	patch.init(MAX_PATCH_DENSITY_BLADES, &patchShader);
 	setupShadersAndMeshes();
 	patchInstance.init(patch.createPatchInstance(), glm::mat4(1));
+	patchInstance2.init(patch.createPatchInstance(), glm::translate(15, 0, 0));
 
 	camera.camPosition = { -15, 20, 0 };
 	camera.yaw = 0;
@@ -316,6 +318,7 @@ void drawScene() {
 		camera.getCamPosition() + camera.getCamForward(), glm::vec3(0, 1, 0));
 
 	drawPatch(patchInstance, projection, view);
+	drawPatch(patchInstance2, projection, view);
 	// Fit the other patch triangle to the other one 
 	// The rotation of the second patch should be applied twice to the blades/billboards 
 	// (to turn them back in the same direction as those in patch 1), so it is passed seperately
@@ -347,7 +350,7 @@ void drawPatch(PatchInstance& patchInstance, glm::mat4 projection, glm::mat4 vie
 	patchInstance.getPatchInstance().drawSceneObject();
 
 	if (config.grassType == GrassType::BLADES) {
-		drawGrass(projection, view);
+		drawGrass(projection, view, model);
 	}
 	else {
 		// Distribute the billboards uniformly within the patch
@@ -362,12 +365,12 @@ void drawPatch(PatchInstance& patchInstance, glm::mat4 projection, glm::mat4 vie
 	}
 }
 
-void drawGrass(glm::mat4 projection, glm::mat4 view) {
+void drawGrass(glm::mat4 projection, glm::mat4 view, glm::mat4 model) {
 
 	bladesShader.use();
 	bladesShader.setMat4("projection", projection);
 	bladesShader.setMat4("view", view);
-	bladesShader.setMat4("model", patchInstance.getPatchMatrix());
+	bladesShader.setMat4("model", model);
 	bladesShader.setFloat("ambientStrength", config.ambientStrength);
 	bladesShader.setVec3("lightPos", config.lightPosition);
 
