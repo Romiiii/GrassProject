@@ -11,6 +11,7 @@
 #include <iostream>
 #include <cassert>
 #include <algorithm>
+#include <cmath>
 
 #include <vector>
 #include <chrono>
@@ -34,7 +35,7 @@ const unsigned int SCR_HEIGHT = 1000;
 const unsigned int MAX_PATCH_DENSITY_BLADES = 40000;
 // Maximum amount of billboards per patch
 const unsigned int MAX_PATCH_DENSITY_BILLBOARDS = 1000;
-const unsigned int MAX_PATCHES = 24;
+const unsigned int MAX_PATCHES = 25;
 
 Patch patch;
 PatchInstance patchInstances[MAX_PATCHES];
@@ -78,6 +79,7 @@ float lastFrame = 0.0f; // Time of last frame
 GLFWwindow* initGLFWWindow();
 void initIMGUI(GLFWwindow* window);
 void setupShadersAndMeshes();
+glm::vec2 calculateSpiralPosition(int n);
 void initPatchInstances();
 
 void drawScene();
@@ -125,6 +127,7 @@ struct Config {
 	glm::vec3 lightPosition = glm::vec3(1.0, 3.0, -1.0);
 	float ambientStrength = 0.5f;
 	SkyboxType skyboxType = SkyboxType::NIGHT; 
+	int numPatches = 1;
 } config;
 
 
@@ -295,9 +298,43 @@ void setupShadersAndMeshes() {
 	glEnable(GL_MULTISAMPLE);
 }
 
+/**
+ * Finds coordinates (position) of the number
+ *
+ * @param {Number} n - number to find position/coordinates for
+ * @return {Number[]} - x and y coordinates of the number
+ */
+glm::vec2 calculateSpiralPosition(int n) {
+	n++;
+	int k = (int)std::ceil((std::sqrt(n) - 1.0) / 2.0);
+	int t = 2 * k + 1;
+	int m = t*t;
+
+	t -= 1;
+
+	if (n >= m - t) {
+		return { k - (m - n), -k };
+	}
+
+	m -= t;
+
+	if (n >= m - t) {
+		return { -k, -k + (m - n) };
+	}
+
+	m -= t;
+
+	if (n >= m - t) {
+		return { -k + (m - n), k };
+	}
+
+	return { k, k - (m - n - t) };
+}
+
 void initPatchInstances() {
 	for (int i = 0; i < MAX_PATCHES; i++) {
-		patchInstances[i].init(patch.createPatchInstance(), glm::translate(i%4*10, 0, i/4*10));
+		glm::vec2 position = calculateSpiralPosition(i) * 10.0f;
+		patchInstances[i].init(patch.createPatchInstance(), glm::translate(position.x, 0, position.y));
 	}
 }
 
@@ -324,7 +361,7 @@ void drawScene() {
 		camera.getCamPosition(),
 		camera.getCamPosition() + camera.getCamForward(), glm::vec3(0, 1, 0));
 
-	for (int i = 0; i < MAX_PATCHES; i++) {
+	for (int i = 0; i < config.numPatches; i++) {
 		drawPatch(patchInstances[i], projection, view);
 	}
 	// Fit the other patch triangle to the other one 
@@ -462,17 +499,20 @@ void drawGui() {
 		if (ImGui::RadioButton("Day", config.skyboxType == SkyboxType::DAY)) { config.skyboxType = SkyboxType::DAY; } ImGui::SameLine();
 		if (ImGui::RadioButton("Night", config.skyboxType == SkyboxType::NIGHT)) { config.skyboxType = SkyboxType::NIGHT; }
 
+
 		ImGui::Separator();
 		ImGui::Text("Grass Settings");
 		ImGui::Text("Grass Type: ");
 		if (ImGui::RadioButton("Blades", config.grassType == GrassType::BLADES)) { config.grassType = GrassType::BLADES; } ImGui::SameLine();
 		if (ImGui::RadioButton("Billboard", config.grassType == GrassType::BILLBOARDS)) { config.grassType = GrassType::BILLBOARDS; }
 		if (config.grassType == GrassType::BLADES) {
+			ImGui::SliderInt("Number of patches", &config.numPatches, 1, MAX_PATCHES);
 			ImGui::SliderInt("Patch density", &config.patchDensity, 1, MAX_PATCH_DENSITY_BLADES);
 			ImGui::InputInt("Patch density value:", &config.patchDensity, 100, 1000);
 			config.patchDensity = glm::clamp(config.patchDensity, 0, (int)MAX_PATCH_DENSITY_BLADES);
 		}
 		else if (config.grassType == GrassType::BILLBOARDS) {
+			ImGui::SliderInt("Number of patches", &config.numPatches, 1, MAX_PATCHES);
 			ImGui::SliderInt("Patch density", &config.patchDensity, 1, MAX_PATCH_DENSITY_BILLBOARDS);
 			ImGui::InputInt("Patch density value:", &config.patchDensity, 100, 1000);
 			config.patchDensity = glm::clamp(config.patchDensity, 0, (int)MAX_PATCH_DENSITY_BILLBOARDS);
