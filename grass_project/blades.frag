@@ -29,7 +29,7 @@ void main()
 
 	vec4 objectColor = vtxColor;
 
-	ambient *= attenuation;
+	//ambient *= attenuation;
 	diffuse *= attenuation;
 
 	vec4 result = (vec4(ambient,1.0f) + vec4(diffuse,1.0f)) * objectColor;
