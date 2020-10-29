@@ -24,33 +24,33 @@ enum class cameraMovement {
 	RIGHT
 };
 
-/* Default camera values
- * Yaw is initialized to -90.0 degrees since a yaw of 0.0
- * results in a direction vector pointing to the right so
- * we initially rotate a bit to the left.
- */
-const float YAW = -90.0f;
-const float PITCH = 0.0f;
-const float SPEED = 2.5f;
-const float SENSITIVITY = 0.05f;
-const float GROUND_Y = 1.6f; // The y coordinate of the ground 
 
 class Camera {
 public:
-	// Camera Attributes
-	glm::vec3 camForward;
-	glm::vec3 camPosition;
-	// Euler Angles
-	float yaw;
-	float pitch;
-	// Camera options
-	float movementSpeed;
-	float mouseSensitivity;
-	float groundY;
 
-	Camera(glm::vec3 cameraForward = glm::vec3(0.0f, 0.0f, -1.0f),
-		glm::vec3 cameraPosition = glm::vec3(0.0f, GROUND_Y, 0.0f),
-		float yaw = YAW, float pitch = PITCH);
+	// Euler Angles
+
+	/* 
+	* Yaw is initialized to -90.0 degrees since a yaw of 0.0
+	* results in a direction vector pointing to the right so
+	* we initially rotate a bit to the left.
+	 */
+
+	float yaw = -90.f;
+	float pitch = 0.0f;
+	// Camera options
+	float movementSpeed = 2.5f;
+	float sprintSpeed = movementSpeed * 10;
+	bool sprinting = false;
+
+	float mouseSensitivity = 0.05f;
+	float groundY = 1.6f;
+
+	// Camera Attributes
+	glm::vec3 camForward = glm::vec3(0.0f, 0.0f, -1.0f);
+	glm::vec3 camPosition = glm::vec3(0.0f, groundY, 0.0f);
+
+	Camera();
 
 	/* Processes input received from any keyboard-like input system.
 	 * Accepts input parameter in the form of camera defined by

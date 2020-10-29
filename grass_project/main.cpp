@@ -532,6 +532,8 @@ void processInput(GLFWwindow* window) {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
 
+	static bool tWasPressed = false;
+
 	// Stop camera movement if GUI is opened
 	if (isPaused)
 		return;
@@ -547,6 +549,16 @@ void processInput(GLFWwindow* window) {
 	}
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
 		camera.processKeyboard(cameraMovement::RIGHT, deltaTime);
+	}
+	if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS) {
+		if (!tWasPressed) {
+			camera.sprinting = !camera.sprinting;
+			tWasPressed = true;
+		}
+
+	}
+	if (glfwGetKey(window, GLFW_KEY_T) == GLFW_RELEASE) {
+		tWasPressed = false;
 	}
 }
 

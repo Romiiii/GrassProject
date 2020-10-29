@@ -1,12 +1,6 @@
 #include "camera.h"
 
-Camera::Camera(glm::vec3 cameraForward, glm::vec3 cameraPosition,
-	float yaw, float pitch) : movementSpeed(SPEED),
-	mouseSensitivity(SENSITIVITY), groundY(GROUND_Y) {
-	camForward = cameraForward;
-	camPosition = cameraPosition;
-	yaw = yaw;
-	pitch = pitch;
+Camera::Camera() {
 	updateCameraVectors();
 }
 
@@ -19,7 +13,13 @@ Camera::Camera(glm::vec3 cameraForward, glm::vec3 cameraPosition,
 void Camera::processKeyboard(cameraMovement direction, float deltaTime) {
 	glm::vec3 forwardInXYZ = glm::normalize(glm::vec3(camForward.x,
 		camForward.y, camForward.z));
-	float cameraSpeed = movementSpeed * deltaTime;
+	float cameraSpeed;
+	if (sprinting) {
+		 cameraSpeed = sprintSpeed * deltaTime;
+	}
+	else {
+		cameraSpeed = movementSpeed * deltaTime;
+	}
 
 	if (direction == cameraMovement::FORWARD) {
 		glm::vec3 newCamPosition = camPosition + forwardInXYZ * cameraSpeed;
