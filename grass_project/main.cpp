@@ -44,6 +44,9 @@ PatchInstance patchInstances[MAX_PATCHES];
 SceneObject grass;
 SceneObject billboardSquare;
 SceneObject skybox;
+SceneObject light;
+
+glm::mat4 lightMatrix;
 //glm::mat4* modelMatrices;
 //glm::mat4 modelMatrices[MAX_PATCH_DENSITY_BLADES];
 
@@ -52,6 +55,7 @@ Shader bladesShader;
 Shader patchShader;
 Shader skyboxShader;
 Shader billboardShader;
+Shader lightShader;
 unsigned int instanceVBO;
 
 
@@ -87,6 +91,7 @@ void drawPatch(PatchInstance& patch, glm::mat4 projection, glm::mat4 view);
 void drawGrass(glm::mat4 projection, glm::mat4 view, glm::mat4 model);
 void drawBillboardSquare(glm::mat4 projection, glm::mat4 view, glm::mat4 model);
 void drawBillboardCollection(glm::mat4 projection, glm::mat4 view, glm::mat4 model);
+void drawLight(glm::mat4 projection, glm::mat4 view);
 void drawSkybox(glm::mat4 projection, glm::mat4 view);
 void drawGui();
 
@@ -128,6 +133,8 @@ struct Config {
 	SkyboxType skyboxType = SkyboxType::NIGHT; 
 	int numPatches = 9;
 	glm::vec2 windDirection = { 1.0, 1.0 };
+	glm::vec4 lightColor = { 1.0, 0.0, 0.0, 1.0 };
+	float lightIntensity = 1;
 } config;
 
 
@@ -254,12 +261,12 @@ void setupShadersAndMeshes() {
 
 
 	// Load grass mesh into openGL
-	//grass.createVertexArray(grassVertices, grassColors, grassIndices,
+	//grass.createVertexArray(grassPositions, grassColors, grassIndices,
 	//	grassNormals, shaderProgram);
 
 	createInstanceMatrixBuffer(patch.getBladeMatrices(), MAX_PATCH_DENSITY_BLADES);
 
-	grass.createVertexArrayInstanced(grassVertices, grassColors, grassIndices,
+	grass.createVertexArrayInstanced(grassPositions, grassColors, grassIndices,
 		grassNormals, bladesShader, instanceVBO);
 
 
@@ -277,7 +284,7 @@ void setupShadersAndMeshes() {
 
 	// Load billboard square into openGL
 	billboardSquare.createVertexArrayTexture(
-		billboardSquareVertices,
+		billboardSquarePositions,
 		billboardSquareIndices,
 		billboardSquareUVs,
 		billboardSquareNormals,
@@ -288,7 +295,11 @@ void setupShadersAndMeshes() {
 	//skyboxShader.use();
 	cubemapTextureDay.loadTextureCubeMap(facesDay, false);
 	cubemapTextureNight.loadTextureCubeMap(facesNight);
-	skybox.createVertexArrayFromPositions(skyboxVertices);
+	skybox.createVertexArrayFromPositions(cubePositions);
+
+	light.createVertexArrayFromPositions(cubePositions);
+	lightShader.initialize("assets/shaders/light.vert", "assets/shaders/light.frag");
+
 
 	// Set up the z-buffer
 	glDepthRange(-1, 1);  // Make the NDC a right handed coordinate system, 
@@ -364,12 +375,15 @@ void drawScene() {
 	for (int i = 0; i < config.numPatches; i++) {
 		drawPatch(patchInstances[i], projection, view);
 	}
+
+	drawLight(projection, view);
 	// Fit the other patch triangle to the other one 
 	// The rotation of the second patch should be applied twice to the blades/billboards 
 	// (to turn them back in the same direction as those in patch 1), so it is passed seperately
-	//drawPatch(projection, view, glm::translate(0.5 * grassPatchVertices[6],
-	//	0.5 * grassPatchVertices[7], 0.5 * grassPatchVertices[8]), glm::rotateY(2 * glm::half_pi<float>()));
+	//drawPatch(projection, view, glm::translate(0.5 * grassPatchPositions[6],
+	//	0.5 * grassPatchPositions[7], 0.5 * grassPatchPositions[8]), glm::rotateY(2 * glm::half_pi<float>()));
 	drawSkybox(projection, view);
+
 }
 
 void createInstanceMatrixBuffer(glm::mat4* modelMatrices, const unsigned int numInstances) {
@@ -391,6 +405,8 @@ void drawPatch(PatchInstance& patchInstance, glm::mat4 projection, glm::mat4 vie
 	patchShader.setMat4("model", model);
 	patchShader.setFloat("ambientStrength", config.ambientStrength);
 	patchShader.setVec3("lightPos", config.lightPosition);
+	patchShader.setVec4("lightColor", config.lightColor);
+	patchShader.setFloat("lightIntensity", config.lightIntensity);
 
 	patchInstance.getPatchInstance().drawSceneObject();
 
@@ -422,6 +438,8 @@ void drawGrass(glm::mat4 projection, glm::mat4 view, glm::mat4 model) {
 	bladesShader.setFloat("windStrength", config.windStrength);
 	bladesShader.setFloat("swayReach", config.swayReach);
 	bladesShader.setVec2("windDirection", config.windDirection);
+	bladesShader.setVec4("lightColor", config.lightColor);
+	bladesShader.setFloat("lightIntensity", config.lightIntensity);
 
 	grass.drawSceneObjectInstanced(config.patchDensity, instanceVBO, 0);
 }
@@ -463,6 +481,18 @@ void drawBillboardCollection(glm::mat4 projection, glm::mat4 view, glm::mat4 mod
 	drawBillboardSquare(projection, view, model * glm::rotateY(6 * glm::quarter_pi<float>()));
 }
 
+void drawLight(glm::mat4 projection, glm::mat4 view) {
+	lightShader.use();
+	glm::mat4 model = glm::translate(glm::mat4(1), config.lightPosition) * glm::scale(glm::mat4(1), glm::vec3(config.lightIntensity *0.1));
+	lightShader.setMat4("projection", projection);
+	lightShader.setMat4("view", view);
+	lightShader.setMat4("model", model);
+	lightShader.setVec4("color", config.lightColor);
+	light.drawSceneObjectArrays();
+
+
+}
+
 /* Draws skybox. Should be called first to ensure skybox is drawn behind the
  * rest of the scene. Draws either a day or night skybox depending
  * on what the user sets the GUI to.
@@ -497,6 +527,8 @@ void drawGui() {
 		ImGui::Text("Light Settings");
 		ImGui::SliderFloat("Ambient Light Strength", &config.ambientStrength, 0.1, 1.0);
 		ImGui::DragFloat3("Light Position", (float*)&config.lightPosition, 0.1, -100, 100);
+		ImGui::ColorEdit4("Light Color", (float*)&config.lightColor);
+		ImGui::SliderFloat("Light Intensity", &config.lightIntensity, 0.0, 10.0);
 
 		ImGui::Separator();
 		ImGui::Text("Skybox Settings");

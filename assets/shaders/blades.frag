@@ -8,6 +8,8 @@ in vec3 FragPos;
 
 uniform float ambientStrength; 
 uniform vec3 lightPos; 
+uniform float lightIntensity;
+uniform vec4 lightColor;
 
 
 void main()
@@ -19,19 +21,19 @@ void main()
 	float distance = length(lightPos - FragPos);
 	float attenuation = 1.0 / (constant + linear * distance + quadratic * (distance * distance));
 
-	vec3 lightColor = vec3(1.0, 1.0, 1.0);
+	//vec3 lightColor = vec3(1.0, 1.0, 1.0);
 	vec3 norm = normalize(Normal);
 	vec3 lightDir = normalize(lightPos - FragPos);  
 	
 	float diff = max(dot(norm, lightDir), 0.0);
-	vec3 diffuse = diff * lightColor;
-    vec3 ambient = ambientStrength * lightColor;
+	vec3 diffuse = diff * lightColor.xyz;
+    vec3 ambient = ambientStrength * lightColor.xyz;
 
 	vec4 objectColor = vtxColor;
 	//vec4 objectColor = vec4(1.0,0,0,1) + vtxColor * 0.0001;
 
 	//ambient *= attenuation;
-	diffuse *= attenuation;
+	diffuse *= attenuation * lightIntensity;
 
 	vec4 result = (vec4(ambient,1.0f) + vec4(diffuse,1.0f)) * objectColor;
 	FragColor = result; 

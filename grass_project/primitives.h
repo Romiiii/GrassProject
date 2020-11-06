@@ -6,7 +6,7 @@
 #define PRIMITIVES_H
 
 
-std::vector<float> grassVertices{ 0.0f, 0.0f, 0.0f,
+std::vector<float> grassPositions{ 0.0f, 0.0f, 0.0f,
 								   0.1f, 0.0f, 0.0f,
 								   0.2f, 0.5f, 0.0f };
 
@@ -20,7 +20,7 @@ std::vector<float> grassNormals{ 0.0f, 0.0f, 1.0f,
 								   0.0f, 0.0f, 1.0f,
 								   0.0f, 0.0f, 1.0f };
 
-std::vector<float> grassPatchVertices{ -5.0f, 0.0f, -5.0f,
+std::vector<float> grassPatchPositions{ -5.0f, 0.0f, -5.0f,
 								   5.0f, 0.0f, -5.0f,
 								   5.0f, 0.0f, 5.0f,
 								   -5.0f, 0.0f, 5.0f};
@@ -38,7 +38,7 @@ std::vector<float> grassPatchNormals{ 0.0f, 1.0f, 0.0f,
 								   0.0f, 1.0f, 0.0f,
 								   0.0f, 1.0f, 0.0f };
 
-std::vector<float> billboardSquareVertices{ 0.5f,  0.5f, 0.0f,  // top right
+std::vector<float> billboardSquarePositions{ 0.5f,  0.5f, 0.0f,  // top right
 											0.5f, -0.5f, 0.0f,  // bottom right
 											-0.5f, -0.5f, 0.0f,  // bottom left
 											-0.5f,  0.5f, 0.0f };   // top left 
@@ -58,7 +58,10 @@ std::vector<float> billboardSquareNormals{	0.0f, 0.0f, 1.0f,  // top right
 											0.0f, 0.0f, 1.0f,  // bottom left
 											0.0f, 0.0f, 1.0f };   // top left 
 
-std::vector<float> skyboxVertices{
+
+
+
+std::vector<float> cubePositions{
 	-1.0f, 1.0f, -1.0f,
 	-1.0f, -1.0f, -1.0f,
 	1.0f, -1.0f, -1.0f,
@@ -100,6 +103,42 @@ std::vector<float> skyboxVertices{
 	1.0f, -1.0f, -1.0f,
 	-1.0f, -1.0f, 1.0f,
 	1.0f, -1.0f, 1.0f };
+
+float length = 1.0;
+//    v5----- v4
+//   /|      /|
+//  v1------v0|
+//  | |     | |
+//  | |v6---|-|v7
+//  |/      |/
+//  v2------v3
+glm::vec3 p[] = {
+		glm::vec3{length, length, length},
+		glm::vec3{-length, length, length},
+		glm::vec3{-length, -length, length},
+		glm::vec3{length, -length, length},
+		
+		glm::vec3{length, length, -length},
+		glm::vec3{-length, length, -length},
+		glm::vec3{-length, -length, -length},
+		glm::vec3{length, -length, -length}
+
+};
+std::vector<uint32_t> indices({
+							0,1,2, 0,2,3,
+							4,5,6, 4,6,7,
+							8,9,10, 8,10,11,
+							12,13,14, 12, 14,15,
+							16,17,18, 16,18,19,
+							20,21,22, 20,22,23
+	});
+std::vector<glm::vec3> positions({ p[0],p[1],p[2], p[3], // v0-v1-v2-v3
+						p[4],p[0],p[3], p[7], // v4-v0-v3-v7
+						p[5],p[4],p[7], p[6], // v5-v4-v7-v6
+						p[1],p[5],p[6], p[2], // v1-v5-v6-v2
+						p[4],p[5],p[1], p[0], // v1-v5-v6-v2
+						p[3],p[2],p[6], p[7], // v1-v5-v6-v2
+	});
 
 /* Skybox Texture Order
  * +X (right)		ft

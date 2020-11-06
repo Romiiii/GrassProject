@@ -38,11 +38,11 @@ public:
 	 * generated as well.
 	 */
 	void initBladeMatrices() {
-		float upperBoundX = std::max({ grassPatchVertices[0], grassPatchVertices[3], grassPatchVertices[6], grassPatchVertices[9] });
-		float lowerBoundX = std::min({ grassPatchVertices[0], grassPatchVertices[3], grassPatchVertices[6], grassPatchVertices[9] });
+		float upperBoundX = std::max({ grassPatchPositions[0], grassPatchPositions[3], grassPatchPositions[6], grassPatchPositions[9] });
+		float lowerBoundX = std::min({ grassPatchPositions[0], grassPatchPositions[3], grassPatchPositions[6], grassPatchPositions[9] });
 
-		int upperBoundZ = std::max({ grassPatchVertices[2], grassPatchVertices[5], grassPatchVertices[8], grassPatchVertices[11] });
-		int lowerBoundZ = std::min({ grassPatchVertices[2], grassPatchVertices[5], grassPatchVertices[8], grassPatchVertices[11] });
+		int upperBoundZ = std::max({ grassPatchPositions[2], grassPatchPositions[5], grassPatchPositions[8], grassPatchPositions[11] });
+		int lowerBoundZ = std::min({ grassPatchPositions[2], grassPatchPositions[5], grassPatchPositions[8], grassPatchPositions[11] });
 
 		constexpr float swayX = glm::radians(20.0f);
 		constexpr float swayY = glm::radians(180.0f);
@@ -65,7 +65,7 @@ public:
 
 	SceneObject createPatchInstance() {
 		SceneObject patchInstance;
-		patchInstance.createVertexArray(grassPatchVertices, grassPatchColors,
+		patchInstance.createVertexArray(grassPatchPositions, grassPatchColors,
 			grassPatchIndices, grassPatchNormals, *shaderProgram);
 		return patchInstance;
 	}
