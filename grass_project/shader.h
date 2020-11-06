@@ -26,6 +26,7 @@ public:
 	 * \param framentPath - path to fragment shader code
 	 */
 	void initialize(const char* vertexPath, const char* fragmentPath);
+	bool compile();
 	bool isInitialized();
 
 	/* Activate the shader.
@@ -47,16 +48,19 @@ public:
 	void setMat2(const std::string& name, const glm::mat2& mat) const;
 	void setMat3(const std::string& name, const glm::mat3& mat) const;
 	void setMat4(const std::string& name, const glm::mat4& mat) const;
-	const std::string& getFragmentPath();
+	const char* getFragmentPath();
 
 private:
     bool initialized = false;
-	std::string fragmentPath;
+	unsigned int vertex;
+	unsigned int fragment;
+	const char* vertexPath;
+	const char* fragmentPath;
 
 	/* Utility function for checking shader compilation or linking errors. 
 	 * \param shader - Shader ID 
 	 * \param type - Shader type as all caps string
 	 */
-	void checkCompileErrors(GLuint shader, std::string type);
+	bool checkCompileErrors(GLuint shader, std::string type);
 };
 #endif
