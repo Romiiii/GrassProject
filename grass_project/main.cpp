@@ -48,7 +48,6 @@ SceneObject skybox;
 //glm::mat4 modelMatrices[MAX_PATCH_DENSITY_BLADES];
 
 
-float currentTime;
 Shader bladesShader;
 Shader patchShader;
 Shader skyboxShader;
@@ -118,16 +117,17 @@ enum class SkyboxType {
  */
 struct Config {
 	GrassType grassType = GrassType::BLADES;
-	int patchDensity = 20;
+	int patchDensity = 10000;
 	WindType windType = WindType::TRIG_SIMPLE;	
-	float windStrength = 0.1; // Perlin sway can only go upto 0.1
-	float swayReach = 0.1;
+	float windStrength = 2.0; // Perlin sway can only go upto 0.1
+	float swayReach = 0.3;
 	float perlinSampleScale = 0.05;
 	int perlinTexture = 1;  // Either 1 or 2
 	glm::vec3 lightPosition = glm::vec3(1.0, 3.0, -1.0);
 	float ambientStrength = 0.5f;
 	SkyboxType skyboxType = SkyboxType::NIGHT; 
-	int numPatches = 1;
+	int numPatches = 9;
+	glm::vec2 windDirection = { 1.0, 1.0 };
 } config;
 
 
@@ -418,6 +418,10 @@ void drawGrass(glm::mat4 projection, glm::mat4 view, glm::mat4 model) {
 	bladesShader.setMat4("model", model);
 	bladesShader.setFloat("ambientStrength", config.ambientStrength);
 	bladesShader.setVec3("lightPos", config.lightPosition);
+	bladesShader.setFloat("currentTime", glfwGetTime());
+	bladesShader.setFloat("windStrength", config.windStrength);
+	bladesShader.setFloat("swayReach", config.swayReach);
+	bladesShader.setVec2("windDirection", config.windDirection);
 
 	grass.drawSceneObjectInstanced(config.patchDensity, instanceVBO, 0);
 }
@@ -437,7 +441,7 @@ void drawBillboardSquare(glm::mat4 projection, glm::mat4 view, glm::mat4 model) 
 		billboardGrassNoise2.bindTexture();
 		billboardShader.setInt("billboardNoise", billboardGrassNoise2.getTextureID());
 	}
-	billboardShader.setFloat("currentTime", currentTime);
+	billboardShader.setFloat("currentTime", glfwGetTime());
 	billboardShader.setMat4("projection", projection);
 	billboardShader.setMat4("view", view);
 	billboardShader.setMat4("model", model);
@@ -510,13 +514,24 @@ void drawGui() {
 			ImGui::SliderInt("Patch density", &config.patchDensity, 1, MAX_PATCH_DENSITY_BLADES);
 			ImGui::InputInt("Patch density value:", &config.patchDensity, 100, 1000);
 			config.patchDensity = glm::clamp(config.patchDensity, 0, (int)MAX_PATCH_DENSITY_BLADES);
+			ImGui::Text("Wind Settings");
+			ImGui::SliderFloat("Sway Reach", &config.swayReach, 0.01, 0.3);
+
 		}
 		else if (config.grassType == GrassType::BILLBOARDS) {
 			ImGui::SliderInt("Number of patches", &config.numPatches, 1, MAX_PATCHES);
 			ImGui::SliderInt("Patch density", &config.patchDensity, 1, MAX_PATCH_DENSITY_BILLBOARDS);
 			ImGui::InputInt("Patch density value:", &config.patchDensity, 100, 1000);
 			config.patchDensity = glm::clamp(config.patchDensity, 0, (int)MAX_PATCH_DENSITY_BILLBOARDS);
+
 		}
+
+
+
+		ImGui::SliderFloat("Wind Strength", &config.windStrength, 0.0, 10.0);
+
+		ImGui::SliderFloat2("Wind Direction", (float*)&config.windDirection, -1.0, 1.0);
+
 
 		if (config.grassType == GrassType::BILLBOARDS) {
 			ImGui::Separator();

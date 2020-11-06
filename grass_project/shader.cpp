@@ -35,7 +35,6 @@ void Shader::initialize(const char* vertexPath, const char* fragmentPath) {
 }
 
 bool Shader::compile() {
-	std::cout << "Compiling" << std::endl;
 	std::string vertexCode;
 	std::string fragmentCode;
 	std::ifstream vShaderFile;
@@ -123,7 +122,7 @@ void Shader::setInt(const std::string& name, int value) const
 
 void Shader::setFloat(const std::string& name, float value) const
 {
-	glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
+	GLCall(glUniform1f(glGetUniformLocation(ID, name.c_str()), value));
 }
 
 void Shader::setVec2(const std::string& name, const glm::vec2& value) const
