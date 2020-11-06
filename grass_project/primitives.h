@@ -112,21 +112,21 @@ std::vector<float> skyboxVertices{
 
 std::vector<std::string> facesDay
 {
-		"skybox/hills_ft.tga",
-		"skybox/hills_bk.tga",
-		"skybox/hills_up.tga",
-		"skybox/hills_dn.tga",
-		"skybox/hills_rt.tga",
-		"skybox/hills_lf.tga" };
+		"assets/textures/skybox_day/hills_ft.tga",
+		"assets/textures/skybox_day/hills_bk.tga",
+		"assets/textures/skybox_day/hills_up.tga",
+		"assets/textures/skybox_day/hills_dn.tga",
+		"assets/textures/skybox_day/hills_rt.tga",
+		"assets/textures/skybox_day/hills_lf.tga" };
 
 
 std::vector<std::string> facesNight
 {
-	"skybox2/hills_ft.png",
-	"skybox2/hills_bk.png",
-	"skybox2/hills_up.png",
-	"skybox2/hills_dn.png",
-	"skybox2/hills_rt.png",
-	"skybox2/hills_lf.png" };
+	"assets/textures/skybox_night/hills_ft.png",
+	"assets/textures/skybox_night/hills_bk.png",
+	"assets/textures/skybox_night/hills_up.png",
+	"assets/textures/skybox_night/hills_dn.png",
+	"assets/textures/skybox_night/hills_rt.png",
+	"assets/textures/skybox_night/hills_lf.png" };
 
 #endif // PRIMITIVES_H

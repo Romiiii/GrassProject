@@ -51,6 +51,12 @@ include_directories(
         ${EXTERNAL_LIBRARIES_BUILD_PATH}/assimp-5.0.0/include
         )
 
+file(GLOB shaders "assets/shaders/*")
+
 
 # project
 add_subdirectory(${CMAKE_SOURCE_DIR}/grass_project)
+
+set_target_properties(
+    grass_project PROPERTIES
+    VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")

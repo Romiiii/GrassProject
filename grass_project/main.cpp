@@ -35,7 +35,7 @@ const unsigned int SCR_HEIGHT = 1000;
 const unsigned int MAX_PATCH_DENSITY_BLADES = 40000;
 // Maximum amount of billboards per patch
 const unsigned int MAX_PATCH_DENSITY_BILLBOARDS = 1000;
-const unsigned int MAX_PATCHES = 25;
+const unsigned int MAX_PATCHES = 81;
 
 Patch patch;
 PatchInstance patchInstances[MAX_PATCHES];
@@ -250,7 +250,7 @@ GLFWwindow* initGLFWWindow() {
  */
 void setupShadersAndMeshes() {
 	// Initialize shader
-	bladesShader.initialize("blades.vert", "blades.frag");
+	bladesShader.initialize("assets/shaders/blades.vert", "assets/shaders/blades.frag");
 
 
 	// Load grass mesh into openGL
@@ -263,14 +263,14 @@ void setupShadersAndMeshes() {
 		grassNormals, bladesShader, instanceVBO);
 
 
-	patchShader.initialize("patch.vert", "patch.frag");
+	patchShader.initialize("assets/shaders/patch.vert", "assets/shaders/patch.frag");
 
 	// Initialize billboard grass texture
-	billboardShader.initialize("billboard.vert", "billboard.frag");
+	billboardShader.initialize("assets/shaders/billboard.vert", "assets/shaders/billboard.frag");
 	//billboardShader.use();
-	std::string billboardGrassFileName = "images/grass_texture.tga";
-	std::string billboardGrassFileNameNoise1 = "images/perlin_noise_1.tga";
-	std::string billboardGrassFileNameNoise2 = "images/perlin_noise_2.tga";
+	std::string billboardGrassFileName = "assets/textures/misc/grass_texture.tga";
+	std::string billboardGrassFileNameNoise1 = "assets/textures/misc/perlin_noise_1.tga";
+	std::string billboardGrassFileNameNoise2 = "assets/textures/misc/perlin_noise_2.tga";
 	billboardGrassTexture.loadTexture(billboardGrassFileName);
 	billboardGrassNoise1.loadTexture(billboardGrassFileNameNoise1, false);
 	billboardGrassNoise2.loadTexture(billboardGrassFileNameNoise2, false);
@@ -284,7 +284,7 @@ void setupShadersAndMeshes() {
 		billboardShader);
 
 	// Setup the Skybox Shaders
-	skyboxShader.initialize("skybox.vert", "skybox.frag");
+	skyboxShader.initialize("assets/shaders/skybox.vert", "assets/shaders/skybox.frag");
 	//skyboxShader.use();
 	cubemapTextureDay.loadTextureCubeMap(facesDay, false);
 	cubemapTextureNight.loadTextureCubeMap(facesNight);
@@ -573,6 +573,7 @@ void processInput(GLFWwindow* window) {
 		glfwSetWindowShouldClose(window, true);
 
 	static bool tWasPressed = false;
+	static bool rWasPressed = false;
 
 	// Stop camera movement if GUI is opened
 	if (isPaused)
@@ -599,6 +600,20 @@ void processInput(GLFWwindow* window) {
 	}
 	if (glfwGetKey(window, GLFW_KEY_T) == GLFW_RELEASE) {
 		tWasPressed = false;
+	}
+	if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) {
+		if (!rWasPressed) {
+			bladesShader.compile();
+			patchShader.compile();
+			skyboxShader.compile();
+			billboardShader.compile();
+			rWasPressed = true;
+			
+		}
+
+	}
+	if (glfwGetKey(window, GLFW_KEY_R) == GLFW_RELEASE) {
+		rWasPressed = false;
 	}
 }
 

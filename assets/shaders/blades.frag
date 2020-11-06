@@ -28,6 +28,7 @@ void main()
     vec3 ambient = ambientStrength * lightColor;
 
 	vec4 objectColor = vtxColor;
+	//vec4 objectColor = vec4(1.0,0,0,1) + vtxColor * 0.0001;
 
 	//ambient *= attenuation;
 	diffuse *= attenuation;
