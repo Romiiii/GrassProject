@@ -27,21 +27,21 @@
 #include "scene_object.h"
 #include "debug.h"
 #include "patch.h"
+#include "scene.h"
+#include "scene_object_instanced.h"
+#include "scene_object_arrays.h"
 
 // Constants
-const unsigned int SCR_WIDTH = 1000;
-const unsigned int SCR_HEIGHT = 1000;
+const unsigned int INIT_SCR_WIDTH = 1000;
+const unsigned int INIT_SCR_HEIGHT = 1000;
 // Maximum amount of grass blades per patch
 const unsigned int MAX_PATCH_DENSITY_BLADES = 40000;
 const unsigned int MAX_PATCHES = 81;
 
+Scene scene;
+
 Patch patch;
 PatchInstance patchInstances[MAX_PATCHES];
-
-// Global variables used for rendering
-SceneObject grass;
-SceneObject skybox;
-SceneObject light;
 
 glm::mat4 lightMatrix;
 
@@ -62,8 +62,8 @@ Texture cubemapTextureNight;
 Camera camera;
 bool isPaused = false;  // Used to stop camera movement when GUI is open
 bool firstMouse = false;
-float lastX = (float)SCR_WIDTH / 2.0;
-float lastY = (float)SCR_HEIGHT / 2.0;
+float lastX = (float)INIT_SCR_WIDTH / 2.0;
+float lastY = (float)INIT_SCR_HEIGHT / 2.0;
 
 // Timing 
 float deltaTime = 0.0f;	// Time between current frame and last frame
@@ -134,6 +134,7 @@ int main()
 		std::cout << "Failed to initialize GLAD" << std::endl;
 		return -1;
 	}
+
 
 
 
@@ -219,7 +220,7 @@ GLFWwindow* initGLFWWindow() {
 	#endif
 
 	// GLFW window creation
-	GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "GrassProject", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(INIT_SCR_WIDTH, INIT_SCR_HEIGHT, "GrassProject", NULL, NULL);
 	if (window == NULL)
 	{
 		std::cout << "Failed to create GLFW window" << std::endl;
@@ -244,17 +245,6 @@ void setupShadersAndMeshes() {
 	// Initialize shader
 	bladesShader.initialize("assets/shaders/blades.vert", "assets/shaders/blades.frag");
 
-
-	// Load grass mesh into openGL
-	//grass.createVertexArray(grassPositions, grassColors, grassIndices,
-	//	grassNormals, shaderProgram);
-
-	createInstanceMatrixBuffer(patch.getBladeMatrices(), MAX_PATCH_DENSITY_BLADES);
-
-	grass.createVertexArrayInstanced(grassPositions, grassColors, grassIndices,
-		grassNormals, bladesShader, instanceVBO);
-
-
 	patchShader.initialize("assets/shaders/patch.vert", "assets/shaders/patch.frag");
 
 	std::string billboardGrassFileNameNoise1 = "assets/textures/misc/perlin_noise_1.tga";
@@ -268,9 +258,7 @@ void setupShadersAndMeshes() {
 	//skyboxShader.use();
 	cubemapTextureDay.loadTextureCubeMap(facesDay, false);
 	cubemapTextureNight.loadTextureCubeMap(facesNight);
-	skybox.createVertexArrayFromPositions(cubePositions);
 
-	light.createVertexArrayFromPositions(cubePositions);
 	lightShader.initialize("assets/shaders/light.vert", "assets/shaders/light.frag");
 
 
@@ -280,6 +268,26 @@ void setupShadersAndMeshes() {
 	glEnable(GL_DEPTH_TEST);  // Turn on z-buffer depth test
 	glDepthFunc(GL_LESS);  // Draws fragments that are closer to the screen in NDC
 	glEnable(GL_MULTISAMPLE);
+
+
+	createInstanceMatrixBuffer(patch.getBladeMatrices(), MAX_PATCH_DENSITY_BLADES);
+
+
+	SceneObjectInstanced* blades = new SceneObjectInstanced();
+	blades->createVertexArray(grassPositions, grassColors, grassIndices,
+		grassNormals, bladesShader, instanceVBO);
+	scene.sceneObjects.push_back(blades);
+
+	SceneObjectArrays* skybox = new SceneObjectArrays();
+	skybox->createVertexArray(cubePositions, skyboxShader);
+	scene.sceneObjects.push_back(skybox);
+
+	SceneObjectArrays* light = new SceneObjectArrays();
+	light->createVertexArray(cubePositions, lightShader);
+	scene.sceneObjects.push_back(light);
+
+
+
 }
 
 /**
@@ -377,7 +385,7 @@ void drawPatch(PatchInstance& patchInstance, glm::mat4 projection, glm::mat4 vie
 	patchShader.setVec4("lightColor", config.lightColor);
 	patchShader.setFloat("lightIntensity", config.lightIntensity);
 
-	patchInstance.getPatchInstance().drawSceneObject();
+	patchInstance.getPatchInstance()->draw(scene);
 
 	drawGrass(projection, view, model);
 
@@ -397,8 +405,8 @@ void drawGrass(glm::mat4 projection, glm::mat4 view, glm::mat4 model) {
 	bladesShader.setVec2("windDirection", config.windDirection);
 	bladesShader.setVec4("lightColor", config.lightColor);
 	bladesShader.setFloat("lightIntensity", config.lightIntensity);
-
-	grass.drawSceneObjectInstanced(config.patchDensity, instanceVBO, 0);
+	scene.sceneObjects[0]->draw(scene);
+	//grass.drawSceneObjectInstanced(config.patchDensity, instanceVBO, 0);
 }
 
 void drawLight(glm::mat4 projection, glm::mat4 view) {
@@ -408,7 +416,8 @@ void drawLight(glm::mat4 projection, glm::mat4 view) {
 	lightShader.setMat4("view", view);
 	lightShader.setMat4("model", model);
 	lightShader.setVec4("color", config.lightColor);
-	light.drawSceneObjectArrays();
+	scene.sceneObjects[2]->draw(scene);
+	//light.draw();
 
 
 }
@@ -430,7 +439,8 @@ void drawSkybox(glm::mat4 projection, glm::mat4 view) {
 		cubemapTextureNight.bindTextureCubeMap();
 		skyboxShader.setInt("skybox", cubemapTextureNight.getTextureID());
 	}
-	skybox.drawSceneObjectArrays();
+	//skybox.draw();
+	scene.sceneObjects[1]->draw(scene);
 	GLCall(glDepthFunc(GL_LESS));
 }
 
@@ -460,7 +470,7 @@ void drawGui() {
 		ImGui::Text("Grass Settings");
 
 		ImGui::SliderInt("Number of patches", &config.numPatches, 1, MAX_PATCHES);
-		ImGui::SliderInt("Patch density", &config.patchDensity, 1, MAX_PATCH_DENSITY_BLADES);
+		ImGui::SliderInt("Patch density", &scene.numSceneObjects, 1, MAX_PATCH_DENSITY_BLADES);
 		ImGui::InputInt("Patch density value:", &config.patchDensity, 100, 1000);
 		config.patchDensity = glm::clamp(config.patchDensity, 0, (int)MAX_PATCH_DENSITY_BLADES);
 

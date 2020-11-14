@@ -14,43 +14,18 @@
 #include "debug.h"
 #include "texture.h"
 
+class Scene;
+
 class SceneObject {
 public:
-	void drawSceneObject() const;
-	void drawSceneObjectArrays() const;
-	void drawSceneObjectInstanced(int numSceneObjects, unsigned int instanceVBO, int offset);
+	virtual void draw(Scene& scene) = 0;
+	void setUniforms(Scene& scene);
 
-	/* Creates the Vertex Array Object and saves 
-	 * positions, colors, indices and normals. 
-	 */
-	unsigned int createVertexArray(
-		const std::vector<float>& positions,
-		const std::vector<float>& colors, const std::vector<unsigned int>& indices, 
-		const std::vector<float>& normals, Shader& shaderProgram);
-	
-	unsigned int SceneObject::createVertexArrayInstanced(
-		const std::vector<float>& positions, const std::vector<float>& colors, const std::vector<unsigned int>& indices, const std::vector<float>& normals, Shader& shaderProgram, unsigned int instanceVBO, const std::vector<float>* uvs = nullptr);
-
-	/* Creates the Vertex Array Object and saves
-	 * positions, colors, indices, uvs (for the texture) and normals.
-	 */
-	unsigned int createVertexArrayTexture(
-		const std::vector<float>& positions,
-		const std::vector<unsigned int>& indices,
-		const std::vector<float>& uvs, 
-		const std::vector<float>& normals, 
-		Shader& shaderProgram);
-
-	/* Creates the Vertex Array Object and saves
-	 * positions.
-	 */
-	unsigned int createVertexArrayFromPositions(const std::vector<float>& positions);
-
-private:
+protected:
 	unsigned int VAO;
 	unsigned int vertexCount;
 	unsigned int createArrayBuffer(const std::vector<float>& array);
-	unsigned int createElementArrayBuffer(const std::vector<unsigned int>& array);
+	Shader* shader;
 
 	/* Sets the specified attribute of the vertex shader
 		*/
@@ -59,6 +34,8 @@ private:
 		const std::vector<float>& data,
 		int dataSize,
 		Shader& shaderProgram);
+
+	unsigned int createElementArrayBuffer(const std::vector<unsigned int>& array);
 };
 
 #endif

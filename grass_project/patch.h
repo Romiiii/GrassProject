@@ -9,6 +9,7 @@
 #include "scene_object.h"
 #include "primitives.h"
 #include "util.h"
+#include "scene_object_indexed.h"
 
 // Array of grass coordinates 
 std::vector<glm::vec3> grassCoordinates;
@@ -63,9 +64,9 @@ public:
 		}
 	}
 
-	SceneObject createPatchInstance() {
-		SceneObject patchInstance;
-		patchInstance.createVertexArray(grassPatchPositions, grassPatchColors,
+	SceneObject* createPatchInstance() {
+		SceneObjectIndexed *patchInstance = new SceneObjectIndexed();
+		patchInstance->createVertexArray(grassPatchPositions, grassPatchColors,
 			grassPatchIndices, grassPatchNormals, *shaderProgram);
 		return patchInstance;
 	}
@@ -88,12 +89,12 @@ public:
 
 	}
 
-	void init(SceneObject patchInstance, glm::mat4 patchMatrix) {
+	void init(SceneObject *patchInstance, glm::mat4 patchMatrix) {
 		this->patchInstance = patchInstance;
 		this->patchMatrix = patchMatrix;
 	}
 
-	SceneObject& getPatchInstance() {
+	SceneObject* getPatchInstance() {
 		return this->patchInstance;
 	}
 
@@ -103,7 +104,7 @@ public:
 
 
 private:
-	SceneObject patchInstance;
+	SceneObject* patchInstance;
 	glm::mat4 patchMatrix;
 
 };

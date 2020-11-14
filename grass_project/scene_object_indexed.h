@@ -1,0 +1,32 @@
+/*
+ * The SceneObjectsArrays class handles the vertex information of the
+ * objects using arrays and draws them on the screen.
+ */
+#ifndef SCENE_OBJECT_INDEXED_H
+#define SCENE_OBJECT_INDEXED_H
+
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+#include <iostream>
+#include <vector>
+#include <cassert>
+#include "shader.h"
+#include "debug.h"
+#include "texture.h"
+#include "scene_object.h"
+#include "scene.h"
+
+class SceneObjectIndexed : public SceneObject {
+public:
+	/* Creates the Vertex Array Object and saves
+	 * positions, colors, indices, uvs (for the texture) and normals.
+	 */
+	unsigned int createVertexArray(const std::vector<float>& positions, const std::vector<float>& colors, const std::vector<unsigned int>& indices, const std::vector<float>& normals, Shader& shaderProgram);
+
+	void draw(Scene& scene) override;
+
+
+};
+
+
+#endif

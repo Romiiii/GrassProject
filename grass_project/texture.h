@@ -2,7 +2,7 @@
  * The Texture class handles loading and binding textures.
  */
 #ifndef TEXTURE_H
-#define TEXTURE__H
+#define TEXTURE_H
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
