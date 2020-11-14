@@ -59,7 +59,7 @@ std::vector<float> billboardSquareNormals{	0.0f, 0.0f, 1.0f,  // top right
 											0.0f, 0.0f, 1.0f };   // top left 
 
 
-
+// Should this have a diameter of 1?
 
 std::vector<float> cubePositions{
 	-1.0f, 1.0f, -1.0f,
