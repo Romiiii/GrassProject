@@ -31,14 +31,12 @@ project(GrassProject)
 add_subdirectory(${EXTERNAL_LIBRARIES_SOURCE_PATH}/glfw)
 add_subdirectory(${EXTERNAL_LIBRARIES_SOURCE_PATH}/glad)
 add_subdirectory(${EXTERNAL_LIBRARIES_SOURCE_PATH}/imgui)
-add_subdirectory(${EXTERNAL_LIBRARIES_SOURCE_PATH}/assimp-5.0.0)
 
 
 set(glfwDir ${EXTERNAL_LIBRARIES_BUILD_PATH}/glfw/src CACHE PATH "Location of the glfw lib")
 set(gladDir ${EXTERNAL_LIBRARIES_BUILD_PATH}/glad/src CACHE PATH "Location of the glad lib")
 set(imguiDir ${EXTERNAL_LIBRARIES_BUILD_PATH}/imgui/src CACHE PATH "Location of the imgui lib")
-set(assimpDir ${EXTERNAL_LIBRARIES_BUILD_PATH}/assimp-5.0.0/code CACHE PATH "Location of the assimp lib")
-link_directories(${gladDir} ${glfwDir} ${imguiDir} ${assimpDir})
+link_directories(${gladDir} ${glfwDir} ${imguiDir})
 
 include_directories(
         include
@@ -47,8 +45,6 @@ include_directories(
         ${EXTERNAL_LIBRARIES_SOURCE_PATH}/imgui/include
         ${EXTERNAL_LIBRARIES_SOURCE_PATH}/glm
         ${EXTERNAL_LIBRARIES_SOURCE_PATH}/STBImage
-        ${EXTERNAL_LIBRARIES_SOURCE_PATH}/assimp-5.0.0/include
-        ${EXTERNAL_LIBRARIES_BUILD_PATH}/assimp-5.0.0/include
         )
 
 file(GLOB shaders "assets/shaders/*")

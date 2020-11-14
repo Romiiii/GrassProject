@@ -38,71 +38,48 @@ std::vector<float> grassPatchNormals{ 0.0f, 1.0f, 0.0f,
 								   0.0f, 1.0f, 0.0f,
 								   0.0f, 1.0f, 0.0f };
 
-std::vector<float> billboardSquarePositions{ 0.5f,  0.5f, 0.0f,  // top right
-											0.5f, -0.5f, 0.0f,  // bottom right
-											-0.5f, -0.5f, 0.0f,  // bottom left
-											-0.5f,  0.5f, 0.0f };   // top left 
-							
-
-std::vector<unsigned int> billboardSquareIndices{	0, 1, 3,  
-													1, 2, 3 };  
-
-
-std::vector<float> billboardSquareUVs{	1.0f, 0.0f,  // bottom right
-										1.0f, 1.0f,  // top right
-										0.0f, 1.0f,	 // top left
-										0.0f, 0.0f };  // bottom left 
-
-std::vector<float> billboardSquareNormals{	0.0f, 0.0f, 1.0f,  // top right
-											0.0f, 0.0f, 1.0f,  // bottom right
-											0.0f, 0.0f, 1.0f,  // bottom left
-											0.0f, 0.0f, 1.0f };   // top left 
-
-
-// Should this have a diameter of 1?
-
 std::vector<float> cubePositions{
-	-1.0f, 1.0f, -1.0f,
-	-1.0f, -1.0f, -1.0f,
-	1.0f, -1.0f, -1.0f,
-	1.0f, -1.0f, -1.0f,
-	1.0f, 1.0f, -1.0f,
-	-1.0f, 1.0f, -1.0f,
+	-0.5f, 0.5f, -0.5f,
+	-0.5f, -0.5f, -0.5f,
+	0.5f, -0.5f, -0.5f,
+	0.5f, -0.5f, -0.5f,
+	0.5f, 0.5f, -0.5f,
+	-0.5f, 0.5f, -0.5f,
 
-	-1.0f, -1.0f, 1.0f,
-	-1.0f, -1.0f, -1.0f,
-	-1.0f, 1.0f, -1.0f,
-	-1.0f, 1.0f, -1.0f,
-	-1.0f, 1.0f, 1.0f,
-	-1.0f, -1.0f, 1.0f,
+	-0.5f, -0.5f, 0.5f,
+	-0.5f, -0.5f, -0.5f,
+	-0.5f, 0.5f, -0.5f,
+	-0.5f, 0.5f, -0.5f,
+	-0.5f, 0.5f, 0.5f,
+	-0.5f, -0.5f, 0.5f,
 
-	1.0f, -1.0f, -1.0f,
-	1.0f, -1.0f, 1.0f,
-	1.0f, 1.0f, 1.0f,
-	1.0f, 1.0f, 1.0f,
-	1.0f, 1.0f, -1.0f,
-	1.0f, -1.0f, -1.0f,
+	0.5f, -0.5f, -0.5f,
+	0.5f, -0.5f, 0.5f,
+	0.5f, 0.5f, 0.5f,
+	0.5f, 0.5f, 0.5f,
+	0.5f, 0.5f, -0.5f,
+	0.5f, -0.5f, -0.5f,
 
-	-1.0f, -1.0f, 1.0f,
-	-1.0f, 1.0f, 1.0f,
-	1.0f, 1.0f, 1.0f,
-	1.0f, 1.0f, 1.0f,
-	1.0f, -1.0f, 1.0f,
-	-1.0f, -1.0f, 1.0f,
+	-0.5f, -0.5f, 0.5f,
+	-0.5f, 0.5f, 0.5f,
+	0.5f, 0.5f, 0.5f,
+	0.5f, 0.5f, 0.5f,
+	0.5f, -0.5f, 0.5f,
+	-0.5f, -0.5f, 0.5f,
 
-	-1.0f, 1.0f, -1.0f,
-	1.0f, 1.0f, -1.0f,
-	1.0f, 1.0f, 1.0f,
-	1.0f, 1.0f, 1.0f,
-	-1.0f, 1.0f, 1.0f,
-	-1.0f, 1.0f, -1.0f,
+	-0.5f, 0.5f, -0.5f,
+	0.5f, 0.5f, -0.5f,
+	0.5f, 0.5f, 0.5f,
+	0.5f, 0.5f, 0.5f,
+	-0.5f, 0.5f, 0.5f,
+	-0.5f, 0.5f, -0.5f,
 
-	-1.0f, -1.0f, -1.0f,
-	-1.0f, -1.0f, 1.0f,
-	1.0f, -1.0f, -1.0f,
-	1.0f, -1.0f, -1.0f,
-	-1.0f, -1.0f, 1.0f,
-	1.0f, -1.0f, 1.0f };
+	-0.5f, -0.5f, -0.5f,
+	-0.5f, -0.5f, 0.5f,
+	0.5f, -0.5f, -0.5f,
+	0.5f, -0.5f, -0.5f,
+	-0.5f, -0.5f, 0.5f,
+	0.5f, -0.5f, 0.5f };
 
 float length = 1.0;
 //    v5----- v4

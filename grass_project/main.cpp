@@ -33,8 +33,6 @@ const unsigned int SCR_WIDTH = 1000;
 const unsigned int SCR_HEIGHT = 1000;
 // Maximum amount of grass blades per patch
 const unsigned int MAX_PATCH_DENSITY_BLADES = 40000;
-// Maximum amount of billboards per patch
-const unsigned int MAX_PATCH_DENSITY_BILLBOARDS = 1000;
 const unsigned int MAX_PATCHES = 81;
 
 Patch patch;
@@ -42,26 +40,18 @@ PatchInstance patchInstances[MAX_PATCHES];
 
 // Global variables used for rendering
 SceneObject grass;
-SceneObject billboardSquare;
 SceneObject skybox;
 SceneObject light;
 
 glm::mat4 lightMatrix;
-//glm::mat4* modelMatrices;
-//glm::mat4 modelMatrices[MAX_PATCH_DENSITY_BLADES];
-
 
 Shader bladesShader;
 Shader patchShader;
 Shader skyboxShader;
-Shader billboardShader;
 Shader lightShader;
 unsigned int instanceVBO;
 
 
-
-// Textures
-Texture billboardGrassTexture;
 Texture billboardGrassNoise1;
 Texture billboardGrassNoise2;
 
@@ -79,6 +69,8 @@ float lastY = (float)SCR_HEIGHT / 2.0;
 float deltaTime = 0.0f;	// Time between current frame and last frame
 float lastFrame = 0.0f; // Time of last frame
 
+GLFWwindow* window;
+
 GLFWwindow* initGLFWWindow();
 void initIMGUI(GLFWwindow* window);
 void setupShadersAndMeshes();
@@ -89,8 +81,6 @@ void drawScene();
 void createInstanceMatrixBuffer(glm::mat4* modelMatrices, const unsigned int MAX_PATCH_DENSITY_BLADES);
 void drawPatch(PatchInstance& patch, glm::mat4 projection, glm::mat4 view);
 void drawGrass(glm::mat4 projection, glm::mat4 view, glm::mat4 model);
-void drawBillboardSquare(glm::mat4 projection, glm::mat4 view, glm::mat4 model);
-void drawBillboardCollection(glm::mat4 projection, glm::mat4 view, glm::mat4 model);
 void drawLight(glm::mat4 projection, glm::mat4 view);
 void drawSkybox(glm::mat4 projection, glm::mat4 view);
 void drawGui();
@@ -101,10 +91,6 @@ void processInput(GLFWwindow* window);
 void keyInputCallback(GLFWwindow* window, int button, int other, int action, int mods);
 void cursorInputCallback(GLFWwindow* window, double posX, double posY);
 
-enum class GrassType {
-	BLADES,
-	BILLBOARDS
-};
 
 enum class WindType {
 	TRIG_SIMPLE,
@@ -121,26 +107,25 @@ enum class SkyboxType {
 /* All variables that can be configured using the GUI
  */
 struct Config {
-	GrassType grassType = GrassType::BLADES;
 	int patchDensity = 10000;
 	WindType windType = WindType::TRIG_SIMPLE;	
 	float windStrength = 2.0; // Perlin sway can only go upto 0.1
 	float swayReach = 0.3;
 	float perlinSampleScale = 0.05;
 	int perlinTexture = 1;  // Either 1 or 2
-	glm::vec3 lightPosition = glm::vec3(1.0, 3.0, -1.0);
+	glm::vec3 lightPosition = glm::vec3(0.0, 15.0, 0.0);
 	float ambientStrength = 0.5f;
 	SkyboxType skyboxType = SkyboxType::NIGHT; 
 	int numPatches = 9;
 	glm::vec2 windDirection = { 1.0, 1.0 };
-	glm::vec4 lightColor = { 1.0, 0.0, 0.0, 1.0 };
-	float lightIntensity = 1;
+	glm::vec4 lightColor = { 1.0, 1.0, 1.0, 1.0 };
+	float lightIntensity = 10;
 } config;
 
 
 int main()
 {
-	GLFWwindow* window = initGLFWWindow();
+	window = initGLFWWindow();
 	assert(window != NULL, "ERROR:: Failed to create GLFW window");
 
 	// GLAD: load all OpenGL function pointers
@@ -272,23 +257,11 @@ void setupShadersAndMeshes() {
 
 	patchShader.initialize("assets/shaders/patch.vert", "assets/shaders/patch.frag");
 
-	// Initialize billboard grass texture
-	billboardShader.initialize("assets/shaders/billboard.vert", "assets/shaders/billboard.frag");
-	//billboardShader.use();
-	std::string billboardGrassFileName = "assets/textures/misc/grass_texture.tga";
 	std::string billboardGrassFileNameNoise1 = "assets/textures/misc/perlin_noise_1.tga";
 	std::string billboardGrassFileNameNoise2 = "assets/textures/misc/perlin_noise_2.tga";
-	billboardGrassTexture.loadTexture(billboardGrassFileName);
 	billboardGrassNoise1.loadTexture(billboardGrassFileNameNoise1, false);
 	billboardGrassNoise2.loadTexture(billboardGrassFileNameNoise2, false);
 
-	// Load billboard square into openGL
-	billboardSquare.createVertexArrayTexture(
-		billboardSquarePositions,
-		billboardSquareIndices,
-		billboardSquareUVs,
-		billboardSquareNormals,
-		billboardShader);
 
 	// Setup the Skybox Shaders
 	skyboxShader.initialize("assets/shaders/skybox.vert", "assets/shaders/skybox.frag");
@@ -365,9 +338,10 @@ void initIMGUI(GLFWwindow* window) {
 /* Draws the scene with grass blades.
  */
 void drawScene() {
-	//glm::mat4 scale = glm::scale(1.f, 1.f, 1.f); // FIX: not every frame
-	glm::mat4 projection = glm::perspectiveFovRH_NO(70.0f, (float)SCR_WIDTH,
-		(float)SCR_HEIGHT, .01f, 100.0f); // FIX: not every frame
+	int width, height;
+	glfwGetWindowSize(window, &width, &height); 
+	glm::mat4 projection = glm::perspectiveFovRH_NO(70.0f, (float)width,
+		(float)height, .01f, 1000.0f); // FIX: not every frame
 	glm::mat4 view = glm::lookAt(
 		camera.getCamPosition(),
 		camera.getCamPosition() + camera.getCamForward(), glm::vec3(0, 1, 0));
@@ -377,11 +351,6 @@ void drawScene() {
 	}
 
 	drawLight(projection, view);
-	// Fit the other patch triangle to the other one 
-	// The rotation of the second patch should be applied twice to the blades/billboards 
-	// (to turn them back in the same direction as those in patch 1), so it is passed seperately
-	//drawPatch(projection, view, glm::translate(0.5 * grassPatchPositions[6],
-	//	0.5 * grassPatchPositions[7], 0.5 * grassPatchPositions[8]), glm::rotateY(2 * glm::half_pi<float>()));
 	drawSkybox(projection, view);
 
 }
@@ -400,7 +369,7 @@ void drawPatch(PatchInstance& patchInstance, glm::mat4 projection, glm::mat4 vie
 	patchShader.setMat4("projection", projection);
 	patchShader.setMat4("view", view);
 
-	// The rotation is applied to the patch, but not to the blades or billboards on the patch
+	// The rotation is applied to the patch, but not to the blades on the patch
 	glm::mat4 model = patchInstance.getPatchMatrix();
 	patchShader.setMat4("model", model);
 	patchShader.setFloat("ambientStrength", config.ambientStrength);
@@ -410,20 +379,8 @@ void drawPatch(PatchInstance& patchInstance, glm::mat4 projection, glm::mat4 vie
 
 	patchInstance.getPatchInstance().drawSceneObject();
 
-	if (config.grassType == GrassType::BLADES) {
-		drawGrass(projection, view, model);
-	}
-	else {
-		// Distribute the billboards uniformly within the patch
-		for (int x = 0; x < config.patchDensity; x += 1) {
-			drawBillboardCollection(
-				projection,
-				view,
-				model * glm::translate(grassCoordinates.at(x)) *
-				glm::translate(0.0, 0.5, 0.0) *
-				glm::rotateY(grassRotations.at(x)[1]));
-		}
-	}
+	drawGrass(projection, view, model);
+
 }
 
 void drawGrass(glm::mat4 projection, glm::mat4 view, glm::mat4 model) {
@@ -442,43 +399,6 @@ void drawGrass(glm::mat4 projection, glm::mat4 view, glm::mat4 model) {
 	bladesShader.setFloat("lightIntensity", config.lightIntensity);
 
 	grass.drawSceneObjectInstanced(config.patchDensity, instanceVBO, 0);
-}
-
-/* Draws a single square of the billboard grass.
- */
-void drawBillboardSquare(glm::mat4 projection, glm::mat4 view, glm::mat4 model) {
-	billboardShader.use();
-	billboardGrassTexture.bindTexture();
-	billboardShader.setInt("billboardTexture", billboardGrassTexture.getTextureID());
-
-	if (config.perlinTexture == 1) {
-		billboardGrassNoise1.bindTexture();
-		billboardShader.setInt("billboardNoise", billboardGrassNoise1.getTextureID());
-	}
-	else if (config.perlinTexture == 2) {
-		billboardGrassNoise2.bindTexture();
-		billboardShader.setInt("billboardNoise", billboardGrassNoise2.getTextureID());
-	}
-	billboardShader.setFloat("currentTime", glfwGetTime());
-	billboardShader.setMat4("projection", projection);
-	billboardShader.setMat4("view", view);
-	billboardShader.setMat4("model", model);
-	billboardShader.setInt("windType", static_cast<int>(config.windType));
-	billboardShader.setFloat("windStrength", config.windStrength);
-	billboardShader.setFloat("swayReach", config.swayReach);
-	billboardShader.setFloat("perlinSampleScale", config.perlinSampleScale);
-	billboardShader.setVec3("lightPos", config.lightPosition);
-	billboardShader.setFloat("ambientStrength", config.ambientStrength);
-	billboardSquare.drawSceneObject();
-}
-
-/* Draws three billboards squares in an aterisk configuration.
- */
-void drawBillboardCollection(glm::mat4 projection, glm::mat4 view, glm::mat4 model) {
-
-	drawBillboardSquare(projection, view, model);
-	drawBillboardSquare(projection, view, model * glm::rotateY(3 * glm::quarter_pi<float>()));
-	drawBillboardSquare(projection, view, model * glm::rotateY(6 * glm::quarter_pi<float>()));
 }
 
 void drawLight(glm::mat4 projection, glm::mat4 view) {
@@ -520,7 +440,8 @@ void drawGui() {
 	// Slider will be 65% of the window width (this is the default)
 
 	ImGui::NewFrame();
-
+	ImGui::SetNextWindowPos({ 0,0 });
+	ImGui::SetNextWindowSize({ 0, 0 });
 	{
 		ImGui::Begin("Settings");
 
@@ -535,56 +456,18 @@ void drawGui() {
 		if (ImGui::RadioButton("Day", config.skyboxType == SkyboxType::DAY)) { config.skyboxType = SkyboxType::DAY; } ImGui::SameLine();
 		if (ImGui::RadioButton("Night", config.skyboxType == SkyboxType::NIGHT)) { config.skyboxType = SkyboxType::NIGHT; }
 
-
 		ImGui::Separator();
 		ImGui::Text("Grass Settings");
-		ImGui::Text("Grass Type: ");
-		if (ImGui::RadioButton("Blades", config.grassType == GrassType::BLADES)) { config.grassType = GrassType::BLADES; } ImGui::SameLine();
-		if (ImGui::RadioButton("Billboard", config.grassType == GrassType::BILLBOARDS)) { config.grassType = GrassType::BILLBOARDS; }
-		if (config.grassType == GrassType::BLADES) {
-			ImGui::SliderInt("Number of patches", &config.numPatches, 1, MAX_PATCHES);
-			ImGui::SliderInt("Patch density", &config.patchDensity, 1, MAX_PATCH_DENSITY_BLADES);
-			ImGui::InputInt("Patch density value:", &config.patchDensity, 100, 1000);
-			config.patchDensity = glm::clamp(config.patchDensity, 0, (int)MAX_PATCH_DENSITY_BLADES);
-			ImGui::Text("Wind Settings");
-			ImGui::SliderFloat("Sway Reach", &config.swayReach, 0.01, 0.3);
 
-		}
-		else if (config.grassType == GrassType::BILLBOARDS) {
-			ImGui::SliderInt("Number of patches", &config.numPatches, 1, MAX_PATCHES);
-			ImGui::SliderInt("Patch density", &config.patchDensity, 1, MAX_PATCH_DENSITY_BILLBOARDS);
-			ImGui::InputInt("Patch density value:", &config.patchDensity, 100, 1000);
-			config.patchDensity = glm::clamp(config.patchDensity, 0, (int)MAX_PATCH_DENSITY_BILLBOARDS);
+		ImGui::SliderInt("Number of patches", &config.numPatches, 1, MAX_PATCHES);
+		ImGui::SliderInt("Patch density", &config.patchDensity, 1, MAX_PATCH_DENSITY_BLADES);
+		ImGui::InputInt("Patch density value:", &config.patchDensity, 100, 1000);
+		config.patchDensity = glm::clamp(config.patchDensity, 0, (int)MAX_PATCH_DENSITY_BLADES);
 
-		}
-
-
-
+		ImGui::Text("Wind Settings");
+		ImGui::SliderFloat("Sway Reach", &config.swayReach, 0.01, 0.3);
 		ImGui::SliderFloat("Wind Strength", &config.windStrength, 0.0, 10.0);
-
 		ImGui::SliderFloat2("Wind Direction", (float*)&config.windDirection, -1.0, 1.0);
-
-
-		if (config.grassType == GrassType::BILLBOARDS) {
-			ImGui::Separator();
-			ImGui::Text("Wind Settings");
-			ImGui::Text("Wind Type: ");
-			if (ImGui::RadioButton("Simple Trigonometric Sway", config.windType == WindType::TRIG_SIMPLE)) { config.windType = WindType::TRIG_SIMPLE; } ImGui::SameLine();
-			if (ImGui::RadioButton("Complex Trigonometric Sway 1", config.windType == WindType::TRIG_COMPLEX_1)) { config.windType = WindType::TRIG_COMPLEX_1; }
-			if (ImGui::RadioButton("Complex Trigonometric Sway 2", config.windType == WindType::TRIG_COMPLEX_2)) { config.windType = WindType::TRIG_COMPLEX_2; } ImGui::SameLine();
-			if (ImGui::RadioButton("Perlin Noise Sway", config.windType == WindType::PERLIN)) { config.windType = WindType::PERLIN; }
-			if (config.windType == WindType::PERLIN) {
-				ImGui::SliderFloat("Wind Strength", &config.windStrength, 0.0, 0.1);
-				ImGui::SliderFloat("Perlin Sample Scale", &config.perlinSampleScale, 0.05, 1.0);
-				ImGui::Text("Perlin Texture: ");
-				if (ImGui::RadioButton("1", config.perlinTexture == 1)) { config.perlinTexture = 1; } ImGui::SameLine();
-				if (ImGui::RadioButton("2", config.perlinTexture == 2)) { config.perlinTexture = 2; }
-			}
-			else {
-				ImGui::SliderFloat("Wind Strength", &config.windStrength, 0.0, 10.0);
-				ImGui::SliderFloat("Sway Reach", &config.swayReach, 0.01, 0.3);
-			}
-		}
 		ImGui::Separator();
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		ImGui::SliderFloat3("Camera Position", (float*)&camera.camPosition, -50, 50);
@@ -653,7 +536,6 @@ void processInput(GLFWwindow* window) {
 			bladesShader.compile();
 			patchShader.compile();
 			skyboxShader.compile();
-			billboardShader.compile();
 			rWasPressed = true;
 			
 		}
