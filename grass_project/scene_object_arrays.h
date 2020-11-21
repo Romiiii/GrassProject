@@ -18,11 +18,13 @@
 
 class SceneObjectArrays : public SceneObject {
 public:
+	SceneObjectArrays(const std::vector<float>& positions, Shader& shaderProgram);
+
 	/* Creates the Vertex Array Object and saves
 	* positions.
 	*/
-	unsigned int createVertexArray(const std::vector<float>& positions, Shader& shaderProgram);
-	unsigned int SceneObjectArrays::createVertexArray(const std::vector<float>& positions, const std::vector<float>& colors, const std::vector<unsigned int>& indices, const std::vector<float>& normals, Shader& shaderProgram);
+	void createVertexArray(const std::vector<float>& positions);
+
 
 	void draw(Scene& scene) override;
 

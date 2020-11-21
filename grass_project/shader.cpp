@@ -99,8 +99,10 @@ bool Shader::isInitialized() {
 	*/
 bool Shader::use() const
 {
+	assert(initialized, "ERROR: Shader is not initialized.");
 	if (initialized)
 		glUseProgram(ID);
+
 	return initialized;
 }
 

@@ -12,9 +12,7 @@
 #include "scene_object_indexed.h"
 
 // Array of grass coordinates 
-std::vector<glm::vec3> grassCoordinates;
-std::vector<glm::vec2> grassRotations;
-std::vector<glm::mat4> grassMatrixes;
+
 
 
 class Patch {
@@ -64,16 +62,20 @@ public:
 		}
 	}
 
-	SceneObject* createPatchInstance() {
-		SceneObjectIndexed *patchInstance = new SceneObjectIndexed();
-		patchInstance->createVertexArray(grassPatchPositions, grassPatchColors,
-			grassPatchIndices, grassPatchNormals, *shaderProgram);
-		return patchInstance;
-	}
+	//SceneObject* createPatchInstance() {
+	//	SceneObjectIndexed *patchInstance = new SceneObjectIndexed();
+	//	patchInstance->createVertexArray(grassPatchPositions, grassPatchColors,
+	//		grassPatchIndices, grassPatchNormals);
+	//	return patchInstance;
+	//}
 
 	glm::mat4* getBladeMatrices() {
 		return bladeMatrices;
 	}
+
+	std::vector<glm::vec3> grassCoordinates;
+	std::vector<glm::vec2> grassRotations;
+	std::vector<glm::mat4> grassMatrixes;
 
 
 private:
@@ -82,32 +84,32 @@ private:
 	Shader* shaderProgram;
 };
 
-
-class PatchInstance {
-public:
-	PatchInstance() {
-
-	}
-
-	void init(SceneObject *patchInstance, glm::mat4 patchMatrix) {
-		this->patchInstance = patchInstance;
-		this->patchMatrix = patchMatrix;
-	}
-
-	SceneObject* getPatchInstance() {
-		return this->patchInstance;
-	}
-
-	glm::mat4& getPatchMatrix() {
-		return patchMatrix;
-	}
-
-
-private:
-	SceneObject* patchInstance;
-	glm::mat4 patchMatrix;
-
-};
+// Doesnt need to exist anymore
+//class PatchInstance {
+//public:
+//	PatchInstance() {
+//
+//	}
+//
+//	void init(SceneObject *patchInstance, glm::mat4 patchMatrix) {
+//		this->patchInstance = patchInstance;
+//		this->patchMatrix = patchMatrix;
+//	}
+//
+//	SceneObject* getPatchInstance() {
+//		return this->patchInstance;
+//	}
+//
+//	glm::mat4& getPatchMatrix() {
+//		return patchMatrix;
+//	}
+//
+//
+//private:
+//	SceneObject* patchInstance;
+//	glm::mat4 patchMatrix;
+//
+//};
 
 
 #endif

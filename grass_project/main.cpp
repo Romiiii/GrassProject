@@ -41,7 +41,6 @@ const unsigned int MAX_PATCHES = 81;
 Scene scene;
 
 Patch patch;
-PatchInstance patchInstances[MAX_PATCHES];
 
 glm::mat4 lightMatrix;
 
@@ -49,7 +48,7 @@ Shader bladesShader;
 Shader patchShader;
 Shader skyboxShader;
 Shader lightShader;
-unsigned int instanceVBO;
+unsigned int instanceMatrixBuffer;
 
 
 Texture billboardGrassNoise1;
@@ -73,16 +72,11 @@ GLFWwindow* window;
 
 GLFWwindow* initGLFWWindow();
 void initIMGUI(GLFWwindow* window);
-void setupShadersAndMeshes();
+void initShadersAndTextures();
 glm::vec2 calculateSpiralPosition(int n);
-void initPatchInstances();
-
-void drawScene();
+void initSceneObjects(Patch& patch);
 void createInstanceMatrixBuffer(glm::mat4* modelMatrices, const unsigned int MAX_PATCH_DENSITY_BLADES);
-void drawPatch(PatchInstance& patch, glm::mat4 projection, glm::mat4 view);
-void drawGrass(glm::mat4 projection, glm::mat4 view, glm::mat4 model);
-void drawLight(glm::mat4 projection, glm::mat4 view);
-void drawSkybox(glm::mat4 projection, glm::mat4 view);
+
 void drawGui();
 
 void cursorInRange(float screenX, float screenY, int screenW, int screenH, float min, float max, float& x, float& y);
@@ -90,38 +84,6 @@ void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 void keyInputCallback(GLFWwindow* window, int button, int other, int action, int mods);
 void cursorInputCallback(GLFWwindow* window, double posX, double posY);
-
-
-enum class WindType {
-	TRIG_SIMPLE,
-	TRIG_COMPLEX_1,
-	TRIG_COMPLEX_2,
-	PERLIN
-};
-
-enum class SkyboxType {
-	DAY,
-	NIGHT
-};
-
-/* All variables that can be configured using the GUI
- */
-struct Config {
-	int patchDensity = 10000;
-	WindType windType = WindType::TRIG_SIMPLE;	
-	float windStrength = 2.0; // Perlin sway can only go upto 0.1
-	float swayReach = 0.3;
-	float perlinSampleScale = 0.05;
-	int perlinTexture = 1;  // Either 1 or 2
-	glm::vec3 lightPosition = glm::vec3(0.0, 15.0, 0.0);
-	float ambientStrength = 0.5f;
-	SkyboxType skyboxType = SkyboxType::NIGHT; 
-	int numPatches = 9;
-	glm::vec2 windDirection = { 1.0, 1.0 };
-	glm::vec4 lightColor = { 1.0, 1.0, 1.0, 1.0 };
-	float lightIntensity = 10;
-} config;
-
 
 int main()
 {
@@ -135,27 +97,19 @@ int main()
 		return -1;
 	}
 
-
-
-
-	patch.init(MAX_PATCH_DENSITY_BLADES, &patchShader);
-	setupShadersAndMeshes();
-	initPatchInstances();
-	
+	initShadersAndTextures();
+	initSceneObjects(patch);
 
 	camera.camPosition = { -15, 20, 0 };
 	camera.yaw = 0;
 	camera.pitch = -50;
 	camera.updateCameraVectors();
 
-
-
 	// Render loop : render every loopInterval seconds
 	float loopInterval = 0.02f;
 
 	// Set seed for random numbers
 	srand((unsigned)time(0));
-
 
 	initIMGUI(window);
 
@@ -181,7 +135,20 @@ int main()
 
 		bladesShader.use();
 
-		drawScene();
+		int width, height;
+		glfwGetWindowSize(window, &width, &height); 
+		glm::mat4 projection = glm::perspectiveFovRH_NO(70.0f, (float)width,
+			(float)height, .01f, 1000.0f); // FIX: not every frame
+		glm::mat4 view = glm::lookAt(
+			camera.getCamPosition(),
+			camera.getCamPosition() + camera.getCamForward(), glm::vec3(0, 1, 0));
+		scene.projection = projection;
+		scene.view = view;
+
+
+		//drawScene();
+		scene.updateDynamic();
+		scene.render();
 
 		if (isPaused) {
 			drawGui();
@@ -241,7 +208,7 @@ GLFWwindow* initGLFWWindow() {
  * and indices (and uvs) from the primitives file. Loads textures.
  * Sets up the z-buffer.
  */
-void setupShadersAndMeshes() {
+void initShadersAndTextures() {
 	// Initialize shader
 	bladesShader.initialize("assets/shaders/blades.vert", "assets/shaders/blades.frag");
 
@@ -261,33 +228,15 @@ void setupShadersAndMeshes() {
 
 	lightShader.initialize("assets/shaders/light.vert", "assets/shaders/light.frag");
 
-
+	scene.cubemapTextureDay = &cubemapTextureDay;
+	scene.cubemapTextureNight = &cubemapTextureNight;
+	scene.currentTexture = scene.cubemapTextureNight;
 	// Set up the z-buffer
 	glDepthRange(-1, 1);  // Make the NDC a right handed coordinate system, 
 						  // with the camera pointing towards -z
 	glEnable(GL_DEPTH_TEST);  // Turn on z-buffer depth test
 	glDepthFunc(GL_LESS);  // Draws fragments that are closer to the screen in NDC
 	glEnable(GL_MULTISAMPLE);
-
-
-	createInstanceMatrixBuffer(patch.getBladeMatrices(), MAX_PATCH_DENSITY_BLADES);
-
-
-	SceneObjectInstanced* blades = new SceneObjectInstanced();
-	blades->createVertexArray(grassPositions, grassColors, grassIndices,
-		grassNormals, bladesShader, instanceVBO);
-	scene.sceneObjects.push_back(blades);
-
-	SceneObjectArrays* skybox = new SceneObjectArrays();
-	skybox->createVertexArray(cubePositions, skyboxShader);
-	scene.sceneObjects.push_back(skybox);
-
-	SceneObjectArrays* light = new SceneObjectArrays();
-	light->createVertexArray(cubePositions, lightShader);
-	scene.sceneObjects.push_back(light);
-
-
-
 }
 
 /**
@@ -323,10 +272,30 @@ glm::vec2 calculateSpiralPosition(int n) {
 	return { k, k - (m - n - t) };
 }
 
-void initPatchInstances() {
+void initSceneObjects(Patch& patch) {
+
+	patch.init(MAX_PATCH_DENSITY_BLADES, &patchShader);
+	createInstanceMatrixBuffer(patch.getBladeMatrices(), MAX_PATCH_DENSITY_BLADES);
+
+	SceneObjectArrays* skybox = new SceneObjectArrays(cubePositions, skyboxShader);
+	scene.sceneObjects.push_back(skybox);
+
+	SceneObjectArrays* light = new SceneObjectArrays(cubePositions, lightShader);
+	scene.sceneObjects.push_back(light);
+	scene.light = light;
+
 	for (int i = 0; i < MAX_PATCHES; i++) {
+		
 		glm::vec2 position = calculateSpiralPosition(i) * 10.0f;
-		patchInstances[i].init(patch.createPatchInstance(), glm::translate(position.x, 0, position.y));
+		SceneObjectIndexed* patchSceneObject = new SceneObjectIndexed(grassPatchPositions, grassPatchColors,
+			grassPatchIndices, grassPatchNormals, patchShader);
+		patchSceneObject->model = glm::translate(position.x, 0, position.y);
+		scene.patches.push_back(patchSceneObject);
+
+		SceneObjectInstanced* blades = new SceneObjectInstanced(grassPositions, grassColors,
+			grassIndices, grassNormals, instanceMatrixBuffer, bladesShader);
+		blades->model = patchSceneObject->model;
+		scene.blades.push_back(blades);
 	}
 }
 
@@ -343,105 +312,11 @@ void initIMGUI(GLFWwindow* window) {
 	ImGui_ImplOpenGL3_Init("#version 330 core");
 }
 
-/* Draws the scene with grass blades.
- */
-void drawScene() {
-	int width, height;
-	glfwGetWindowSize(window, &width, &height); 
-	glm::mat4 projection = glm::perspectiveFovRH_NO(70.0f, (float)width,
-		(float)height, .01f, 1000.0f); // FIX: not every frame
-	glm::mat4 view = glm::lookAt(
-		camera.getCamPosition(),
-		camera.getCamPosition() + camera.getCamForward(), glm::vec3(0, 1, 0));
-
-	for (int i = 0; i < config.numPatches; i++) {
-		drawPatch(patchInstances[i], projection, view);
-	}
-
-	drawLight(projection, view);
-	drawSkybox(projection, view);
-
-}
-
 void createInstanceMatrixBuffer(glm::mat4* modelMatrices, const unsigned int numInstances) {
-	GLCall(glGenBuffers(1, &instanceVBO));
-	GLCall(glBindBuffer(GL_ARRAY_BUFFER, instanceVBO));
+	GLCall(glGenBuffers(1, &instanceMatrixBuffer));
+	GLCall(glBindBuffer(GL_ARRAY_BUFFER, instanceMatrixBuffer));
 	GLCall(glBufferData(GL_ARRAY_BUFFER, numInstances * sizeof(glm::mat4), modelMatrices, GL_STATIC_DRAW));
 	GLCall(glBindBuffer(GL_ARRAY_BUFFER, 0));
-}
-
-/* Draws a triangular patch of grass with the specified rotation.
- */
-void drawPatch(PatchInstance& patchInstance, glm::mat4 projection, glm::mat4 view) {
-	patchShader.use();
-	patchShader.setMat4("projection", projection);
-	patchShader.setMat4("view", view);
-
-	// The rotation is applied to the patch, but not to the blades on the patch
-	glm::mat4 model = patchInstance.getPatchMatrix();
-	patchShader.setMat4("model", model);
-	patchShader.setFloat("ambientStrength", config.ambientStrength);
-	patchShader.setVec3("lightPos", config.lightPosition);
-	patchShader.setVec4("lightColor", config.lightColor);
-	patchShader.setFloat("lightIntensity", config.lightIntensity);
-
-	patchInstance.getPatchInstance()->draw(scene);
-
-	drawGrass(projection, view, model);
-
-}
-
-void drawGrass(glm::mat4 projection, glm::mat4 view, glm::mat4 model) {
-
-	bladesShader.use();
-	bladesShader.setMat4("projection", projection);
-	bladesShader.setMat4("view", view);
-	bladesShader.setMat4("model", model);
-	bladesShader.setFloat("ambientStrength", config.ambientStrength);
-	bladesShader.setVec3("lightPos", config.lightPosition);
-	bladesShader.setFloat("currentTime", glfwGetTime());
-	bladesShader.setFloat("windStrength", config.windStrength);
-	bladesShader.setFloat("swayReach", config.swayReach);
-	bladesShader.setVec2("windDirection", config.windDirection);
-	bladesShader.setVec4("lightColor", config.lightColor);
-	bladesShader.setFloat("lightIntensity", config.lightIntensity);
-	scene.sceneObjects[0]->draw(scene);
-	//grass.drawSceneObjectInstanced(config.patchDensity, instanceVBO, 0);
-}
-
-void drawLight(glm::mat4 projection, glm::mat4 view) {
-	lightShader.use();
-	glm::mat4 model = glm::translate(glm::mat4(1), config.lightPosition) * glm::scale(glm::mat4(1), glm::vec3(config.lightIntensity *0.1));
-	lightShader.setMat4("projection", projection);
-	lightShader.setMat4("view", view);
-	lightShader.setMat4("model", model);
-	lightShader.setVec4("color", config.lightColor);
-	scene.sceneObjects[2]->draw(scene);
-	//light.draw();
-
-
-}
-
-/* Draws skybox. Should be called first to ensure skybox is drawn behind the
- * rest of the scene. Draws either a day or night skybox depending
- * on what the user sets the GUI to.
- */
-void drawSkybox(glm::mat4 projection, glm::mat4 view) {
-	GLCall(glDepthFunc(GL_LEQUAL));  // Change depth function so depth test passes when values are equal to depth buffer's content
-	skyboxShader.use();
-	skyboxShader.setMat4("projection", projection);
-	skyboxShader.setMat4("view", view);
-	if (config.skyboxType == SkyboxType::DAY) {
-		cubemapTextureDay.bindTextureCubeMap();
-		skyboxShader.setInt("skybox", cubemapTextureDay.getTextureID());
-	}
-	else if (config.skyboxType == SkyboxType::NIGHT) {
-		cubemapTextureNight.bindTextureCubeMap();
-		skyboxShader.setInt("skybox", cubemapTextureNight.getTextureID());
-	}
-	//skybox.draw();
-	scene.sceneObjects[1]->draw(scene);
-	GLCall(glDepthFunc(GL_LESS));
 }
 
 /* Draws the GUI that lets the user control the light, skybox, grass and wind.
@@ -456,28 +331,34 @@ void drawGui() {
 		ImGui::Begin("Settings");
 
 		ImGui::Text("Light Settings");
-		ImGui::SliderFloat("Ambient Light Strength", &config.ambientStrength, 0.1, 1.0);
-		ImGui::DragFloat3("Light Position", (float*)&config.lightPosition, 0.1, -100, 100);
-		ImGui::ColorEdit4("Light Color", (float*)&config.lightColor);
-		ImGui::SliderFloat("Light Intensity", &config.lightIntensity, 0.0, 10.0);
-
+		ImGui::SliderFloat("Ambient Light Strength", &scene.config.ambientStrength, 0.1, 1.0);
+		ImGui::DragFloat3("Light Position", (float*)&scene.config.lightPosition, 0.1, -100, 100);
+		ImGui::ColorEdit4("Light Color", (float*)&scene.config.lightColor);
+		ImGui::SliderFloat("Light Intensity", &scene.config.lightIntensity, 0.0, 10.0);
+	
 		ImGui::Separator();
 		ImGui::Text("Skybox Settings");
-		if (ImGui::RadioButton("Day", config.skyboxType == SkyboxType::DAY)) { config.skyboxType = SkyboxType::DAY; } ImGui::SameLine();
-		if (ImGui::RadioButton("Night", config.skyboxType == SkyboxType::NIGHT)) { config.skyboxType = SkyboxType::NIGHT; }
+		if (ImGui::RadioButton("Day", scene.config.skyboxType == SkyboxType::DAY)) { 
+			scene.config.skyboxType = SkyboxType::DAY;
+			scene.currentTexture = scene.cubemapTextureDay;
+		} ImGui::SameLine();
+		if (ImGui::RadioButton("Night", scene.config.skyboxType == SkyboxType::NIGHT)) {
+			scene.config.skyboxType = SkyboxType::NIGHT;
+			scene.currentTexture = scene.cubemapTextureNight;
+		}
 
 		ImGui::Separator();
 		ImGui::Text("Grass Settings");
 
-		ImGui::SliderInt("Number of patches", &config.numPatches, 1, MAX_PATCHES);
-		ImGui::SliderInt("Patch density", &scene.numSceneObjects, 1, MAX_PATCH_DENSITY_BLADES);
-		ImGui::InputInt("Patch density value:", &config.patchDensity, 100, 1000);
-		config.patchDensity = glm::clamp(config.patchDensity, 0, (int)MAX_PATCH_DENSITY_BLADES);
+		ImGui::SliderInt("Number of patches", &scene.config.numPatches, 1, MAX_PATCHES);
+		ImGui::SliderInt("Patch density", &scene.config.patchDensity, 1, MAX_PATCH_DENSITY_BLADES);
+		//ImGui::InputInt("Patch density value:", &scene.config.patchDensity, 100, 1000);
+		scene.config.patchDensity = glm::clamp(scene.config.patchDensity, 0, (int)MAX_PATCH_DENSITY_BLADES);
 
 		ImGui::Text("Wind Settings");
-		ImGui::SliderFloat("Sway Reach", &config.swayReach, 0.01, 0.3);
-		ImGui::SliderFloat("Wind Strength", &config.windStrength, 0.0, 10.0);
-		ImGui::SliderFloat2("Wind Direction", (float*)&config.windDirection, -1.0, 1.0);
+		ImGui::SliderFloat("Sway Reach", &scene.config.swayReach, 0.01, 0.3);
+		ImGui::SliderFloat("Wind Strength", &scene.config.windStrength, 0.0, 10.0);
+		ImGui::SliderFloat2("Wind Direction", (float*)&scene.config.windDirection, -1.0, 1.0);
 		ImGui::Separator();
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		ImGui::SliderFloat3("Camera Position", (float*)&camera.camPosition, -50, 50);
