@@ -20,15 +20,16 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 
+#include "patch.h"
 #include "shader.h"
 #include "glmutils.h"
 #include "primitives.h"
 #include "camera.h"
-#include "scene_object.h"
 #include "debug.h"
-#include "patch.h"
 #include "scene.h"
+#include "scene_object.h"
 #include "scene_object_instanced.h"
+#include "scene_object_indexed.h"
 #include "scene_object_arrays.h"
 
 // Constants

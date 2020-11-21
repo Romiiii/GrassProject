@@ -5,40 +5,44 @@
 #ifndef PRIMITIVES_H
 #define PRIMITIVES_H
 
+#include <vector>
+#include <glm\glm.hpp>
+#include <string>
 
-std::vector<float> grassPositions{ 0.0f, 0.0f, 0.0f,
+
+static std::vector<float> grassPositions{ 0.0f, 0.0f, 0.0f,
 								   0.1f, 0.0f, 0.0f,
 								   0.2f, 0.5f, 0.0f };
 
-std::vector<unsigned int> grassIndices{ 0, 1, 2 };
+static std::vector<unsigned int> grassIndices{ 0, 1, 2 };
 
-std::vector<float> grassColors{ .46f, .50f, .17f, 1.f,
+static std::vector<float> grassColors{ .46f, .50f, .17f, 1.f,
 								 .46f, .50f, .17f, 1.f,
 								.38f, .47f, .17f, 1.f};
 
-std::vector<float> grassNormals{ 0.0f, 0.0f, 1.0f,
+static std::vector<float> grassNormals{ 0.0f, 0.0f, 1.0f,
 								   0.0f, 0.0f, 1.0f,
 								   0.0f, 0.0f, 1.0f };
 
-std::vector<float> grassPatchPositions{ -5.0f, 0.0f, -5.0f,
+static std::vector<float> grassPatchPositions{ -5.0f, 0.0f, -5.0f,
 								   5.0f, 0.0f, -5.0f,
 								   5.0f, 0.0f, 5.0f,
 								   -5.0f, 0.0f, 5.0f};
 
-std::vector<unsigned int> grassPatchIndices{ 0, 1, 3, 
+static std::vector<unsigned int> grassPatchIndices{ 0, 1, 3,
 											 1, 2, 3};
 
-std::vector<float> grassPatchColors{ .6f, .58f, .27f, 1.f,
+static std::vector<float> grassPatchColors{ .6f, .58f, .27f, 1.f,
 								.6f, .58f, .27f, 1.f,
 								.6f, .58f, .27f, 1.f,
 								.6f, .58f, .27f, 1.f, };
 
-std::vector<float> grassPatchNormals{ 0.0f, 1.0f, 0.0f,
+static std::vector<float> grassPatchNormals{ 0.0f, 1.0f, 0.0f,
 								   0.0f, 1.0f, 0.0f,
 								   0.0f, 1.0f, 0.0f,
 								   0.0f, 1.0f, 0.0f };
 
-std::vector<float> cubePositions{
+static std::vector<float> cubePositions{
 	-0.5f, 0.5f, -0.5f,
 	-0.5f, -0.5f, -0.5f,
 	0.5f, -0.5f, -0.5f,
@@ -81,7 +85,7 @@ std::vector<float> cubePositions{
 	-0.5f, -0.5f, 0.5f,
 	0.5f, -0.5f, 0.5f };
 
-float length = 1.0;
+static float length = 1.0;
 //    v5----- v4
 //   /|      /|
 //  v1------v0|
@@ -89,7 +93,7 @@ float length = 1.0;
 //  | |v6---|-|v7
 //  |/      |/
 //  v2------v3
-glm::vec3 p[] = {
+static glm::vec3 p[] = {
 		glm::vec3{length, length, length},
 		glm::vec3{-length, length, length},
 		glm::vec3{-length, -length, length},
@@ -101,7 +105,7 @@ glm::vec3 p[] = {
 		glm::vec3{length, -length, -length}
 
 };
-std::vector<uint32_t> indices({
+static std::vector<uint32_t> indices({
 							0,1,2, 0,2,3,
 							4,5,6, 4,6,7,
 							8,9,10, 8,10,11,
@@ -109,7 +113,7 @@ std::vector<uint32_t> indices({
 							16,17,18, 16,18,19,
 							20,21,22, 20,22,23
 	});
-std::vector<glm::vec3> positions({ p[0],p[1],p[2], p[3], // v0-v1-v2-v3
+static std::vector<glm::vec3> positions({ p[0],p[1],p[2], p[3], // v0-v1-v2-v3
 						p[4],p[0],p[3], p[7], // v4-v0-v3-v7
 						p[5],p[4],p[7], p[6], // v5-v4-v7-v6
 						p[1],p[5],p[6], p[2], // v1-v5-v6-v2
@@ -126,7 +130,7 @@ std::vector<glm::vec3> positions({ p[0],p[1],p[2], p[3], // v0-v1-v2-v3
  * -Z (back)		lf
  */
 
-std::vector<std::string> facesDay
+static std::vector<std::string> facesDay
 {
 		"assets/textures/skybox_day/hills_ft.tga",
 		"assets/textures/skybox_day/hills_bk.tga",
@@ -136,7 +140,7 @@ std::vector<std::string> facesDay
 		"assets/textures/skybox_day/hills_lf.tga" };
 
 
-std::vector<std::string> facesNight
+static std::vector<std::string> facesNight
 {
 	"assets/textures/skybox_night/hills_ft.png",
 	"assets/textures/skybox_night/hills_bk.png",

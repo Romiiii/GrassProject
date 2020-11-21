@@ -4,7 +4,7 @@
 /*
  * Generate a random number between lower and upper.
  */
-float generateRandomNumber(float lower, float upper) {
+inline float generateRandomNumber(float lower, float upper) {
 	return rand() / (float)RAND_MAX * (upper - lower) + lower;
 }
 

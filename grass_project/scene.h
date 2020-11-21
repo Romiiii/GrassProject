@@ -5,8 +5,6 @@
 #include "scene_object.h"
 #include "shader.h"
 
-
-
 enum class WindType {
 	TRIG_SIMPLE,
 	TRIG_COMPLEX_1,
