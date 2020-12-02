@@ -23,7 +23,7 @@ public:
 		const std::vector<float>& colors,
 		const std::vector<unsigned int>& indices,
 		const std::vector<float>& normals,
-		unsigned int instanceMatrixBuffer, Shader& shaderProgram, const std::vector<float>* uvs = NULL);
+		unsigned int instanceMatrixBuffer, ShaderProgram& shaderProgram, const std::vector<float>* uvs = NULL);
 
 	void createVertexArray(
 		const std::vector<float>& positions, const std::vector<float>& colors, const std::vector<unsigned int>& indices, const std::vector<float>& normals, unsigned int instanceMatrixBuffer, const std::vector<float>* uvs = NULL);

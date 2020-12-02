@@ -18,7 +18,7 @@
 
 class SceneObjectArrays : public SceneObject {
 public:
-	SceneObjectArrays(const std::vector<float>& positions, Shader& shaderProgram);
+	SceneObjectArrays(const std::vector<float>& positions, ShaderProgram& shaderProgram);
 
 	/* Creates the Vertex Array Object and saves
 	* positions.

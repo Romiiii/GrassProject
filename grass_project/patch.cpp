@@ -13,7 +13,7 @@ Patch::~Patch() {
 	delete bladeMatrices;
 }
 
-void Patch::init(int numBlades, Shader* shaderProgram) {
+void Patch::init(int numBlades, ShaderProgram* shaderProgram) {
 	this->numBlades = numBlades;
 	this->shaderProgram = shaderProgram;
 	bladeMatrices = new glm::mat4[numBlades];

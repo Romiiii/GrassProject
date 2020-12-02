@@ -1,6 +1,6 @@
 #include "scene_object_arrays.h"
 
-SceneObjectArrays::SceneObjectArrays(const std::vector<float>& positions, Shader& shaderProgram) 
+SceneObjectArrays::SceneObjectArrays(const std::vector<float>& positions, ShaderProgram& shaderProgram) 
 	: SceneObject(shaderProgram) {
 	createVertexArray(positions);
 }
@@ -9,7 +9,7 @@ SceneObjectArrays::SceneObjectArrays(const std::vector<float>& positions, Shader
 	* positions.
 	*/
 void SceneObjectArrays::createVertexArray(const std::vector<float>& positions) {
-	shader.use();
+	shaderProgram.use();
 	GLCall(glGenVertexArrays(1, &VAO));
 	GLCall(glBindVertexArray(VAO));
 	createArrayBuffer(positions);
@@ -19,12 +19,9 @@ void SceneObjectArrays::createVertexArray(const std::vector<float>& positions) {
 }
 
 void SceneObjectArrays::draw(Scene& scene) {
-	if (shader.use()) {
-		setUniforms(scene);
-	}
-	else {
-		std::cout << "ERROR: Shader is not initialized." << std::endl;
-	}
+	shaderProgram.use();
+	setUniforms(scene);
+
 	GLCall(glBindVertexArray(VAO));
 	GLCall(glDrawArrays(GL_TRIANGLES, 0, vertexCount));
 	GLCall(glBindVertexArray(0));

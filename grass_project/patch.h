@@ -3,7 +3,7 @@
 
 #include <glm/glm.hpp>
 #include <vector>
-#include "shader.h"
+#include "shader_program.h"
 
 class Patch {
 public:
@@ -11,7 +11,7 @@ public:
 
 	~Patch();
 
-	void init(int numBlades, Shader* shaderProgram);
+	void init(int numBlades, ShaderProgram* shaderProgram);
 
 	/* Initializes the patch by calculating the coordinates of the grass/billboards.
 	 * Coordinates are sampled uniformly. A random rotation of the grass is
@@ -29,7 +29,7 @@ public:
 private:
 	glm::mat4* bladeMatrices = nullptr;
 	int numBlades = 0;
-	Shader* shaderProgram = nullptr;
+	ShaderProgram* shaderProgram = nullptr;
 };
 
 

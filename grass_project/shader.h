@@ -1,5 +1,5 @@
 /*
- * Shader class that handles initializing the shader, activating the shader
+ * Shader class that handles initializing the shaderProgram, activating the shaderProgram
  * and setting uniforms. 
  */
 #ifndef SHADER_H
@@ -15,52 +15,31 @@
 
 class Shader {
 public:
-    unsigned int ID;
 
-	Shader();
-	Shader(const char* vertexPath, const char* fragmentPath);
+	/* Initialize, compile and link vertex and fragment shaderProgram.
+	 * \param vertexPath - path to vertex shaderProgram code
+	 * \param framentPath - path to fragment shaderProgram code
+	 */
+	Shader(const char* shaderPath, GLenum type);
 	~Shader();
 
-	/* Initialize, compile and link vertex and fragment shader.
-	 * \param vertexPath - path to vertex shader code
-	 * \param framentPath - path to fragment shader code
-	 */
-	void initialize(const char* vertexPath, const char* fragmentPath);
 	bool compile();
 	bool isInitialized();
 
-	/* Activate the shader.
-	 */
-	bool use() const;
-	unsigned int getShaderID();
-
-	/* Utility functions to set uniforms. 
-	 */
-	void setBool(const std::string& name, bool value) const;
-	void setInt(const std::string& name, int value) const;
-	void setFloat(const std::string& name, float value) const;
-	void setVec2(const std::string& name, const glm::vec2& value) const;
-	void setVec2(const std::string& name, float x, float y) const;
-	void setVec3(const std::string& name, const glm::vec3& value) const;
-	void setVec3(const std::string& name, float x, float y, float z) const;
-	void setVec4(const std::string& name, const glm::vec4& value) const;
-	void setVec4(const std::string& name, float x, float y, float z, float w) const;
-	void setMat2(const std::string& name, const glm::mat2& mat) const;
-	void setMat3(const std::string& name, const glm::mat3& mat) const;
-	void setMat4(const std::string& name, const glm::mat4& mat) const;
-	const char* getFragmentPath();
+	unsigned int getShaderId();
 
 private:
     bool initialized = false;
-	unsigned int vertex;
-	unsigned int fragment;
-	const char* vertexPath;
-	const char* fragmentPath;
+	unsigned int id = 0;
+	const char* path = nullptr;
+	GLenum type = 0;
 
-	/* Utility function for checking shader compilation or linking errors. 
-	 * \param shader - Shader ID 
+	std::string shaderTypeToString();
+
+	/* Utility function for checking shaderProgram compilation or linking errors. 
+	 * \param shaderProgram - Shader id 
 	 * \param type - Shader type as all caps string
 	 */
-	bool checkCompileErrors(GLuint shader, std::string type);
+	bool checkCompileErrors();
 };
 #endif

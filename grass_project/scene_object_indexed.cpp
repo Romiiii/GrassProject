@@ -2,7 +2,7 @@
 
 
 SceneObjectIndexed::SceneObjectIndexed(const std::vector<float>& positions, const std::vector<float>& colors, const std::vector<unsigned int>& indices, const std::vector<float>& normals,
-	Shader& shaderProgram) 
+	ShaderProgram& shaderProgram) 
 	: SceneObject(shaderProgram) {
 	createVertexArray(positions, colors, indices, normals);
 }
@@ -11,15 +11,15 @@ SceneObjectIndexed::SceneObjectIndexed(const std::vector<float>& positions, cons
 	* positions, colors, indices and normals.
 	*/
 void SceneObjectIndexed::createVertexArray(const std::vector<float>& positions, const std::vector<float>& colors, const std::vector<unsigned int>& indices, const std::vector<float>& normals) {
-	shader.use();
+	shaderProgram.use();
 	glGenVertexArrays(1, &VAO);
 	// Bind vertex array object
 	glBindVertexArray(VAO);
 
 	// Set attributes
-	setVertexShaderAttribute("pos", positions, 3, shader);
-	setVertexShaderAttribute("color", colors, 4, shader);
-	setVertexShaderAttribute("normal", normals, 3, shader);
+	setVertexShaderAttribute("pos", positions, 3, shaderProgram);
+	setVertexShaderAttribute("color", colors, 4, shaderProgram);
+	setVertexShaderAttribute("normal", normals, 3, shaderProgram);
 
 	// Create and bind the EBO
 	createElementArrayBuffer(indices);
@@ -29,12 +29,9 @@ void SceneObjectIndexed::createVertexArray(const std::vector<float>& positions, 
 
 
 void SceneObjectIndexed::draw(Scene& scene) {
-	if (shader.use()) {
-		setUniforms(scene);
-	}
-	else {
-		std::cout << "ERROR: Shader is not initialized." << std::endl;
-	}
+	shaderProgram.use();
+	setUniforms(scene);
+
 	GLCall(glBindVertexArray(VAO));
 	GLCall(glDrawElements(GL_TRIANGLES, vertexCount, GL_UNSIGNED_INT, 0));
 }

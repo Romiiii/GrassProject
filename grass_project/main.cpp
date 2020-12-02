@@ -22,6 +22,7 @@
 
 #include "patch.h"
 #include "shader.h"
+#include "shader_program.h"
 #include "glmutils.h"
 #include "primitives.h"
 #include "camera.h"
@@ -45,10 +46,19 @@ Patch patch;
 
 glm::mat4 lightMatrix;
 
-Shader bladesShader;
-Shader patchShader;
-Shader skyboxShader;
-Shader lightShader;
+Shader* bladesVertexShader;
+Shader* patchVertexShader;
+Shader* skyboxVertexShader;
+Shader* lightVertexShader;
+Shader* bladesFragmentShader;
+Shader* patchFragmentShader;
+Shader* skyboxFragmentShader;
+Shader* lightFragmentShader;
+
+ShaderProgram* bladesShaderProgram;
+ShaderProgram* patchShaderProgram;
+ShaderProgram* skyboxShaderProgram;
+ShaderProgram* lightShaderProgram;
 unsigned int instanceMatrixBuffer;
 
 
@@ -86,15 +96,28 @@ void processInput(GLFWwindow* window);
 void keyInputCallback(GLFWwindow* window, int button, int other, int action, int mods);
 void cursorInputCallback(GLFWwindow* window, double posX, double posY);
 
+void createComputeShader();
+void cleanUp();
+
 int main()
 {
 	window = initGLFWWindow();
+
 	assert(window != NULL, "ERROR:: Failed to create GLFW window");
 
 	// GLAD: load all OpenGL function pointers
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
-		std::cout << "Failed to initialize GLAD" << std::endl;
+		std::cout << "ERROR:: Failed to initialize GLAD" << std::endl;
+		return -1;
+	}
+
+	GLint major, minor;
+	glGetIntegerv(GL_MAJOR_VERSION, &major);
+	glGetIntegerv(GL_MINOR_VERSION, &minor);
+
+	if (!(major >= 4 && minor >= 3)) {
+		std::cout << "ERROR:: Wrong OpenGL version" << std::endl;
 		return -1;
 	}
 
@@ -134,7 +157,7 @@ int main()
 		// Clear the depth buffer (aka z-buffer) every new frame
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		bladesShader.use();
+		bladesShaderProgram->use();
 
 		int width, height;
 		glfwGetWindowSize(window, &width, &height); 
@@ -165,20 +188,14 @@ int main()
 		lastFrame = currentFrame;
 	}
 
-	// Cleanup
-	ImGui_ImplOpenGL3_Shutdown();
-	ImGui_ImplGlfw_Shutdown();
-	ImGui::DestroyContext();
-
-	// GLFW: terminate, clearing all previously allocated GLFW resources.
-	glfwTerminate();
+	cleanUp();
 	return 0;
 }
 
 GLFWwindow* initGLFWWindow() {
 	// GLFW: initialize and configure
 	glfwInit();
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_SAMPLES, 4);
@@ -201,6 +218,7 @@ GLFWwindow* initGLFWWindow() {
 	// Hide the cursor and capture it
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	glfwSetKeyCallback(window, keyInputCallback);
+
 	return window;
 }
 
@@ -210,10 +228,15 @@ GLFWwindow* initGLFWWindow() {
  * Sets up the z-buffer.
  */
 void initShadersAndTextures() {
-	// Initialize shader
-	bladesShader.initialize("assets/shaders/blades.vert", "assets/shaders/blades.frag");
+	bladesVertexShader = new Shader("assets/shaders/blades.vert", GL_VERTEX_SHADER);
+	bladesFragmentShader = new Shader("assets/shaders/blades.frag", GL_FRAGMENT_SHADER);
 
-	patchShader.initialize("assets/shaders/patch.vert", "assets/shaders/patch.frag");
+	bladesShaderProgram = new ShaderProgram({ bladesVertexShader, bladesFragmentShader });
+
+	patchVertexShader = new Shader("assets/shaders/patch.vert", GL_VERTEX_SHADER);
+	patchFragmentShader = new Shader("assets/shaders/patch.frag", GL_FRAGMENT_SHADER);
+
+	patchShaderProgram = new ShaderProgram({ patchVertexShader, patchFragmentShader });
 
 	std::string billboardGrassFileNameNoise1 = "assets/textures/misc/perlin_noise_1.tga";
 	std::string billboardGrassFileNameNoise2 = "assets/textures/misc/perlin_noise_2.tga";
@@ -222,16 +245,27 @@ void initShadersAndTextures() {
 
 
 	// Setup the Skybox Shaders
-	skyboxShader.initialize("assets/shaders/skybox.vert", "assets/shaders/skybox.frag");
+	skyboxVertexShader = new Shader("assets/shaders/skybox.vert", GL_VERTEX_SHADER);
+	skyboxFragmentShader = new Shader("assets/shaders/skybox.frag", GL_FRAGMENT_SHADER);
+	skyboxShaderProgram = new ShaderProgram({ skyboxVertexShader, skyboxFragmentShader });
+
 	//skyboxShader.use();
 	cubemapTextureDay.loadTextureCubeMap(facesDay, false);
 	cubemapTextureNight.loadTextureCubeMap(facesNight);
 
-	lightShader.initialize("assets/shaders/light.vert", "assets/shaders/light.frag");
+	lightVertexShader = new Shader("assets/shaders/light.vert", GL_VERTEX_SHADER);
+	lightFragmentShader = new Shader("assets/shaders/light.frag", GL_FRAGMENT_SHADER);
+	lightShaderProgram = new ShaderProgram({ lightVertexShader, lightFragmentShader });
+
+
+
 
 	scene.cubemapTextureDay = &cubemapTextureDay;
 	scene.cubemapTextureNight = &cubemapTextureNight;
 	scene.currentTexture = scene.cubemapTextureNight;
+
+
+
 	// Set up the z-buffer
 	glDepthRange(-1, 1);  // Make the NDC a right handed coordinate system, 
 						  // with the camera pointing towards -z
@@ -275,13 +309,13 @@ glm::vec2 calculateSpiralPosition(int n) {
 
 void initSceneObjects(Patch& patch) {
 
-	patch.init(MAX_PATCH_DENSITY_BLADES, &patchShader);
+	patch.init(MAX_PATCH_DENSITY_BLADES, patchShaderProgram);
 	createInstanceMatrixBuffer(patch.getBladeMatrices(), MAX_PATCH_DENSITY_BLADES);
 
-	SceneObjectArrays* skybox = new SceneObjectArrays(cubePositions, skyboxShader);
+	SceneObjectArrays* skybox = new SceneObjectArrays(cubePositions, *skyboxShaderProgram);
 	scene.sceneObjects.push_back(skybox);
 
-	SceneObjectArrays* light = new SceneObjectArrays(cubePositions, lightShader);
+	SceneObjectArrays* light = new SceneObjectArrays(cubePositions, *lightShaderProgram);
 	scene.sceneObjects.push_back(light);
 	scene.light = light;
 
@@ -289,12 +323,12 @@ void initSceneObjects(Patch& patch) {
 		
 		glm::vec2 position = calculateSpiralPosition(i) * 10.0f;
 		SceneObjectIndexed* patchSceneObject = new SceneObjectIndexed(grassPatchPositions, grassPatchColors,
-			grassPatchIndices, grassPatchNormals, patchShader);
+			grassPatchIndices, grassPatchNormals, *patchShaderProgram);
 		patchSceneObject->model = glm::translate(position.x, 0, position.y);
 		scene.patches.push_back(patchSceneObject);
 
 		SceneObjectInstanced* blades = new SceneObjectInstanced(grassPositions, grassColors,
-			grassIndices, grassNormals, instanceMatrixBuffer, bladesShader);
+			grassIndices, grassNormals, instanceMatrixBuffer, *bladesShaderProgram);
 		blades->model = patchSceneObject->model;
 		scene.blades.push_back(blades);
 	}
@@ -425,9 +459,10 @@ void processInput(GLFWwindow* window) {
 	}
 	if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) {
 		if (!rWasPressed) {
-			bladesShader.compile();
-			patchShader.compile();
-			skyboxShader.compile();
+			bladesShaderProgram->reloadShaders();
+			patchShaderProgram->reloadShaders();
+			skyboxShaderProgram->reloadShaders();
+			lightShaderProgram->reloadShaders();
 			rWasPressed = true;
 			
 		}
@@ -461,10 +496,42 @@ void cursorInputCallback(GLFWwindow* window, double xpos, double ypos)
 	camera.processMouseMovement(xoffset, yoffset);
 }
 
+
 void keyInputCallback(GLFWwindow* window, int button, int other, int action, int mods) {
 
 	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
 		isPaused = !isPaused;
 		glfwSetInputMode(window, GLFW_CURSOR, isPaused ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
 	}
+}
+
+void createComputeShader()
+{
+	int shaderID = glCreateShader(GL_COMPUTE_SHADER);
+
+
+}
+
+void cleanUp() 
+{
+	// Cleanup
+	ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplGlfw_Shutdown();
+	ImGui::DestroyContext();
+
+	// GLFW: terminate, clearing all previously allocated GLFW resources.
+	glfwTerminate();
+
+	delete bladesVertexShader;
+	delete bladesFragmentShader;
+	delete bladesShaderProgram;
+	delete patchVertexShader;
+	delete patchFragmentShader;
+	delete patchShaderProgram;
+	delete skyboxVertexShader;
+	delete skyboxFragmentShader;
+	delete skyboxShaderProgram;
+	delete lightVertexShader;
+	delete lightFragmentShader;
+	delete lightShaderProgram;
 }

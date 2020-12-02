@@ -6,19 +6,19 @@ SceneObjectInstanced::SceneObjectInstanced(
 	const std::vector<unsigned int>& indices, 
 	const std::vector<float>& normals, 
 	unsigned int instanceMatrixBuffer, 
-	Shader& shaderProgram, const std::vector<float>* uvs)
+	ShaderProgram& shaderProgram, const std::vector<float>* uvs)
 	: SceneObject(shaderProgram) {
 	createVertexArray(positions, colors, indices, normals, instanceMatrixBuffer, uvs);
 
 }
 
 void SceneObjectInstanced::createVertexArray(const std::vector<float>& positions, const std::vector<float>& colors, const std::vector<unsigned int>& indices, const std::vector<float>& normals, unsigned int instanceMatrixBuffer, const std::vector<float>* uvs) {
-	shader.use();
+	shaderProgram.use();
 	GLCall(glGenVertexArrays(1, &VAO));
 	// Bind vertex array object
 	GLCall(glBindVertexArray(VAO));
 
-	int instanceMatrixAttributeLocation = glGetAttribLocation(shader.getShaderID(), "instanceMatrix");
+	int instanceMatrixAttributeLocation = glGetAttribLocation(shaderProgram.getShaderProgramId(), "instanceMatrix");
 	GLCall(glEnableVertexAttribArray(instanceMatrixAttributeLocation));
 	GLCall(glBindBuffer(GL_ARRAY_BUFFER, instanceMatrixBuffer)); // this attribute comes from a different vertex buffer
 			// set attribute pointers for matrix (4 times vec4)
@@ -37,11 +37,11 @@ void SceneObjectInstanced::createVertexArray(const std::vector<float>& positions
 	GLCall(glVertexAttribDivisor(instanceMatrixAttributeLocation + 3, 1));
 
 	// Set attributes
-	setVertexShaderAttribute("pos", positions, 3, shader);
-	setVertexShaderAttribute("color", colors, 4, shader);
-	setVertexShaderAttribute("normal", normals, 3, shader);
+	setVertexShaderAttribute("pos", positions, 3, shaderProgram);
+	setVertexShaderAttribute("color", colors, 4, shaderProgram);
+	setVertexShaderAttribute("normal", normals, 3, shaderProgram);
 	if (uvs != NULL) {
-		setVertexShaderAttribute("uvs", *uvs, 2, shader);
+		setVertexShaderAttribute("uvs", *uvs, 2, shaderProgram);
 	}
 
 
@@ -52,13 +52,9 @@ void SceneObjectInstanced::createVertexArray(const std::vector<float>& positions
 }
 
 void SceneObjectInstanced::draw(Scene& scene) {
-	//std::cout << shader->getShaderID() << std::endl;
-	if (shader.use()) {
-		setUniforms(scene);
-	}
-	else {
-		std::cout << "ERROR: Shader is not initialized." << std::endl;
-	}
+	shaderProgram.use();
+	setUniforms(scene);
+
 	GLCall(glBindVertexArray(VAO));
 	//glBindBuffer(GL_ARRAY_BUFFER, instanceMatrixBuffer);
 	// Draw patchDensity triangles of 3 vertices each
