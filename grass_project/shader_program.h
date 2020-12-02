@@ -3,11 +3,12 @@
 
 #include "shader.h"
 #include <vector>
+#include <string>
 
 class ShaderProgram {
 public:
 	// Assumes shaders are initialized
-	ShaderProgram(std::vector<Shader*> shaders);
+	ShaderProgram(std::vector<Shader*> shaders, const std::string& name);
 
 	unsigned int getShaderProgramId();
 
@@ -19,6 +20,8 @@ public:
 	void use() const;
 
 	void reloadShaders();
+
+	const std::string& getName();
 
 	/* Utility functions to set uniforms.
  */
@@ -42,6 +45,7 @@ private:
 	std::vector<Shader*> shaders;
 	// Probably something like
     // std::vector<Shader*> shaders;
+	std::string name;
 
 	void checkShaderProgramError();
 

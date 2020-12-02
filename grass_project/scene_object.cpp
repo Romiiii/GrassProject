@@ -91,7 +91,7 @@ void SceneObject::setVertexShaderAttribute(char *attributeName,
 	if (attributeLocation == -1) {
 
 		std::cout << "\x1B[01;93mWARNING: Attribute: " << attributeName << " - not found" << std::endl;
-		std::cout << "WARNING: Using shader: " << shaderProgram.getShaderProgramId() << "\x1B[0m" << std::endl;
+		std::cout << "WARNING: Using shader: " << shaderProgram.getName() << "\x1B[0m" << std::endl;
 	}
 	GLCall(glEnableVertexAttribArray(attributeLocation));
 	GLCall(glVertexAttribPointer(attributeLocation, dataSize, GL_FLOAT, GL_FALSE, 0, 0));

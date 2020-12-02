@@ -1,7 +1,7 @@
 #include "shader_program.h"
 #include "debug.h"
 
-ShaderProgram::ShaderProgram(std::vector<Shader*> shaders) : shaders(shaders) {
+ShaderProgram::ShaderProgram(std::vector<Shader*> shaders, const std::string& name) : shaders(shaders), name(name) {
 	id = glCreateProgram();
 	linkShaders();
 }
@@ -35,9 +35,6 @@ void ShaderProgram::use() const
 	glUseProgram(id);
 }
 
-
-
-
 void ShaderProgram::reloadShaders() 
 {
 	for (auto shader : shaders) {
@@ -46,6 +43,11 @@ void ShaderProgram::reloadShaders()
 	}
 	linkShaders();
 
+}
+
+const std::string& ShaderProgram::getName()
+{
+	return name;
 }
 
 void ShaderProgram::setBool(const std::string& name, bool value) const
@@ -116,8 +118,8 @@ void ShaderProgram::checkShaderProgramError()
 	if (!success)
 	{
 		glGetProgramInfoLog(id, 1024, NULL, infoLog);
-		std::cout << "ERROR::PROGRAM_LINKING_ERROR of type: "
-			<< "\n" << infoLog <<
+		std::cout << "ERROR::PROGRAM_LINKING_ERROR with name: "
+			<< name << "\n" << infoLog <<
 			"\n -- --------------------------------------------------- -- "
 			<< std::endl;
 	}

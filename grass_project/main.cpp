@@ -231,12 +231,12 @@ void initShadersAndTextures() {
 	bladesVertexShader = new Shader("assets/shaders/blades.vert", GL_VERTEX_SHADER);
 	bladesFragmentShader = new Shader("assets/shaders/blades.frag", GL_FRAGMENT_SHADER);
 
-	bladesShaderProgram = new ShaderProgram({ bladesVertexShader, bladesFragmentShader });
+	bladesShaderProgram = new ShaderProgram({ bladesVertexShader, bladesFragmentShader }, "BLADES SHADER");
 
 	patchVertexShader = new Shader("assets/shaders/patch.vert", GL_VERTEX_SHADER);
 	patchFragmentShader = new Shader("assets/shaders/patch.frag", GL_FRAGMENT_SHADER);
 
-	patchShaderProgram = new ShaderProgram({ patchVertexShader, patchFragmentShader });
+	patchShaderProgram = new ShaderProgram({ patchVertexShader, patchFragmentShader }, "PATCH SHADER");
 
 	std::string billboardGrassFileNameNoise1 = "assets/textures/misc/perlin_noise_1.tga";
 	std::string billboardGrassFileNameNoise2 = "assets/textures/misc/perlin_noise_2.tga";
@@ -247,7 +247,7 @@ void initShadersAndTextures() {
 	// Setup the Skybox Shaders
 	skyboxVertexShader = new Shader("assets/shaders/skybox.vert", GL_VERTEX_SHADER);
 	skyboxFragmentShader = new Shader("assets/shaders/skybox.frag", GL_FRAGMENT_SHADER);
-	skyboxShaderProgram = new ShaderProgram({ skyboxVertexShader, skyboxFragmentShader });
+	skyboxShaderProgram = new ShaderProgram({ skyboxVertexShader, skyboxFragmentShader }, "SKYBOX SHADER");
 
 	//skyboxShader.use();
 	cubemapTextureDay.loadTextureCubeMap(facesDay, false);
@@ -255,7 +255,7 @@ void initShadersAndTextures() {
 
 	lightVertexShader = new Shader("assets/shaders/light.vert", GL_VERTEX_SHADER);
 	lightFragmentShader = new Shader("assets/shaders/light.frag", GL_FRAGMENT_SHADER);
-	lightShaderProgram = new ShaderProgram({ lightVertexShader, lightFragmentShader });
+	lightShaderProgram = new ShaderProgram({ lightVertexShader, lightFragmentShader }, "LIGHT SHADER");
 
 
 
