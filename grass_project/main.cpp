@@ -54,12 +54,18 @@ Shader* bladesFragmentShader;
 Shader* patchFragmentShader;
 Shader* skyboxFragmentShader;
 Shader* lightFragmentShader;
+Shader* computeShader;
+Shader* computeFragmentShader;
 
 ShaderProgram* bladesShaderProgram;
 ShaderProgram* patchShaderProgram;
 ShaderProgram* skyboxShaderProgram;
 ShaderProgram* lightShaderProgram;
+ShaderProgram* computeShaderProgram;
+ShaderProgram* computeFragmentShaderProgram;
 unsigned int instanceMatrixBuffer;
+
+GLuint computeShaderTexture;
 
 
 Texture billboardGrassNoise1;
@@ -174,6 +180,21 @@ int main()
 		scene.updateDynamic();
 		scene.render();
 
+		//GLCall(glActiveTexture(GL_TEXTURE0 + computeShaderTexture));
+		//GLCall(glBindTexture(GL_TEXTURE_2D, computeShaderTexture));
+
+		computeShaderProgram->use();
+
+		glBindImageTexture(0, computeShaderTexture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA8);
+
+		glDispatchCompute(512 / 16, 512 / 16, 1);
+
+		//computeFragmentShaderProgram->use();
+
+
+
+
+
 		if (isPaused) {
 			drawGui();
 		}
@@ -257,6 +278,18 @@ void initShadersAndTextures() {
 	lightFragmentShader = new Shader("assets/shaders/light.frag", GL_FRAGMENT_SHADER);
 	lightShaderProgram = new ShaderProgram({ lightVertexShader, lightFragmentShader }, "LIGHT SHADER");
 
+	GLCall(glGenTextures(1, &computeShaderTexture));
+	glBindTexture(GL_TEXTURE_2D, computeShaderTexture);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 512, 512, 0, GL_RGBA, GL_FLOAT, 0);
+	glBindImageTexture(0, computeShaderTexture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA8);
+
+	computeShader = new Shader("assets/shaders/compute.comp", GL_COMPUTE_SHADER);
+	computeShaderProgram = new ShaderProgram({ computeShader }, "COMPUTE SHADER");
+	
+	//computeFragmentShader = new Shader("assets/shaders/compute.frag", GL_FRAGMENT_SHADER);
+	//computeFragmentShaderProgram = new ShaderProgram({ computeFragmentShader }, "COMPUTE FRAGMENT SHADER");
 
 
 
@@ -364,6 +397,8 @@ void drawGui() {
 	ImGui::SetNextWindowSize({ 0, 0 });
 	{
 		ImGui::Begin("Settings");
+
+		ImGui::Image((ImTextureID) computeShaderTexture, { 512,512 });
 
 		ImGui::Text("Light Settings");
 		ImGui::SliderFloat("Ambient Light Strength", &scene.config.ambientStrength, 0.1, 1.0);

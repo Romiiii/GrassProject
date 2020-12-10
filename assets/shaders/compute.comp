@@ -1,0 +1,12 @@
+#version 430 core
+
+writeonly uniform image2D writer;
+layout (local_size_x = 16, local_size_y = 16) in;
+void main()
+{
+vec2 coordinates = gl_GlobalInvocationID.xy;
+vec2 resolution = vec2(512,512);
+vec2 k = sign(cos(coordinates/resolution.yy*32.0));	
+imageStore(writer,ivec2(gl_GlobalInvocationID.xy),vec4(k.x*k.y));
+//imageStore(writer,ivec2(gl_GlobalInvocationID.xy),vec4(1,0,0,0));
+}
