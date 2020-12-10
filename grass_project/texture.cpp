@@ -41,6 +41,34 @@ unsigned int Texture::loadTexture(std::string fileName, bool alpha) {
 	return textureID;
 }
 
+void Texture::generateTexture(void* data, int width, int height, bool alpha) {
+	GLCall(glGenTextures(1, &textureID));
+	loadTextureData(data, width, height, alpha);
+}
+
+
+/* Loads a 2D texture from a specified file.
+ * \param fileName - texture's filename
+ * \param alpha - set to true if alpha channel should be read from texture
+ * \return textureID
+ */
+unsigned int Texture::loadTextureData(void* data, int width, int height, bool alpha) {
+	GLCall(glBindTexture(GL_TEXTURE_2D, textureID));
+
+	if (alpha) {
+		GLCall(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RED, GL_FLOAT, data));
+	}
+	else {
+		GLCall(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RED, GL_FLOAT, data));
+	}
+
+	GLCall(glGenerateMipmap(GL_TEXTURE_2D));
+	
+
+	return textureID;
+}
+
+
 /* Loads a cubemap texture from 6 individual texture faces.
  * Order:
  * +X (right)

@@ -752,7 +752,7 @@ static void ShowDemoWindowWidgets()
 
         if (ImGui::TreeNode("UTF-8 Text"))
         {
-            // UTF-8 test with Japanese characters
+            // UTF-8 perlinNoiseTexture with Japanese characters
             // (Needs a suitable font, try Noto, or Arial Unicode, or M+ fonts. Read misc/fonts/README.txt for details.)
             // - From C++11 you can use the u8"my text" syntax to encode literal strings as UTF-8
             // - For earlier compiler, you may be able to encode your sources as UTF-8 (e.g. Visual Studio save your file as 'UTF-8 without signature')
@@ -941,7 +941,7 @@ static void ShowDemoWindowWidgets()
                 ImGui::PushID(i);
                 if (ImGui::Selectable("Sailor", &selected[i], 0, ImVec2(50,50)))
                 {
-                    // Note: We _unnecessarily_ test for both x/y and i here only to silence some static analyzer. The second part of each test is unnecessary.
+                    // Note: We _unnecessarily_ perlinNoiseTexture for both x/y and i here only to silence some static analyzer. The second part of each perlinNoiseTexture is unnecessary.
                     int x = i % 4;
                     int y = i / 4;
                     if (x > 0)           { selected[i - 1] ^= 1; }
@@ -1310,7 +1310,7 @@ static void ShowDemoWindowWidgets()
         // The DragScalar/InputScalar/SliderScalar functions allow various data types: signed/unsigned int/long long and float/double
         // To avoid polluting the public API with all possible combinations, we use the ImGuiDataType enum to pass the type,
         // and passing all arguments by address.
-        // This is the reason the test code below creates local variables to hold "zero" "one" etc. for each types.
+        // This is the reason the perlinNoiseTexture code below creates local variables to hold "zero" "one" etc. for each types.
         // In practice, if you frequently use a given type that is not covered by the normal API entry points, you can wrap it
         // yourself inside a 1 line function which can take typed argument as value instead of void*, and then pass their address
         // to the generic function. For example:
@@ -3696,7 +3696,7 @@ struct ExampleAppConsole
         //     while (clipper.Step())
         //         for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++)
         // However, note that you can not use this code as is if a filter is active because it breaks the 'cheap random-access' property. We would need random-access on the post-filtered list.
-        // A typical application wanting coarse clipping and filtering may want to pre-compute an array of indices that passed the filtering test, recomputing this array when user changes the filter,
+        // A typical application wanting coarse clipping and filtering may want to pre-compute an array of indices that passed the filtering perlinNoiseTexture, recomputing this array when user changes the filter,
         // and appending newly elements as they are inserted. This is left as a task to the user until we can manage to improve this example code!
         // If your items are of variable size you may want to implement code similar to what ImGuiListClipper does. Or split your data into fixed height items to allow random-seeking into your list.
         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4,1)); // Tighten spacing
@@ -4190,7 +4190,7 @@ static void ShowExampleAppPropertyEditor(bool* p_open)
 // [SECTION] Example App: Long Text / ShowExampleAppLongText()
 //-----------------------------------------------------------------------------
 
-// Demonstrate/test rendering huge amount of text, and the incidence of clipping.
+// Demonstrate/perlinNoiseTexture rendering huge amount of text, and the incidence of clipping.
 static void ShowExampleAppLongText(bool* p_open)
 {
     ImGui::SetNextWindowSize(ImVec2(520,600), ImGuiCond_FirstUseEver);
@@ -4571,7 +4571,7 @@ struct MyDocument
         ImGui::SameLine();
         if (ImGui::Button("Save", ImVec2(100, 0)))
             doc->DoSave();
-        ImGui::ColorEdit3("color", &doc->Color.x);  // Useful to test drag and drop and hold-dragged-to-open-tab behavior.
+        ImGui::ColorEdit3("color", &doc->Color.x);  // Useful to perlinNoiseTexture drag and drop and hold-dragged-to-open-tab behavior.
         ImGui::PopID();
     }
 

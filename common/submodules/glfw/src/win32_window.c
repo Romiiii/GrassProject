@@ -408,7 +408,7 @@ static void updateFramebufferTransparency(const _GLFWwindow* window)
             SetWindowLongW(window->win32.handle, GWL_EXSTYLE, exStyle);
 
             // Using a color key not equal to black to fix the trailing
-            // issue.  When set to black, something is making the hit test
+            // issue.  When set to black, something is making the hit perlinNoiseTexture
             // not resize with the window frame.
             SetLayeredWindowAttributes(window->win32.handle,
                                        RGB(0, 193, 48), 255, LWA_COLORKEY);

@@ -32,6 +32,7 @@
 #include "scene_object_instanced.h"
 #include "scene_object_indexed.h"
 #include "scene_object_arrays.h"
+#include "perlin_noise.h"
 
 // Constants
 const unsigned int INIT_SCR_WIDTH = 1000;
@@ -65,6 +66,8 @@ ShaderProgram* computeShaderProgram;
 ShaderProgram* computeFragmentShaderProgram;
 unsigned int instanceMatrixBuffer;
 
+float* perlinNoiseTextureData;
+
 GLuint computeShaderTexture;
 
 
@@ -73,6 +76,9 @@ Texture billboardGrassNoise2;
 
 Texture cubemapTextureDay;
 Texture cubemapTextureNight;
+
+
+Texture perlinNoiseTexture;
 
 // Camera setup
 Camera camera;
@@ -143,6 +149,7 @@ int main()
 
 	initIMGUI(window);
 
+
 	while (!glfwWindowShouldClose(window))
 	{
 		// Poll events at start so you have the newest inputs
@@ -192,6 +199,7 @@ int main()
 		//computeFragmentShaderProgram->use();
 
 
+		
 
 
 
@@ -297,12 +305,22 @@ void initShadersAndTextures() {
 	scene.cubemapTextureNight = &cubemapTextureNight;
 	scene.currentTexture = scene.cubemapTextureNight;
 
+	int width = 512;
+	int height = 512;
+
+	perlinNoiseTextureData = new float[(long)width * height];
+
+	PerlinNoise2D(width, height, 9, 2.0f, perlinNoiseTextureData);
+
+	perlinNoiseTexture.generateTexture(perlinNoiseTextureData, width, height, false);
+
+
 
 
 	// Set up the z-buffer
 	glDepthRange(-1, 1);  // Make the NDC a right handed coordinate system, 
 						  // with the camera pointing towards -z
-	glEnable(GL_DEPTH_TEST);  // Turn on z-buffer depth test
+	glEnable(GL_DEPTH_TEST);  // Turn on z-buffer depth perlinNoiseTexture
 	glDepthFunc(GL_LESS);  // Draws fragments that are closer to the screen in NDC
 	glEnable(GL_MULTISAMPLE);
 }
@@ -398,7 +416,21 @@ void drawGui() {
 	{
 		ImGui::Begin("Settings");
 
+		ImGui::Text("Perlin Noise Settings");
+
+		ImGui::SliderInt("Octaves", &scene.config.perlinConfig.octaves, 2, 10);
+
+		ImGui::SliderFloat("Bias", &scene.config.perlinConfig.bias, 0.2f, 2.0f);
+
+		if (ImGui::Button("Generate")) {
+			PerlinNoise2D(512, 512, scene.config.perlinConfig.octaves, scene.config.perlinConfig.bias, perlinNoiseTextureData);
+			perlinNoiseTexture.loadTextureData(perlinNoiseTextureData, 512, 512, false);
+		}
+			
+
 		ImGui::Image((ImTextureID) computeShaderTexture, { 512,512 });
+
+		ImGui::Image((ImTextureID)perlinNoiseTexture.getTextureID(), { 512,512 });
 
 		ImGui::Text("Light Settings");
 		ImGui::SliderFloat("Ambient Light Strength", &scene.config.ambientStrength, 0.1, 1.0);

@@ -24,6 +24,10 @@ public:
 	 */
 	unsigned int loadTexture(std::string fileName, bool alpha = true);
 
+	void generateTexture(void* data, int width, int height, bool alpha);
+	
+	unsigned int Texture::loadTextureData(void* data, int width, int height, bool alpha);
+
 	/* Loads a cubemap texture from 6 individual texture faces.
 	 * Order:
 	 * +X (right)

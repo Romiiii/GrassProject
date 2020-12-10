@@ -4,6 +4,7 @@
 #include <vector>
 #include "scene_object.h"
 #include "shader.h"
+#include "perlin_noise.h"
 
 enum class WindType {
 	TRIG_SIMPLE,
@@ -20,6 +21,7 @@ enum class SkyboxType {
 /* All variables that can be configured using the GUI
  */
 struct Config {
+	PerlinConfig perlinConfig;
 	int patchDensity = 10000;
 	WindType windType = WindType::TRIG_SIMPLE;
 	float windStrength = 2.0; // Perlin sway can only go upto 0.1
