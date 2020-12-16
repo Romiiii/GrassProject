@@ -6,6 +6,6 @@ struct PerlinConfig {
 	float bias = 2.0f;
 };
 
-void PerlinNoise2D(int nWidth, int nHeight, int nOctaves, float fBias, float* fOutput);
+void PerlinNoise2D(int nWidth, int nHeight, int nOctaves, float fBias, float* fOutput, float* fSeed);
 
 #endif

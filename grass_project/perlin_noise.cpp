@@ -1,16 +1,19 @@
 #include "perlin_noise.h"
 #include <stdlib.h>  
 
-void PerlinNoise2D(int nWidth, int nHeight, int nOctaves, float fBias, float* fOutput)
+void PerlinNoise2D(int nWidth, int nHeight, int nOctaves, float fBias, float* fOutput, float* fSeed)
 
 {
 
-	float* fSeed = new float[(long)nWidth * (long)nHeight];
+	//float* fSeed = new float[(long)nWidth * (long)nHeight];
 
-	for (int i = 0; i < nWidth * nHeight; i++) fSeed[i] = (float)rand() / (float)RAND_MAX;
+	//for (int i = 0; i < nWidth * nHeight; i++) fSeed[i] = (float)rand() / (float)RAND_MAX;
 
-	// Used 1D Perlin Noise
+	//for (int i = 0; i < nWidth * nHeight; i++) fSeed[i] = i/((float)nWidth*nHeight);
+
+
 	for (int x = 0; x < nWidth; x++)
+	{
 		for (int y = 0; y < nHeight; y++)
 		{
 			float fNoise = 0.0f;
@@ -41,6 +44,7 @@ void PerlinNoise2D(int nWidth, int nHeight, int nOctaves, float fBias, float* fO
 			fOutput[y * nWidth + x] = fNoise / fScaleAcc;
 
 		}
-	delete[] fSeed;
+	}
+	//delete[] fSeed;
 
 }

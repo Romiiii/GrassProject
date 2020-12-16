@@ -66,7 +66,6 @@ ShaderProgram* computeShaderProgram;
 ShaderProgram* computeFragmentShaderProgram;
 unsigned int instanceMatrixBuffer;
 
-float* perlinNoiseTextureData;
 
 GLuint computeShaderTexture;
 
@@ -79,6 +78,10 @@ Texture cubemapTextureNight;
 
 
 Texture perlinNoiseTexture;
+Texture seedTexture;
+
+float* perlinNoiseTextureData;
+float* seedTextureData;
 
 // Camera setup
 Camera camera;
@@ -98,6 +101,7 @@ void initIMGUI(GLFWwindow* window);
 void initShadersAndTextures();
 glm::vec2 calculateSpiralPosition(int n);
 void initSceneObjects(Patch& patch);
+void generatePerlinNoise();
 void createInstanceMatrixBuffer(glm::mat4* modelMatrices, const unsigned int MAX_PATCH_DENSITY_BLADES);
 
 void drawGui();
@@ -135,6 +139,7 @@ int main()
 
 	initShadersAndTextures();
 	initSceneObjects(patch);
+	generatePerlinNoise();
 
 	camera.camPosition = { -15, 20, 0 };
 	camera.yaw = 0;
@@ -190,11 +195,6 @@ int main()
 		//GLCall(glActiveTexture(GL_TEXTURE0 + computeShaderTexture));
 		//GLCall(glBindTexture(GL_TEXTURE_2D, computeShaderTexture));
 
-		computeShaderProgram->use();
-
-		glBindImageTexture(0, computeShaderTexture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA8);
-
-		glDispatchCompute(512 / 16, 512 / 16, 1);
 
 		//computeFragmentShaderProgram->use();
 
@@ -287,11 +287,11 @@ void initShadersAndTextures() {
 	lightShaderProgram = new ShaderProgram({ lightVertexShader, lightFragmentShader }, "LIGHT SHADER");
 
 	GLCall(glGenTextures(1, &computeShaderTexture));
-	glBindTexture(GL_TEXTURE_2D, computeShaderTexture);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 512, 512, 0, GL_RGBA, GL_FLOAT, 0);
-	glBindImageTexture(0, computeShaderTexture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA8);
+	GLCall(glBindTexture(GL_TEXTURE_2D, computeShaderTexture));
+	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+	GLCall(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 512, 512, 0, GL_RGBA, GL_FLOAT, 0));
+	GLCall(glBindImageTexture(0, computeShaderTexture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA8));
 
 	computeShader = new Shader("assets/shaders/compute.comp", GL_COMPUTE_SHADER);
 	computeShaderProgram = new ShaderProgram({ computeShader }, "COMPUTE SHADER");
@@ -310,9 +310,24 @@ void initShadersAndTextures() {
 
 	perlinNoiseTextureData = new float[(long)width * height];
 
-	PerlinNoise2D(width, height, 9, 2.0f, perlinNoiseTextureData);
+
+
+	seedTextureData = new float[(long)width * height];
+	for (int i = 0; i < 512 * 512; i++) seedTextureData[i] = (float)rand() / (float)RAND_MAX;
+
 
 	perlinNoiseTexture.generateTexture(perlinNoiseTextureData, width, height, false);
+
+	GLCall(glBindTexture(GL_TEXTURE_2D, seedTexture.getTextureID()));
+	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+	GLCall(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 512, 512, 0, GL_RGBA, GL_FLOAT, 0));
+
+	PerlinNoise2D(width, height, 9, 2.0f, perlinNoiseTextureData, seedTextureData);
+
+	seedTexture.generateTexture(seedTextureData, width, height, false);
+
+
 
 
 
@@ -385,6 +400,33 @@ void initSceneObjects(Patch& patch) {
 	}
 }
 
+void generatePerlinNoise() {
+	for (int i = 0; i < 512 * 512; i++) seedTextureData[i] = (float)rand() / (float)RAND_MAX;
+
+
+	PerlinNoise2D(512, 512, scene.config.perlinConfig.octaves, scene.config.perlinConfig.bias, perlinNoiseTextureData, seedTextureData);
+	perlinNoiseTexture.loadTextureData(perlinNoiseTextureData, 512, 512, false);
+
+	seedTexture.loadTextureData(seedTextureData, 512, 512, false);
+
+
+	computeShaderProgram->use();
+
+	GLCall(glBindImageTexture(0, computeShaderTexture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA8));
+	GLCall(glBindImageTexture(1, seedTexture.getTextureID() , 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA8));
+
+	//scene.currentTexture->bindTextureCubeMap();
+	//shaderProgram.setInt("skybox", scene.currentTexture->getTextureID());
+
+
+	computeShaderProgram->setInt("height", 512);
+	computeShaderProgram->setInt("width", 512);
+	computeShaderProgram->setInt("octaves", scene.config.perlinConfig.octaves);
+	computeShaderProgram->setFloat("bias", scene.config.perlinConfig.bias);
+
+	GLCall(glDispatchCompute(512 / 16, 512 / 16, 1));
+}
+
 void initIMGUI(GLFWwindow* window) {
 	// IMGUI init
 	IMGUI_CHECKVERSION();
@@ -423,8 +465,7 @@ void drawGui() {
 		ImGui::SliderFloat("Bias", &scene.config.perlinConfig.bias, 0.2f, 2.0f);
 
 		if (ImGui::Button("Generate")) {
-			PerlinNoise2D(512, 512, scene.config.perlinConfig.octaves, scene.config.perlinConfig.bias, perlinNoiseTextureData);
-			perlinNoiseTexture.loadTextureData(perlinNoiseTextureData, 512, 512, false);
+			generatePerlinNoise();
 		}
 			
 
