@@ -20,41 +20,42 @@ float rand(vec2 co){
 //
 void main()
 {
-//int width = 512;
-//int height = 512;
-int x = int(gl_GlobalInvocationID.x);
-int y = int(gl_GlobalInvocationID.y);
-//int octaves = 1;
-//float bias = 1.5;
+	//int width = 512;
+	//int height = 512;
+	int x = int(gl_GlobalInvocationID.x);
+	int y = int(gl_GlobalInvocationID.y);
+	//int octaves = 1;
+	//float bias = 1.5;
 
-//imageStore(writer,ivec2(gl_GlobalInvocationID.xy),vec4(1,0,0,0));
-float noise = 0.0;
-float scaleAcc = 0.0;
-float scale = 1.0;
+	//imageStore(writer,ivec2(gl_GlobalInvocationID.xy),vec4(1,0,0,0));
+	float noise = 0.0;
+	float scaleAcc = 0.0;
+	float scale = 1.0;
 
-for (int o = 0; o < octaves; o++)
-{
-	int pitch = width >> o;
-	int sampleX1 = (x / pitch) * pitch;
-	int sampleY1 = (y / pitch) * pitch;
+	for (int o = 0; o < octaves; o++)
+	{
+		int pitch = width >> o;
+		int sampleX1 = (x / pitch) * pitch;
+		int sampleY1 = (y / pitch) * pitch;
 
-	int sampleX2 = (sampleX1 + pitch) % width;
-	int sampleY2 = (sampleY1 + pitch) % width;
+		int sampleX2 = (sampleX1 + pitch) % width;
+		int sampleY2 = (sampleY1 + pitch) % width;
 
-	float blendX = float(x - sampleX1) / float(pitch);
-	float blendY = float(y - sampleY1) / float(pitch);
+		float blendX = float(x - sampleX1) / float(pitch);
+		float blendY = float(y - sampleY1) / float(pitch);
 
-	vec4 seed1 = imageLoad(seed, ivec2(x, y));
-	float sampleT = (1.0 - blendX) * rand(vec2(x+1, y)) + blendX * rand(vec2(x+2, y));
-	float sampleB = (1.0 - blendX) * rand(vec2(x+3, y)) + blendX * rand(vec2(x+4, y));
+		vec4 seed1 = imageLoad(seed, ivec2(x, y));
+		float sampleT = (1.0 - blendX) * rand(vec2(x+1, y)) + blendX * rand(vec2(x+2, y));
+		float sampleB = (1.0 - blendX) * rand(vec2(x+3, y)) + blendX * rand(vec2(x+4, y));
 
-	scaleAcc += scale;
-	noise += (blendY * (sampleB - sampleT) + sampleT) * scale;
-	scale = scale / bias;
-}
+		scaleAcc += scale;
+		noise += (blendY * (sampleB - sampleT) + sampleT) * scale;
+		scale = scale / bias;
+	}
 
-// Scale to seed range
-//fOutput[y * nWidth + x] = fNoise / fScaleAcc;
+	// Scale to seed range
+	//fOutput[y * nWidth + x] = fNoise / fScaleAcc;
 
-imageStore(writer,ivec2(gl_GlobalInvocationID.xy),imageLoad(seed, ivec2(x, y)));
+	//imageStore(writer,ivec2(gl_GlobalInvocationID.xy),imageLoad(seed, ivec2(x, y)));
+	imageStore(writer,ivec2(gl_GlobalInvocationID.xy),vec4(0.5,0,0,0));
 }

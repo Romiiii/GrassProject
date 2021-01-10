@@ -1,7 +1,8 @@
 #include "perlin_noise.h"
 #include <stdlib.h>  
 
-void PerlinNoise2D(int nWidth, int nHeight, int nOctaves, float fBias, float* fOutput, float* fSeed)
+
+void PerlinNoise2DCPU(int nWidth, int nHeight, int nOctaves, float fBias, float* fOutput, float* fSeed)
 
 {
 
@@ -47,4 +48,24 @@ void PerlinNoise2D(int nWidth, int nHeight, int nOctaves, float fBias, float* fO
 	}
 	//delete[] fSeed;
 
+}
+
+
+void PerlinNoise2DGPU(Texture& seedTexture, float* seedTextureData, ShaderProgram* computeShaderProgram, GLuint computeShaderTexture, int octaves, float bias) {
+	seedTexture.loadTextureData(seedTextureData, 512, 512, GL_RED);
+
+	computeShaderProgram->use();
+
+	GLCall(glBindImageTexture(0, computeShaderTexture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_R8));
+	GLCall(glBindImageTexture(1, seedTexture.getTextureID(), 0, GL_FALSE, 0, GL_READ_ONLY, GL_R8));
+
+	//scene.currentTexture->bindTextureCubeMap();
+	//shaderProgram.setInt("skybox", scene.currentTexture->getTextureID());
+
+	computeShaderProgram->setInt("height", 512);
+	computeShaderProgram->setInt("width", 512);
+	computeShaderProgram->setInt("octaves", octaves);
+	computeShaderProgram->setFloat("bias", bias);
+
+	GLCall(glDispatchCompute(512 / 16, 512 / 16, 1));
 }

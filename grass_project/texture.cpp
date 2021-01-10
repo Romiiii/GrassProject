@@ -41,9 +41,9 @@ unsigned int Texture::loadTexture(std::string fileName, bool alpha) {
 	return textureID;
 }
 
-void Texture::generateTexture(void* data, int width, int height, bool alpha) {
+void Texture::generateTexture(void* data, int width, int height, GLenum format) {
 	GLCall(glGenTextures(1, &textureID));
-	loadTextureData(data, width, height, alpha);
+	loadTextureData(data, width, height, GL_RED);
 }
 
 
@@ -52,15 +52,10 @@ void Texture::generateTexture(void* data, int width, int height, bool alpha) {
  * \param alpha - set to true if alpha channel should be read from texture
  * \return textureID
  */
-unsigned int Texture::loadTextureData(void* data, int width, int height, bool alpha) {
+unsigned int Texture::loadTextureData(void* data, int width, int height, GLenum format) {
 	GLCall(glBindTexture(GL_TEXTURE_2D, textureID));
 
-	if (alpha) {
-		GLCall(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RED, GL_FLOAT, data));
-	}
-	else {
-		GLCall(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RED, GL_FLOAT, data));
-	}
+	GLCall(glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_FLOAT, data));
 
 	GLCall(glGenerateMipmap(GL_TEXTURE_2D));
 	
