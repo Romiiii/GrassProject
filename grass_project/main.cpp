@@ -291,7 +291,7 @@ void initShadersAndTextures() {
 	GLCall(glBindTexture(GL_TEXTURE_2D, computeShaderTexture));
 	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
 	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
-	GLCall(glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, 512, 512, 0, GL_RED, GL_FLOAT, 0));
+	GLCall(glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, PERLIN_NOISE_TEXTURE_WIDTH, PERLIN_NOISE_TEXTURE_WIDTH, 0, GL_RED, GL_FLOAT, 0));
 	GLCall(glBindImageTexture(0, computeShaderTexture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_R8));
 
 	computeShader = new Shader("assets/shaders/compute.comp", GL_COMPUTE_SHADER);
@@ -306,32 +306,27 @@ void initShadersAndTextures() {
 	scene.cubemapTextureNight = &cubemapTextureNight;
 	scene.currentTexture = scene.cubemapTextureNight;
 
-	int width = 512;
-	int height = 512;
+	int width = PERLIN_NOISE_TEXTURE_WIDTH;
+	int height = PERLIN_NOISE_TEXTURE_WIDTH;
 
 	perlinNoiseTextureData = new float[(long)width * height];
 
 
 
 	seedTextureData = new float[(long)width * height];
-	for (int i = 0; i < 512 * 512; i++) seedTextureData[i] = (float)rand() / (float)RAND_MAX;
+	for (int i = 0; i < PERLIN_NOISE_TEXTURE_WIDTH * PERLIN_NOISE_TEXTURE_WIDTH; i++) seedTextureData[i] = (float)rand() / (float)RAND_MAX;
 
 
-	perlinNoiseTexture.generateTexture(perlinNoiseTextureData, width, height, false);
+	perlinNoiseTexture.generateTexture(perlinNoiseTextureData, width, height, GL_RED);
 
 	GLCall(glBindTexture(GL_TEXTURE_2D, seedTexture.getTextureID()));
 	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
 	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
-	GLCall(glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, 512, 512, 0, GL_RED, GL_FLOAT, 0));
+	GLCall(glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, PERLIN_NOISE_TEXTURE_WIDTH, PERLIN_NOISE_TEXTURE_WIDTH, 0, GL_RED, GL_FLOAT, 0));
 
 	PerlinNoise2DCPU(width, height, 9, 2.0f, perlinNoiseTextureData, seedTextureData);
 
-	seedTexture.generateTexture(seedTextureData, width, height, false);
-
-
-
-
-
+	seedTexture.generateTexture(seedTextureData, width, height, GL_RED);
 
 	// Set up the z-buffer
 	glDepthRange(-1, 1);  // Make the NDC a right handed coordinate system, 
@@ -402,14 +397,23 @@ void initSceneObjects(Patch& patch) {
 }
 
 void generatePerlinNoise() {
-	for (int i = 0; i < 512 * 512; i++) seedTextureData[i] = (float)rand() / (float)RAND_MAX;
+	using namespace std::chrono;
+	for (int i = 0; i < PERLIN_NOISE_TEXTURE_WIDTH * PERLIN_NOISE_TEXTURE_WIDTH; i++) seedTextureData[i] = (float)rand() / (float)RAND_MAX;
 
-
-	PerlinNoise2DCPU(512, 512, scene.config.perlinConfig.octaves, scene.config.perlinConfig.bias, perlinNoiseTextureData, seedTextureData);
+	high_resolution_clock::time_point t1 = high_resolution_clock::now();
+	PerlinNoise2DCPU(PERLIN_NOISE_TEXTURE_WIDTH, PERLIN_NOISE_TEXTURE_WIDTH, scene.config.perlinConfig.octaves, scene.config.perlinConfig.bias, perlinNoiseTextureData, seedTextureData);
+	high_resolution_clock::time_point t2 = high_resolution_clock::now();
+	auto tm_duration = duration_cast<microseconds>(t2 - t1).count();
+	//std::cout << "CPU:" << std::endl;
+	//std::cout << tm_duration / 1000.0f << std::endl;
 	// Upload texture to IMGUI
-	perlinNoiseTexture.loadTextureData(perlinNoiseTextureData, 512, 512, GL_RED);
-
+	perlinNoiseTexture.loadTextureData(perlinNoiseTextureData, PERLIN_NOISE_TEXTURE_WIDTH, PERLIN_NOISE_TEXTURE_WIDTH, GL_RED);
+	t1 = high_resolution_clock::now();
 	PerlinNoise2DGPU(seedTexture, seedTextureData, computeShaderProgram, computeShaderTexture, scene.config.perlinConfig.octaves, scene.config.perlinConfig.bias);
+	t2 = high_resolution_clock::now();
+	tm_duration = duration_cast<microseconds>(t2 - t1).count();
+	//std::cout << "GPU:" << std::endl;
+	//std::cout << tm_duration / 1000.0f << std::endl;
 
 
 }
@@ -456,9 +460,11 @@ void drawGui() {
 		}
 			
 
-		ImGui::Image((ImTextureID) computeShaderTexture, { 512,512 });
+		//ImGui::Image((ImTextureID) computeShaderTexture, { PERLIN_NOISE_TEXTURE_WIDTH,PERLIN_NOISE_TEXTURE_WIDTH });
 
-		ImGui::Image((ImTextureID)perlinNoiseTexture.getTextureID(), { 512,512 });
+		//ImGui::Image((ImTextureID)perlinNoiseTexture.getTextureID(), { PERLIN_NOISE_TEXTURE_WIDTH,PERLIN_NOISE_TEXTURE_WIDTH });
+
+		//ImGui::Image((ImTextureID)seedTexture.getTextureID(), { PERLIN_NOISE_TEXTURE_WIDTH,PERLIN_NOISE_TEXTURE_WIDTH });
 
 		ImGui::Text("Light Settings");
 		ImGui::SliderFloat("Ambient Light Strength", &scene.config.ambientStrength, 0.1, 1.0);

@@ -1,6 +1,8 @@
 #ifndef PERLIN_NOISE_H
 #define PERLIN_NOISE_H
 
+#define PERLIN_NOISE_TEXTURE_WIDTH 512
+
 #include "texture.h"
 #include "shader_program.h"
 

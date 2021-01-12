@@ -43,7 +43,7 @@ unsigned int Texture::loadTexture(std::string fileName, bool alpha) {
 
 void Texture::generateTexture(void* data, int width, int height, GLenum format) {
 	GLCall(glGenTextures(1, &textureID));
-	loadTextureData(data, width, height, GL_RED);
+	loadTextureData(data, width, height, format);
 }
 
 
