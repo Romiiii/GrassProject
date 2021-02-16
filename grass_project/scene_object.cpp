@@ -68,6 +68,16 @@ void SceneObject::setUniforms(Scene& scene) {
 			scene.currentTexture->bindTextureCubeMap();
 			shaderProgram.setInt("skybox", scene.currentTexture->getTextureID());
 		}
+		else if (name == "perlinNoise") {
+			//glBindTexture(GL_TEXTURE_2D, scene.perlinNoiseID);
+			//GLCall(glBindImageTexture(1, scene.perlinNoiseID, 0, GL_FALSE, 0, GL_READ_ONLY, GL_R8));
+			GLCall(glActiveTexture(GL_TEXTURE0 + scene.perlinNoiseID));
+			GLCall(glBindTexture(GL_TEXTURE_2D, scene.perlinNoiseID));
+			shaderProgram.setInt("perlinNoise", scene.perlinNoiseID);
+		}
+		else if (name == "perlinSampleScale") {
+			shaderProgram.setFloat("perlinSampleScale", scene.config.perlinSampleScale);
+		}
 		//printf("Uniform #%d Type: %u Name: %s\n", i, type, name);
 		// Get info and pass it to shaderProgram
 	}
@@ -93,8 +103,11 @@ void SceneObject::setVertexShaderAttribute(char *attributeName,
 		std::cout << "\x1B[01;93mWARNING: Attribute: " << attributeName << " - not found" << std::endl;
 		std::cout << "WARNING: Using shader: " << shaderProgram.getName() << "\x1B[0m" << std::endl;
 	}
-	GLCall(glEnableVertexAttribArray(attributeLocation));
-	GLCall(glVertexAttribPointer(attributeLocation, dataSize, GL_FLOAT, GL_FALSE, 0, 0));
+	else {
+		GLCall(glEnableVertexAttribArray(attributeLocation));
+		GLCall(glVertexAttribPointer(attributeLocation, dataSize, GL_FLOAT, GL_FALSE, 0, 0));
+	}
+
 }
 
 unsigned int SceneObject::createElementArrayBuffer(const std::vector<unsigned int>& array) {

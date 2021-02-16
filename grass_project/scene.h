@@ -50,6 +50,8 @@ public:
 	Texture* currentTexture = nullptr;
 	Texture* cubemapTextureDay = nullptr;
 	Texture* cubemapTextureNight = nullptr;
+	Texture* perlinNoise = nullptr;
+	GLuint perlinNoiseID;
 	glm::mat4 projection;
 	glm::mat4 view;
 	SceneObject* light = nullptr;

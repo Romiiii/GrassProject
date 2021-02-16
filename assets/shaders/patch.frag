@@ -5,11 +5,14 @@ out vec4 FragColor;
 in  vec4 vtxColor;
 in vec3 Normal;
 in vec3 FragPos;
+in vec2 UV;
 
 uniform float ambientStrength; 
 uniform vec3 lightPos; 
 uniform float lightIntensity;
 uniform vec4 lightColor;
+
+uniform sampler2D perlinNoise;
 
 void main()
 {
@@ -34,7 +37,10 @@ void main()
 	diffuse *= attenuation * lightIntensity;
 
 	vec4 result = (vec4(ambient,1.0f) + vec4(diffuse,1.0f)) * objectColor;
-	FragColor = result; 
+	//FragColor = result; 
+
+	vec4 textureColor = texture(perlinNoise, UV);
+	FragColor = textureColor; 
   
 	if(FragColor.a < 0.1) discard;
 }

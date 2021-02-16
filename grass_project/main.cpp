@@ -66,10 +66,6 @@ ShaderProgram* computeShaderProgram;
 ShaderProgram* computeFragmentShaderProgram;
 unsigned int instanceMatrixBuffer;
 
-
-GLuint computeShaderTexture;
-
-
 Texture billboardGrassNoise1;
 Texture billboardGrassNoise2;
 
@@ -157,7 +153,6 @@ int main()
 
 	while (!glfwWindowShouldClose(window))
 	{
-		generatePerlinNoise();
 		// Poll events at start so you have the newest inputs
 		glfwPollEvents();
 
@@ -287,12 +282,15 @@ void initShadersAndTextures() {
 	lightFragmentShader = new Shader("assets/shaders/light.frag", GL_FRAGMENT_SHADER);
 	lightShaderProgram = new ShaderProgram({ lightVertexShader, lightFragmentShader }, "LIGHT SHADER");
 
-	GLCall(glGenTextures(1, &computeShaderTexture));
-	GLCall(glBindTexture(GL_TEXTURE_2D, computeShaderTexture));
+	GLCall(glGenTextures(1, &scene.perlinNoiseID));
+	GLCall(glObjectLabel(GL_TEXTURE, scene.perlinNoiseID, -1, "perlinNoise"));
+	GLCall(glBindTexture(GL_TEXTURE_2D, scene.perlinNoiseID));
 	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
 	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
 	GLCall(glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, PERLIN_NOISE_TEXTURE_WIDTH, PERLIN_NOISE_TEXTURE_WIDTH, 0, GL_RED, GL_FLOAT, 0));
-	GLCall(glBindImageTexture(0, computeShaderTexture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_R8));
+	GLCall(glBindImageTexture(0, scene.perlinNoiseID, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_R8));
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
 	computeShader = new Shader("assets/shaders/compute.comp", GL_COMPUTE_SHADER);
 	computeShaderProgram = new ShaderProgram({ computeShader }, "COMPUTE SHADER");
@@ -309,22 +307,22 @@ void initShadersAndTextures() {
 	int width = PERLIN_NOISE_TEXTURE_WIDTH;
 	int height = PERLIN_NOISE_TEXTURE_WIDTH;
 
-	perlinNoiseTextureData = new float[(long)width * height];
+	//perlinNoiseTextureData = new float[(long)width * height];
 
 
 
 	seedTextureData = new float[(long)width * height];
-	for (int i = 0; i < PERLIN_NOISE_TEXTURE_WIDTH * PERLIN_NOISE_TEXTURE_WIDTH; i++) seedTextureData[i] = (float)rand() / (float)RAND_MAX;
+	//for (int i = 0; i < PERLIN_NOISE_TEXTURE_WIDTH * PERLIN_NOISE_TEXTURE_WIDTH; i++) seedTextureData[i] = (float)rand() / (float)RAND_MAX;
 
 
-	perlinNoiseTexture.generateTexture(perlinNoiseTextureData, width, height, GL_RED);
+	/*perlinNoiseTexture.generateTexture(perlinNoiseTextureData, width, height, GL_RED);
 
 	GLCall(glBindTexture(GL_TEXTURE_2D, seedTexture.getTextureID()));
 	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
 	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
-	GLCall(glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, PERLIN_NOISE_TEXTURE_WIDTH, PERLIN_NOISE_TEXTURE_WIDTH, 0, GL_RED, GL_FLOAT, 0));
+	GLCall(glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, PERLIN_NOISE_TEXTURE_WIDTH, PERLIN_NOISE_TEXTURE_WIDTH, 0, GL_RED, GL_FLOAT, 0));*/
 
-	PerlinNoise2DCPU(width, height, 9, 2.0f, perlinNoiseTextureData, seedTextureData);
+	//PerlinNoise2DCPU(width, height, 9, 2.0f, perlinNoiseTextureData, seedTextureData);
 
 	seedTexture.generateTexture(seedTextureData, width, height, GL_RED);
 
@@ -400,22 +398,12 @@ void generatePerlinNoise() {
 	using namespace std::chrono;
 	for (int i = 0; i < PERLIN_NOISE_TEXTURE_WIDTH * PERLIN_NOISE_TEXTURE_WIDTH; i++) seedTextureData[i] = (float)rand() / (float)RAND_MAX;
 
-	high_resolution_clock::time_point t1 = high_resolution_clock::now();
-	PerlinNoise2DCPU(PERLIN_NOISE_TEXTURE_WIDTH, PERLIN_NOISE_TEXTURE_WIDTH, scene.config.perlinConfig.octaves, scene.config.perlinConfig.bias, perlinNoiseTextureData, seedTextureData);
-	high_resolution_clock::time_point t2 = high_resolution_clock::now();
-	auto tm_duration = duration_cast<microseconds>(t2 - t1).count();
-	//std::cout << "CPU:" << std::endl;
-	//std::cout << tm_duration / 1000.0f << std::endl;
+	//PerlinNoise2DCPU(PERLIN_NOISE_TEXTURE_WIDTH, PERLIN_NOISE_TEXTURE_WIDTH, scene.config.perlinConfig.octaves, scene.config.perlinConfig.bias, perlinNoiseTextureData, seedTextureData);
+
 	// Upload texture to IMGUI
 	perlinNoiseTexture.loadTextureData(perlinNoiseTextureData, PERLIN_NOISE_TEXTURE_WIDTH, PERLIN_NOISE_TEXTURE_WIDTH, GL_RED);
-	t1 = high_resolution_clock::now();
-	PerlinNoise2DGPU(seedTexture, seedTextureData, computeShaderProgram, computeShaderTexture, scene.config.perlinConfig.octaves, scene.config.perlinConfig.bias);
-	t2 = high_resolution_clock::now();
-	tm_duration = duration_cast<microseconds>(t2 - t1).count();
-	//std::cout << "GPU:" << std::endl;
-	//std::cout << tm_duration / 1000.0f << std::endl;
 
-
+	PerlinNoise2DGPU(seedTexture, seedTextureData, computeShaderProgram, scene.perlinNoiseID, scene.config.perlinConfig.octaves, scene.config.perlinConfig.bias);
 }
 
 void initIMGUI(GLFWwindow* window) {
@@ -455,16 +443,15 @@ void drawGui() {
 
 		ImGui::SliderFloat("Bias", &scene.config.perlinConfig.bias, 0.2f, 2.0f);
 
+
+
 		if (ImGui::Button("Generate")) {
 			generatePerlinNoise();
 		}
-			
 
-		//ImGui::Image((ImTextureID) computeShaderTexture, { PERLIN_NOISE_TEXTURE_WIDTH,PERLIN_NOISE_TEXTURE_WIDTH });
+		ImGui::Image((ImTextureID )scene.perlinNoiseID, { PERLIN_NOISE_TEXTURE_WIDTH,PERLIN_NOISE_TEXTURE_WIDTH });
 
-		//ImGui::Image((ImTextureID)perlinNoiseTexture.getTextureID(), { PERLIN_NOISE_TEXTURE_WIDTH,PERLIN_NOISE_TEXTURE_WIDTH });
-
-		//ImGui::Image((ImTextureID)seedTexture.getTextureID(), { PERLIN_NOISE_TEXTURE_WIDTH,PERLIN_NOISE_TEXTURE_WIDTH });
+		ImGui::SliderFloat("Perlin Sample Scale", &scene.config.perlinSampleScale, 0.05, 1.0);
 
 		ImGui::Text("Light Settings");
 		ImGui::SliderFloat("Ambient Light Strength", &scene.config.ambientStrength, 0.1, 1.0);
@@ -487,7 +474,7 @@ void drawGui() {
 		ImGui::Text("Grass Settings");
 
 		ImGui::SliderInt("Number of patches", &scene.config.numPatches, 1, MAX_PATCHES);
-		ImGui::SliderInt("Patch density", &scene.config.patchDensity, 1, MAX_PATCH_DENSITY_BLADES);
+		ImGui::SliderInt("Patch density", &scene.config.patchDensity, 0, MAX_PATCH_DENSITY_BLADES);
 		//ImGui::InputInt("Patch density value:", &scene.config.patchDensity, 100, 1000);
 		scene.config.patchDensity = glm::clamp(scene.config.patchDensity, 0, (int)MAX_PATCH_DENSITY_BLADES);
 
