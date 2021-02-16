@@ -107,15 +107,13 @@ void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 void keyInputCallback(GLFWwindow* window, int button, int other, int action, int mods);
 void cursorInputCallback(GLFWwindow* window, double posX, double posY);
-
-void createComputeShader();
 void cleanUp();
 
 int main()
 {
 	window = initGLFWWindow();
 
-	assert(window != NULL, "ERROR:: Failed to create GLFW window");
+	assert(window != NULL);
 
 	// GLAD: load all OpenGL function pointers
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
@@ -161,7 +159,7 @@ int main()
 		ImGui_ImplGlfw_NewFrame();
 
 		// For correcting the camera input in processInput
-		float currentFrame = glfwGetTime();
+		float currentFrame = (float)glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 
 		processInput(window);
@@ -208,7 +206,7 @@ int main()
 		// Control render loop frequency
 		float elapsed = deltaTime;
 		while (loopInterval > elapsed) {
-			elapsed = glfwGetTime() - lastFrame;
+			elapsed = (float)glfwGetTime() - lastFrame;
 		}
 		lastFrame = currentFrame;
 	}
@@ -311,7 +309,7 @@ void initShadersAndTextures() {
 
 
 
-	seedTextureData = new float[(long)width * height];
+	seedTextureData = new float[width * height];
 	//for (int i = 0; i < PERLIN_NOISE_TEXTURE_WIDTH * PERLIN_NOISE_TEXTURE_WIDTH; i++) seedTextureData[i] = (float)rand() / (float)RAND_MAX;
 
 
@@ -449,15 +447,15 @@ void drawGui() {
 			generatePerlinNoise();
 		}
 
-		ImGui::Image((ImTextureID )scene.perlinNoiseID, { PERLIN_NOISE_TEXTURE_WIDTH,PERLIN_NOISE_TEXTURE_WIDTH });
+		ImGui::Image((ImTextureID)(long long)scene.perlinNoiseID, { PERLIN_NOISE_TEXTURE_WIDTH,PERLIN_NOISE_TEXTURE_WIDTH });
 
-		ImGui::SliderFloat("Perlin Sample Scale", &scene.config.perlinSampleScale, 0.05, 1.0);
+		ImGui::SliderFloat("Perlin Sample Scale", &scene.config.perlinSampleScale, 0.05f, 1.0f);
 
 		ImGui::Text("Light Settings");
-		ImGui::SliderFloat("Ambient Light Strength", &scene.config.ambientStrength, 0.1, 1.0);
-		ImGui::DragFloat3("Light Position", (float*)&scene.config.lightPosition, 0.1, -100, 100);
+		ImGui::SliderFloat("Ambient Light Strength", &scene.config.ambientStrength, 0.1f, 1.0f);
+		ImGui::DragFloat3("Light Position", (float*)&scene.config.lightPosition, 0.1f, -100, 100);
 		ImGui::ColorEdit4("Light Color", (float*)&scene.config.lightColor);
-		ImGui::SliderFloat("Light Intensity", &scene.config.lightIntensity, 0.0, 10.0);
+		ImGui::SliderFloat("Light Intensity", &scene.config.lightIntensity, 0.0f, 10);
 	
 		ImGui::Separator();
 		ImGui::Text("Skybox Settings");
@@ -479,9 +477,9 @@ void drawGui() {
 		scene.config.patchDensity = glm::clamp(scene.config.patchDensity, 0, (int)MAX_PATCH_DENSITY_BLADES);
 
 		ImGui::Text("Wind Settings");
-		ImGui::SliderFloat("Sway Reach", &scene.config.swayReach, 0.01, 0.3);
-		ImGui::SliderFloat("Wind Strength", &scene.config.windStrength, 0.0, 10.0);
-		ImGui::SliderFloat2("Wind Direction", (float*)&scene.config.windDirection, -1.0, 1.0);
+		ImGui::SliderFloat("Sway Reach", &scene.config.swayReach, 0.01f, 0.3f);
+		ImGui::SliderFloat("Wind Strength", &scene.config.windStrength, 0, 10);
+		ImGui::SliderFloat2("Wind Direction", (float*)&scene.config.windDirection, -1, 1);
 		ImGui::Separator();
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		ImGui::SliderFloat3("Camera Position", (float*)&camera.camPosition, -50, 50);
@@ -494,7 +492,10 @@ void drawGui() {
 	camera.updateCameraVectors();
 }
 
-void cursorInRange(float screenX, float screenY, int screenW, int screenH, float min, float max, float& x, float& y) {
+void cursorInRange(
+	float screenX, float screenY, int screenW, int screenH, 
+	float min, float max, float& x, float& y) 
+{
 	float sum = max - min;
 	float xInRange = (float)screenX / (float)screenW * sum - sum / 2.0f;
 	float yInRange = (float)screenY / (float)screenH * sum - sum / 2.0f;
@@ -512,7 +513,8 @@ void framebufferSizeCallback(GLFWwindow* window, int width, int height)
 	glViewport(0, 0, width, height);
 }
 
-void processInput(GLFWwindow* window) {
+void processInput(GLFWwindow* window) 
+{
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
 
@@ -568,15 +570,15 @@ void cursorInputCallback(GLFWwindow* window, double xpos, double ypos)
 {
 	if (firstMouse)
 	{
-		lastX = xpos;
-		lastY = ypos;
+		lastX = (float)xpos;
+		lastY = (float)ypos;
 		firstMouse = false;
 	}
 
-	float xoffset = xpos - lastX;
-	float yoffset = lastY - ypos;
-	lastX = xpos;
-	lastY = ypos;
+	float xoffset = (float)xpos - lastX;
+	float yoffset = lastY - (float)ypos;
+	lastX = (float)xpos;
+	lastY = (float)ypos;
 	// Stop camera movement if the GUI is opened
 	if (isPaused)
 		return;
@@ -584,20 +586,14 @@ void cursorInputCallback(GLFWwindow* window, double xpos, double ypos)
 	camera.processMouseMovement(xoffset, yoffset);
 }
 
-
-void keyInputCallback(GLFWwindow* window, int button, int other, int action, int mods) {
-
+void keyInputCallback(GLFWwindow* window, int button, 
+	int other, int action, int mods) 
+{
 	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
 		isPaused = !isPaused;
-		glfwSetInputMode(window, GLFW_CURSOR, isPaused ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
+		glfwSetInputMode(window, GLFW_CURSOR, 
+			isPaused ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
 	}
-}
-
-void createComputeShader()
-{
-	int shaderID = glCreateShader(GL_COMPUTE_SHADER);
-
-
 }
 
 void cleanUp() 

@@ -9,7 +9,6 @@ ShaderProgram::ShaderProgram(std::vector<Shader*> shaders, const std::string& na
 unsigned int ShaderProgram::getShaderProgramId() 
 {
 	return id;
-
 }
 
 void ShaderProgram::linkShaders()
@@ -29,7 +28,7 @@ void ShaderProgram::linkShaders()
 void ShaderProgram::use() const
 {
 	for (auto shader : shaders) {
-		assert(shader->isInitialized(), "ERROR: Shader is not initialized.");
+		assert(shader->isInitialized());
 	}
 
 	glUseProgram(id);

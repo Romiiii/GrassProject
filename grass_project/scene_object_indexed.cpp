@@ -1,8 +1,13 @@
 #include "scene_object_indexed.h"
 
 
-SceneObjectIndexed::SceneObjectIndexed(const std::vector<float>& positions, const std::vector<float>& colors, const std::vector<unsigned int>& indices, const std::vector<float>& normals,
-	ShaderProgram& shaderProgram, const std::vector<float>* uvs)
+SceneObjectIndexed::SceneObjectIndexed(
+	const std::vector<float>& positions, 
+	const std::vector<float>& colors, 
+	const std::vector<unsigned int>& indices, 
+	const std::vector<float>& normals,
+	ShaderProgram& shaderProgram, 
+	const std::vector<float>* uvs)
 	: SceneObject(shaderProgram) {
 	createVertexArray(positions, colors, indices, normals, uvs);
 }
@@ -10,7 +15,12 @@ SceneObjectIndexed::SceneObjectIndexed(const std::vector<float>& positions, cons
 /* Creates the Vertex Array Object and saves
 	* positions, colors, indices and normals.
 	*/
-void SceneObjectIndexed::createVertexArray(const std::vector<float>& positions, const std::vector<float>& colors, const std::vector<unsigned int>& indices, const std::vector<float>& normals, const std::vector<float>* uvs) {
+void SceneObjectIndexed::createVertexArray(
+	const std::vector<float>& positions, 
+	const std::vector<float>& colors, 
+	const std::vector<unsigned int>& indices, 
+	const std::vector<float>& normals, 
+	const std::vector<float>* uvs) {
 	shaderProgram.use();
 	glGenVertexArrays(1, &VAO);
 	// Bind vertex array object
@@ -27,7 +37,7 @@ void SceneObjectIndexed::createVertexArray(const std::vector<float>& positions, 
 	// Create and bind the EBO
 	createElementArrayBuffer(indices);
 
-	vertexCount = indices.size();
+	vertexCount = (unsigned int)indices.size();
 }
 
 

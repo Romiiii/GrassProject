@@ -18,12 +18,22 @@
 
 class SceneObjectIndexed : public SceneObject {
 public:
-	SceneObjectIndexed(const std::vector<float>& positions, const std::vector<float>& colors, const std::vector<unsigned int>& indices, const std::vector<float>& normals,
-		ShaderProgram& shaderProgram, const std::vector<float>* uvs = nullptr);
+	SceneObjectIndexed(
+		const std::vector<float>& positions, 
+		const std::vector<float>& colors, 
+		const std::vector<unsigned int>& indices, 
+		const std::vector<float>& normals,
+		ShaderProgram& shaderProgram, 
+		const std::vector<float>* uvs = nullptr);
 	/* Creates the Vertex Array Object and saves
 	 * positions, colors, indices, uvs (for the texture) and normals.
 	 */
-	void createVertexArray(const std::vector<float>& positions, const std::vector<float>& colors, const std::vector<unsigned int>& indices, const std::vector<float>& normals, const std::vector<float>* uvs = nullptr);
+	void createVertexArray(
+		const std::vector<float>& positions, 
+		const std::vector<float>& colors, 
+		const std::vector<unsigned int>& indices, 
+		const std::vector<float>& normals, 
+		const std::vector<float>* uvs = nullptr);
 
 	void draw(Scene& scene) override;
 

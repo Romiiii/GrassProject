@@ -1,7 +1,7 @@
 #include "scene_object_instanced.h"
 
 SceneObjectInstanced::SceneObjectInstanced(
-	const const std::vector<float>& positions, 
+	const std::vector<float>& positions, 
 	const std::vector<float>& colors, 
 	const std::vector<unsigned int>& indices, 
 	const std::vector<float>& normals, 
@@ -12,7 +12,13 @@ SceneObjectInstanced::SceneObjectInstanced(
 
 }
 
-void SceneObjectInstanced::createVertexArray(const std::vector<float>& positions, const std::vector<float>& colors, const std::vector<unsigned int>& indices, const std::vector<float>& normals, unsigned int instanceMatrixBuffer, const std::vector<float>* uvs) {
+void SceneObjectInstanced::createVertexArray(
+	const std::vector<float>& positions, 
+	const std::vector<float>& colors, 
+	const std::vector<unsigned int>& indices, 
+	const std::vector<float>& normals, 
+	unsigned int instanceMatrixBuffer, 
+	const std::vector<float>* uvs) {
 	shaderProgram.use();
 	GLCall(glGenVertexArrays(1, &VAO));
 	// Bind vertex array object
@@ -48,7 +54,7 @@ void SceneObjectInstanced::createVertexArray(const std::vector<float>& positions
 	// Create and bind the EBO
 	createElementArrayBuffer(indices);
 
-	vertexCount = indices.size();
+	vertexCount = (int)indices.size();
 }
 
 void SceneObjectInstanced::draw(Scene& scene) {

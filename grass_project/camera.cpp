@@ -48,10 +48,12 @@ void Camera::processKeyboard(cameraMovement direction, float deltaTime) {
 		}
 	}
 	if (direction == cameraMovement::LEFT) {
-		camPosition -= glm::cross(forwardInXYZ, glm::vec3(0, 1, 0)) * cameraSpeed;
+		camPosition -= glm::cross(forwardInXYZ, 
+			glm::vec3(0, 1, 0)) * cameraSpeed;
 	}
 	if (direction == cameraMovement::RIGHT) {
-		camPosition += glm::cross(forwardInXYZ, glm::vec3(0, 1, 0)) * cameraSpeed;
+		camPosition += glm::cross(forwardInXYZ, 
+			glm::vec3(0, 1, 0)) * cameraSpeed;
 	}
 }
 
