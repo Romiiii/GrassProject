@@ -36,7 +36,8 @@ void main()
 	diffuse *= attenuation * lightIntensity;
 
 	vec4 result = (vec4(ambient,1.0f) + vec4(diffuse,1.0f)) * objectColor;
+	result = objectColor;
 	FragColor = result; 
   
-	if(FragColor.a < 0.1) discard;
+	//if(FragColor.a < 0.1) discard;
 }

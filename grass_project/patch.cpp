@@ -41,12 +41,17 @@ void Patch::initBladeMatrices() {
 
 		glm::vec3 grassCoordinate = glm::vec3(randomPosX, 0, randomPosZ);
 
+		//grassCoordinate = glm::vec3(5.0f, 0.0f, -5.0f);
+
 		grassCoordinates.push_back(grassCoordinate);
 
 		float randomRotX = generateRandomNumber(-swayX, swayX);
 		float randomRotY = generateRandomNumber(-swayY, swayY);
 
-		bladeMatrices[x] = glm::translate(grassCoordinate) * glm::rotateX(randomRotX) * glm::rotateY(randomRotY);
+		
+
+		//bladeMatrices[x] = glm::translate(grassCoordinate) * glm::rotateX(randomRotX) * glm::rotateY(randomRotY);
+		bladeMatrices[x] = glm::translate(grassCoordinate);
 	}
 }
 

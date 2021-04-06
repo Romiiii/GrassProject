@@ -51,5 +51,17 @@ void main()
 		scale = scale / bias;
 	}
 
+	// This will draw a checker pattern
+//	if ((x % 64 < 32) && (y % 64 < 32)) {
+//		imageStore(writer,ivec2(gl_GlobalInvocationID.xy), vec4(1,1,1,0)); 
+//	} else if ((x % 64 > 32) && (y % 64 > 32)) {
+//		imageStore(writer,ivec2(gl_GlobalInvocationID.xy), vec4(1,1,1,0));
+//	} else {
+//		imageStore(writer,ivec2(gl_GlobalInvocationID.xy), vec4(0,0,0,0));
+//	}
+	//noise = x % 64;
+
 	imageStore(writer,ivec2(gl_GlobalInvocationID.xy), vec4(noise / scaleAcc,0,0,0));
+	//imageStore(writer,ivec2(0, 511), vec4(1,0,0,0));
+
 }

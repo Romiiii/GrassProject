@@ -24,7 +24,7 @@ public:
 		const std::vector<unsigned int>& indices, 
 		const std::vector<float>& normals,
 		ShaderProgram& shaderProgram, 
-		const std::vector<float>* uvs = nullptr);
+		const std::vector<float>& uvs);
 	/* Creates the Vertex Array Object and saves
 	 * positions, colors, indices, uvs (for the texture) and normals.
 	 */
@@ -33,7 +33,7 @@ public:
 		const std::vector<float>& colors, 
 		const std::vector<unsigned int>& indices, 
 		const std::vector<float>& normals, 
-		const std::vector<float>* uvs = nullptr);
+		const std::vector<float>& uvs);
 
 	void draw(Scene& scene) override;
 

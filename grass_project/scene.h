@@ -24,9 +24,9 @@ struct Config {
 	PerlinConfig perlinConfig;
 	int patchDensity = 10000;
 	WindType windType = WindType::TRIG_SIMPLE;
-	float windStrength = 2.0f; // Perlin sway can only go upto 0.1
+	float windStrength = 0.17f;
 	float swayReach = 0.3f;
-	float perlinSampleScale = 0.05f;
+	float perlinSampleScale = 1.0f;
 	int perlinTexture = 1;  // Either 1 or 2
 	glm::vec3 lightPosition = glm::vec3(0.0, 15.0, 0.0);
 	float ambientStrength = 0.5f;

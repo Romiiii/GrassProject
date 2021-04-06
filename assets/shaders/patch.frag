@@ -11,6 +11,8 @@ uniform float ambientStrength;
 uniform vec3 lightPos; 
 uniform float lightIntensity;
 uniform vec4 lightColor;
+uniform float windStrength;
+uniform float currentTime;
 
 uniform sampler2D perlinNoise;
 
@@ -38,9 +40,13 @@ void main()
 
 	vec4 result = (vec4(ambient,1.0f) + vec4(diffuse,1.0f)) * objectColor;
 	//FragColor = result; 
-
-	vec4 textureColor = texture(perlinNoise, UV);
+//
+	vec2 uv = UV + currentTime * windStrength;
+	vec4 textureColor = texture(perlinNoise, uv);
 	FragColor = textureColor; 
+
+	// Visualize UVs
+	//FragColor = vec4(UV.xy, 0, 1);
   
 	if(FragColor.a < 0.1) discard;
 }

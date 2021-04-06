@@ -12,7 +12,7 @@
 
 static std::vector<float> grassPositions{ 0.0f, 0.0f, 0.0f,
 								   0.1f, 0.0f, 0.0f,
-								   0.2f, 0.5f, 0.0f };
+								   0.1f, 0.5f, 0.0f };
 
 static std::vector<unsigned int> grassIndices{ 0, 1, 2 };
 
@@ -42,10 +42,10 @@ static std::vector<float> grassPatchNormals{ 0.0f, 1.0f, 0.0f,
 								   0.0f, 1.0f, 0.0f,
 								   0.0f, 1.0f, 0.0f };
 
-static std::vector<float> grassPatchUVs{0.0f, 0.0f,  // bottom left
-										1.0f, 0.0f,   // bottom right 
-										1.0f, 1.0f,  // top right
-										0.0f, 1.0f };	 // top left
+static std::vector<float> grassPatchUVs{0.0f, 0.0f,		// bottom left
+										0.0f, 1.0f,		// bottom right 
+										1.0f, 1.0f,		// top right
+										1.0f, 0.0f };	// top left
 										
 
 static std::vector<float> cubePositions{

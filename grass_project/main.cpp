@@ -381,7 +381,7 @@ void initSceneObjects(Patch& patch) {
 		
 		glm::vec2 position = calculateSpiralPosition(i) * 10.0f;
 		SceneObjectIndexed* patchSceneObject = new SceneObjectIndexed(grassPatchPositions, grassPatchColors,
-			grassPatchIndices, grassPatchNormals, *patchShaderProgram);
+			grassPatchIndices, grassPatchNormals, *patchShaderProgram, grassPatchUVs);
 		patchSceneObject->model = glm::translate(position.x, 0, position.y);
 		scene.patches.push_back(patchSceneObject);
 
