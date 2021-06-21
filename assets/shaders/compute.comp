@@ -4,6 +4,7 @@ uniform int width;
 uniform int height;
 uniform int octaves;
 uniform float bias;
+uniform bool makeChecker;
 
 readonly layout(r8, binding=1) uniform image2D seed;
 writeonly layout(binding=0) uniform image2D writer;
@@ -22,46 +23,52 @@ void main()
 	int x = int(gl_GlobalInvocationID.x);
 	int y = int(gl_GlobalInvocationID.y);
 
-	float noise = 0.0;
-	float scaleAcc = 0.0;
-	float scale = 1.0;
 
-	for (int o = 0; o < octaves; o++)
-	{
-		int pitch = width >> o;
-		int sampleX1 = (x / pitch) * pitch;
-		int sampleY1 = (y / pitch) * pitch;
+	if (!makeChecker) {
+		float noise = 0.0;
+		float scaleAcc = 0.0;
+		float scale = 1.0;
 
-		int sampleX2 = (sampleX1 + pitch) % width;
-		int sampleY2 = (sampleY1 + pitch) % width;
+		for (int o = 0; o < octaves; o++)
+		{
+			int pitch = width >> o;
+			int sampleX1 = (x / pitch) * pitch;
+			int sampleY1 = (y / pitch) * pitch;
 
-		float blendX = float(x - sampleX1) / float(pitch);
-		float blendY = float(y - sampleY1) / float(pitch);
+			int sampleX2 = (sampleX1 + pitch) % width;
+			int sampleY2 = (sampleY1 + pitch) % width;
 
-		float seed1 = imageLoad(seed, convert(sampleY1 * width + sampleX1)).r;
-		float seed2 = imageLoad(seed, convert(sampleY1 * width + sampleX2)).r;
-		float seed3 = imageLoad(seed, convert(sampleY2 * width + sampleX1)).r;
-		float seed4 = imageLoad(seed, convert(sampleY2 * width + sampleX2)).r;
+			float blendX = float(x - sampleX1) / float(pitch);
+			float blendY = float(y - sampleY1) / float(pitch);
 
-		float sampleT = (1.0 - blendX) * seed1 + blendX * seed2;
-		float sampleB = (1.0 - blendX) * seed3 + blendX * seed4;
+			float seed1 = imageLoad(seed, convert(sampleY1 * width + sampleX1)).r;
+			float seed2 = imageLoad(seed, convert(sampleY1 * width + sampleX2)).r;
+			float seed3 = imageLoad(seed, convert(sampleY2 * width + sampleX1)).r;
+			float seed4 = imageLoad(seed, convert(sampleY2 * width + sampleX2)).r;
 
-		scaleAcc += scale;
-		noise += (blendY * (sampleB - sampleT) + sampleT) * scale;
-		scale = scale / bias;
+			float sampleT = (1.0 - blendX) * seed1 + blendX * seed2;
+			float sampleB = (1.0 - blendX) * seed3 + blendX * seed4;
+
+			scaleAcc += scale;
+			noise += (blendY * (sampleB - sampleT) + sampleT) * scale;
+			scale = scale / bias;
+			
+			
+		}
+		imageStore(writer,ivec2(gl_GlobalInvocationID.xy), vec4(noise / scaleAcc,0,0,0));
+	} else {
+
+		// This will draw a checker pattern
+		if ((x % 64 < 32) && (y % 64 < 32)) {
+			imageStore(writer,ivec2(gl_GlobalInvocationID.xy), vec4(1,1,1,0)); 
+		} else if ((x % 64 > 32) && (y % 64 > 32)) {
+			imageStore(writer,ivec2(gl_GlobalInvocationID.xy), vec4(1,1,1,0));
+		} else {
+			imageStore(writer,ivec2(gl_GlobalInvocationID.xy), vec4(0,0,0,0));
+		}
 	}
-
-	// This will draw a checker pattern
-//	if ((x % 64 < 32) && (y % 64 < 32)) {
-//		imageStore(writer,ivec2(gl_GlobalInvocationID.xy), vec4(1,1,1,0)); 
-//	} else if ((x % 64 > 32) && (y % 64 > 32)) {
-//		imageStore(writer,ivec2(gl_GlobalInvocationID.xy), vec4(1,1,1,0));
-//	} else {
-//		imageStore(writer,ivec2(gl_GlobalInvocationID.xy), vec4(0,0,0,0));
-//	}
 	//noise = x % 64;
 
-	imageStore(writer,ivec2(gl_GlobalInvocationID.xy), vec4(noise / scaleAcc,0,0,0));
 	//imageStore(writer,ivec2(0, 511), vec4(1,0,0,0));
 
 }

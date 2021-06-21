@@ -7,12 +7,13 @@
 #include "shader_program.h"
 
 struct PerlinConfig {
+	bool makeChecker = false;
 	int octaves = 9;
 	float bias = 2.0f;
 };
 
 void PerlinNoise2DCPU(int nWidth, int nHeight, int nOctaves, float fBias, float* fOutput, float* fSeed);
 
-void PerlinNoise2DGPU(Texture& seedTexture, float* seedTextureData, ShaderProgram* computeShaderProgram, GLuint computeShaderTexture, int octaves, float bias);
+void PerlinNoise2DGPU(Texture& seedTexture, float* seedTextureData, ShaderProgram* computeShaderProgram, GLuint computeShaderTexture, int octaves, float bias, bool makeChecker);
 
 #endif

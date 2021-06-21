@@ -34,21 +34,26 @@ void Patch::initBladeMatrices() {
 	constexpr float swayX = glm::radians(20.0f);
 	constexpr float swayY = glm::radians(180.0f);
 
+	float middleX = (upperBoundX + lowerBoundX) / 2;
+
 	// Distribute the grass blades uniformly within the patch
 	for (int x = 0; x < numBlades; x += 1) {
-		float randomPosX = generateRandomNumber(lowerBoundX, upperBoundX);
-		float randomPosZ = generateRandomNumber(lowerBoundZ, upperBoundZ);
+		//float randomPosX = generateRandomNumber(lowerBoundX, upperBoundX);
+		//float randomPosZ = generateRandomNumber(lowerBoundZ, upperBoundZ);
 
-		glm::vec3 grassCoordinate = glm::vec3(randomPosX, 0, randomPosZ);
+		//glm::vec3 grassCoordinate = glm::vec3(randomPosX, 0, randomPosZ);
+
+		float z = lowerBoundZ + ((upperBoundZ - lowerBoundZ) / (numBlades)) * x;
+		glm::vec3 grassCoordinate = glm::vec3(middleX, 0, z);
+
+
 
 		//grassCoordinate = glm::vec3(5.0f, 0.0f, -5.0f);
 
 		grassCoordinates.push_back(grassCoordinate);
 
-		float randomRotX = generateRandomNumber(-swayX, swayX);
-		float randomRotY = generateRandomNumber(-swayY, swayY);
-
-		
+		//float randomRotX = generateRandomNumber(-swayX, swayX);
+		//float randomRotY = generateRandomNumber(-swayY, swayY);
 
 		//bladeMatrices[x] = glm::translate(grassCoordinate) * glm::rotateX(randomRotX) * glm::rotateY(randomRotY);
 		bladeMatrices[x] = glm::translate(grassCoordinate);

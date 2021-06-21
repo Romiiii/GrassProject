@@ -38,7 +38,8 @@
 const unsigned int INIT_SCR_WIDTH = 1000;
 const unsigned int INIT_SCR_HEIGHT = 1000;
 // Maximum amount of grass blades per patch
-const unsigned int MAX_PATCH_DENSITY_BLADES = 40000;
+const unsigned int MAX_PATCH_DENSITY_BLADES = 100;
+//  const unsigned int MAX_PATCH_DENSITY_BLADES = 4000;
 const unsigned int MAX_PATCHES = 81;
 
 Scene scene;
@@ -135,9 +136,9 @@ int main()
 	initSceneObjects(patch);
 	generatePerlinNoise();
 
-	camera.camPosition = { -15, 20, 0 };
+	camera.camPosition = { 0, 20, 0 };
 	camera.yaw = 0;
-	camera.pitch = -50;
+	camera.pitch = -90;
 	camera.updateCameraVectors();
 
 	// Render loop : render every loopInterval seconds
@@ -173,8 +174,8 @@ int main()
 
 		int width, height;
 		glfwGetWindowSize(window, &width, &height); 
-		glm::mat4 projection = glm::perspectiveFovRH_NO(70.0f, (float)width,
-			(float)height, .01f, 1000.0f); // FIX: not every frame
+		glm::mat4 projection = glm::perspective(70.0f, 
+			(float)width/(float)height, .01f, 1000.0f); // FIX: not every frame
 		glm::mat4 view = glm::lookAt(
 			camera.getCamPosition(),
 			camera.getCamPosition() + camera.getCamForward(), glm::vec3(0, 1, 0));
@@ -283,8 +284,8 @@ void initShadersAndTextures() {
 	GLCall(glGenTextures(1, &scene.perlinNoiseID));
 	GLCall(glObjectLabel(GL_TEXTURE, scene.perlinNoiseID, -1, "perlinNoise"));
 	GLCall(glBindTexture(GL_TEXTURE_2D, scene.perlinNoiseID));
-	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
-	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
 	GLCall(glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, PERLIN_NOISE_TEXTURE_WIDTH, PERLIN_NOISE_TEXTURE_WIDTH, 0, GL_RED, GL_FLOAT, 0));
 	GLCall(glBindImageTexture(0, scene.perlinNoiseID, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_R8));
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -294,7 +295,7 @@ void initShadersAndTextures() {
 	computeShaderProgram = new ShaderProgram({ computeShader }, "COMPUTE SHADER");
 	
 	//computeFragmentShader = new Shader("assets/shaders/compute.frag", GL_FRAGMENT_SHADER);
-	//computeFragmentShaderProgram = new ShaderProgram({ computeFragmentShader }, "COMPUTE FRAGMENT SHADER");
+	//computeFragmentShaderProgram = new ShaderProgram({ computeFragmentShader }, "COMPUTE FRAGMENT SHADER
 
 
 
@@ -394,14 +395,13 @@ void initSceneObjects(Patch& patch) {
 
 void generatePerlinNoise() {
 	using namespace std::chrono;
+	// Initialize seed data
 	for (int i = 0; i < PERLIN_NOISE_TEXTURE_WIDTH * PERLIN_NOISE_TEXTURE_WIDTH; i++) seedTextureData[i] = (float)rand() / (float)RAND_MAX;
 
-	//PerlinNoise2DCPU(PERLIN_NOISE_TEXTURE_WIDTH, PERLIN_NOISE_TEXTURE_WIDTH, scene.config.perlinConfig.octaves, scene.config.perlinConfig.bias, perlinNoiseTextureData, seedTextureData);
+	PerlinNoise2DGPU(seedTexture, seedTextureData, computeShaderProgram, scene.perlinNoiseID, scene.config.perlinConfig.octaves, scene.config.perlinConfig.bias, scene.config.perlinConfig.makeChecker);
 
 	// Upload texture to IMGUI
 	perlinNoiseTexture.loadTextureData(perlinNoiseTextureData, PERLIN_NOISE_TEXTURE_WIDTH, PERLIN_NOISE_TEXTURE_WIDTH, GL_RED);
-
-	PerlinNoise2DGPU(seedTexture, seedTextureData, computeShaderProgram, scene.perlinNoiseID, scene.config.perlinConfig.octaves, scene.config.perlinConfig.bias);
 }
 
 void initIMGUI(GLFWwindow* window) {
@@ -436,6 +436,9 @@ void drawGui() {
 		ImGui::Begin("Settings");
 
 		ImGui::Text("Perlin Noise Settings");
+		
+		if (ImGui::Checkbox("Turn On Checker Mode", &scene.config.perlinConfig.makeChecker))
+			generatePerlinNoise();
 
 		ImGui::SliderInt("Octaves", &scene.config.perlinConfig.octaves, 2, 10);
 
@@ -446,8 +449,9 @@ void drawGui() {
 		if (ImGui::Button("Generate")) {
 			generatePerlinNoise();
 		}
-
-		ImGui::Image((ImTextureID)(long long)scene.perlinNoiseID, { PERLIN_NOISE_TEXTURE_WIDTH,PERLIN_NOISE_TEXTURE_WIDTH });
+		float width = PERLIN_NOISE_TEXTURE_WIDTH;
+		// perlinSampleScale zooms the image in
+		ImGui::Image((ImTextureID)(long long)scene.perlinNoiseID, { width, width }, { 0,0 }, { scene.config.perlinSampleScale, scene.config.perlinSampleScale } );
 
 		ImGui::SliderFloat("Perlin Sample Scale", &scene.config.perlinSampleScale, 0.05f, 1.0f);
 
@@ -477,7 +481,7 @@ void drawGui() {
 		scene.config.patchDensity = glm::clamp(scene.config.patchDensity, 0, (int)MAX_PATCH_DENSITY_BLADES);
 
 		ImGui::Text("Wind Settings");
-		ImGui::SliderFloat("Sway Reach", &scene.config.swayReach, 0.01f, 0.3f);
+		ImGui::SliderFloat("Sway Reach", &scene.config.swayReach, 0.0f, 1.0f);
 		ImGui::SliderFloat("Wind Strength", &scene.config.windStrength, 0, 10);
 		ImGui::SliderFloat2("Wind Direction", (float*)&scene.config.windDirection, -1, 1);
 		ImGui::Separator();

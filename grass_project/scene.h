@@ -24,7 +24,7 @@ struct Config {
 	PerlinConfig perlinConfig;
 	int patchDensity = 10000;
 	WindType windType = WindType::TRIG_SIMPLE;
-	float windStrength = 0.17f;
+	float windStrength = 0.0f;
 	float swayReach = 0.3f;
 	float perlinSampleScale = 1.0f;
 	int perlinTexture = 1;  // Either 1 or 2

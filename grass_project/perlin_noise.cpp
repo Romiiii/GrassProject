@@ -49,7 +49,7 @@ void PerlinNoise2DCPU(int nWidth, int nHeight, int nOctaves, float fBias, float*
 }
 
 
-void PerlinNoise2DGPU(Texture& seedTexture, float* seedTextureData, ShaderProgram* computeShaderProgram, GLuint computeShaderTexture, int octaves, float bias) {
+void PerlinNoise2DGPU(Texture& seedTexture, float* seedTextureData, ShaderProgram* computeShaderProgram, GLuint computeShaderTexture, int octaves, float bias, bool makeChecker) {
 	seedTexture.loadTextureData(seedTextureData, PERLIN_NOISE_TEXTURE_WIDTH, PERLIN_NOISE_TEXTURE_WIDTH, GL_RED);
 
 	computeShaderProgram->use();
@@ -61,6 +61,8 @@ void PerlinNoise2DGPU(Texture& seedTexture, float* seedTextureData, ShaderProgra
 	computeShaderProgram->setInt("width", PERLIN_NOISE_TEXTURE_WIDTH);
 	computeShaderProgram->setInt("octaves", octaves);
 	computeShaderProgram->setFloat("bias", bias);
+	computeShaderProgram->setBool("makeChecker", makeChecker);
+	
 
 	GLCall(glDispatchCompute(PERLIN_NOISE_TEXTURE_WIDTH / 16, PERLIN_NOISE_TEXTURE_WIDTH / 16, 1));
 }

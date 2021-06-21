@@ -13,6 +13,7 @@ uniform float lightIntensity;
 uniform vec4 lightColor;
 uniform float windStrength;
 uniform float currentTime;
+uniform float perlinSampleScale;
 
 uniform sampler2D perlinNoise;
 
@@ -39,9 +40,12 @@ void main()
 	diffuse *= attenuation * lightIntensity;
 
 	vec4 result = (vec4(ambient,1.0f) + vec4(diffuse,1.0f)) * objectColor;
-	//FragColor = result; 
-//
-	vec2 uv = UV + currentTime * windStrength;
+	FragColor = result; 
+
+	//vec2 uv = UV + currentTime * windStrength;
+
+	vec2 uv = UV * perlinSampleScale;
+	uv.y += currentTime * windStrength;
 	vec4 textureColor = texture(perlinNoise, uv);
 	FragColor = textureColor; 
 

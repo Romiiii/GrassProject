@@ -13,7 +13,7 @@ void SceneObject::setUniforms(Scene& scene) {
 	GLint size; // size of the variable
 	GLenum type; // type of the variable (float, vec3 or mat4, etc)
 
-	const GLsizei bufSize = 16; // maximum name length
+	const GLsizei bufSize = 128; // maximum name length
 	GLchar nameBuf[bufSize]; // variable name in GLSL
 	//std::string name;
 	//name.reserve(bufSize);
@@ -58,6 +58,7 @@ void SceneObject::setUniforms(Scene& scene) {
 		}
 		else if (name == "swayReach") {
 			shaderProgram.setFloat("swayReach", scene.config.swayReach);
+			//std::cout << "hi" << std::endl;
 		}
 		else if (name == "windDirection") {
 			shaderProgram.setVec2("windDirection", scene.config.windDirection);
@@ -84,7 +85,9 @@ void SceneObject::setUniforms(Scene& scene) {
 		else if (name == "perlinSampleScale") {
 			shaderProgram.setFloat("perlinSampleScale",
 				scene.config.perlinSampleScale);
+			//std::cout << "hi" << std::endl;
 		}
+
 		//printf("Uniform #%d Type: %u Name: %s\n", i, type, name);
 		// Get info and pass it to shaderProgram
 	}

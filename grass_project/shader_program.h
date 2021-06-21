@@ -21,7 +21,9 @@ public:
 
 	void reloadShaders();
 
-	const std::string& getName();
+	const std::string& getName() const;
+
+	GLint getUniformLocation(const std::string& name) const;
 
 	/* Utility functions to set uniforms.
  */
