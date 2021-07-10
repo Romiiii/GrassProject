@@ -60,9 +60,6 @@ void SceneObject::setUniforms(Scene& scene) {
 			shaderProgram.setFloat("swayReach", scene.config.swayReach);
 			//std::cout << "hi" << std::endl;
 		}
-		else if (name == "windDirection") {
-			shaderProgram.setVec2("windDirection", scene.config.windDirection);
-		}
 		else if (name == "lightColor") {
 			shaderProgram.setVec4("lightColor", scene.config.lightColor);
 		}

@@ -17,7 +17,9 @@ public:
 	 * Coordinates are sampled uniformly. A random rotation of the grass is
 	 * generated as well.
 	 */
-	void initBladeMatrices();
+	void initHarryEdwardStylesBladeMatrices(bool useRandomRotations = true);
+
+	void initOneDirectionBladeMatrices();
 
 	glm::mat4* getBladeMatrices();
 

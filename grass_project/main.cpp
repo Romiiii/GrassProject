@@ -38,8 +38,8 @@
 const unsigned int INIT_SCR_WIDTH = 1000;
 const unsigned int INIT_SCR_HEIGHT = 1000;
 // Maximum amount of grass blades per patch
-const unsigned int MAX_PATCH_DENSITY_BLADES = 100;
-//  const unsigned int MAX_PATCH_DENSITY_BLADES = 4000;
+//const unsigned int MAX_PATCH_DENSITY_BLADES = 100;
+const unsigned int MAX_PATCH_DENSITY_BLADES = 4000;
 const unsigned int MAX_PATCHES = 81;
 
 Scene scene;
@@ -100,6 +100,7 @@ glm::vec2 calculateSpiralPosition(int n);
 void initSceneObjects(Patch& patch);
 void generatePerlinNoise();
 void createInstanceMatrixBuffer(glm::mat4* modelMatrices, const unsigned int MAX_PATCH_DENSITY_BLADES);
+void transferInstanceMatrixBuffer(glm::mat4* modelMatrices, const unsigned int numInstances);
 
 void drawGui();
 
@@ -148,6 +149,8 @@ int main()
 	srand((unsigned)time(0));
 
 	initIMGUI(window);
+
+
 
 
 	while (!glfwWindowShouldClose(window))
@@ -369,6 +372,7 @@ glm::vec2 calculateSpiralPosition(int n) {
 void initSceneObjects(Patch& patch) {
 
 	patch.init(MAX_PATCH_DENSITY_BLADES, patchShaderProgram);
+	patch.initHarryEdwardStylesBladeMatrices();
 	createInstanceMatrixBuffer(patch.getBladeMatrices(), MAX_PATCH_DENSITY_BLADES);
 
 	SceneObjectArrays* skybox = new SceneObjectArrays(cubePositions, *skyboxShaderProgram);
@@ -419,6 +423,12 @@ void initIMGUI(GLFWwindow* window) {
 
 void createInstanceMatrixBuffer(glm::mat4* modelMatrices, const unsigned int numInstances) {
 	GLCall(glGenBuffers(1, &instanceMatrixBuffer));
+	transferInstanceMatrixBuffer(modelMatrices, numInstances);
+}
+
+/* Upload the matrices to the GPU.
+ */
+void transferInstanceMatrixBuffer(glm::mat4* modelMatrices, const unsigned int numInstances) {
 	GLCall(glBindBuffer(GL_ARRAY_BUFFER, instanceMatrixBuffer));
 	GLCall(glBufferData(GL_ARRAY_BUFFER, numInstances * sizeof(glm::mat4), modelMatrices, GL_STATIC_DRAW));
 	GLCall(glBindBuffer(GL_ARRAY_BUFFER, 0));
@@ -433,62 +443,106 @@ void drawGui() {
 	ImGui::SetNextWindowPos({ 0,0 });
 	ImGui::SetNextWindowSize({ 0, 0 });
 	{
+		
 		ImGui::Begin("Settings");
 
-		ImGui::Text("Perlin Noise Settings");
-		
-		if (ImGui::Checkbox("Turn On Checker Mode", &scene.config.perlinConfig.makeChecker))
-			generatePerlinNoise();
-
-		ImGui::SliderInt("Octaves", &scene.config.perlinConfig.octaves, 2, 10);
-
-		ImGui::SliderFloat("Bias", &scene.config.perlinConfig.bias, 0.2f, 2.0f);
-
-
-
-		if (ImGui::Button("Generate")) {
-			generatePerlinNoise();
-		}
-		float width = PERLIN_NOISE_TEXTURE_WIDTH;
-		// perlinSampleScale zooms the image in
-		ImGui::Image((ImTextureID)(long long)scene.perlinNoiseID, { width, width }, { 0,0 }, { scene.config.perlinSampleScale, scene.config.perlinSampleScale } );
-
-		ImGui::SliderFloat("Perlin Sample Scale", &scene.config.perlinSampleScale, 0.05f, 1.0f);
-
-		ImGui::Text("Light Settings");
-		ImGui::SliderFloat("Ambient Light Strength", &scene.config.ambientStrength, 0.1f, 1.0f);
-		ImGui::DragFloat3("Light Position", (float*)&scene.config.lightPosition, 0.1f, -100, 100);
-		ImGui::ColorEdit4("Light Color", (float*)&scene.config.lightColor);
-		ImGui::SliderFloat("Light Intensity", &scene.config.lightIntensity, 0.0f, 10);
-	
-		ImGui::Separator();
-		ImGui::Text("Skybox Settings");
-		if (ImGui::RadioButton("Day", scene.config.skyboxType == SkyboxType::DAY)) { 
-			scene.config.skyboxType = SkyboxType::DAY;
-			scene.currentTexture = scene.cubemapTextureDay;
-		} ImGui::SameLine();
-		if (ImGui::RadioButton("Night", scene.config.skyboxType == SkyboxType::NIGHT)) {
-			scene.config.skyboxType = SkyboxType::NIGHT;
-			scene.currentTexture = scene.cubemapTextureNight;
-		}
-
-		ImGui::Separator();
-		ImGui::Text("Grass Settings");
-
-		ImGui::SliderInt("Number of patches", &scene.config.numPatches, 1, MAX_PATCHES);
-		ImGui::SliderInt("Patch density", &scene.config.patchDensity, 0, MAX_PATCH_DENSITY_BLADES);
-		//ImGui::InputInt("Patch density value:", &scene.config.patchDensity, 100, 1000);
-		scene.config.patchDensity = glm::clamp(scene.config.patchDensity, 0, (int)MAX_PATCH_DENSITY_BLADES);
-
-		ImGui::Text("Wind Settings");
-		ImGui::SliderFloat("Sway Reach", &scene.config.swayReach, 0.0f, 1.0f);
-		ImGui::SliderFloat("Wind Strength", &scene.config.windStrength, 0, 10);
-		ImGui::SliderFloat2("Wind Direction", (float*)&scene.config.windDirection, -1, 1);
-		ImGui::Separator();
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-		ImGui::SliderFloat3("Camera Position", (float*)&camera.camPosition, -50, 50);
-		ImGui::SliderFloat("Yaw", &camera.yaw, -180, 180);
-		ImGui::SliderFloat("Pitch", &camera.pitch, -180, 180);
+
+		if (ImGui::CollapsingHeader("Camera Settings"))
+		{
+			ImGui::SliderFloat3("Camera Position", (float*)&camera.camPosition, -50, 50);
+			ImGui::SliderFloat("Yaw", &camera.yaw, -180, 180);
+			ImGui::SliderFloat("Pitch", &camera.pitch, -180, 180);
+		}
+
+		if (ImGui::CollapsingHeader("Debug Settings"))
+		{
+
+
+
+			if (ImGui::Checkbox("Turn On Checker Mode", &scene.config.perlinConfig.makeChecker))
+				generatePerlinNoise();
+			ImGui::SameLine;
+			ImGui::Text("Harry Styles Settings");
+			if (ImGui::RadioButton("Harry Styles With Randos", scene.config.bladeDistribution == BladeDistribution::HARRY_STYLES_WITH_RANDOS)) {
+				scene.config.bladeDistribution = BladeDistribution::HARRY_STYLES_WITH_RANDOS;
+				patch.initHarryEdwardStylesBladeMatrices();
+				transferInstanceMatrixBuffer(patch.getBladeMatrices(), MAX_PATCH_DENSITY_BLADES);
+			} ImGui::SameLine();
+			if (ImGui::RadioButton("Harry Styles", scene.config.bladeDistribution == BladeDistribution::HARRY_STYLES)) {
+				scene.config.bladeDistribution = BladeDistribution::HARRY_STYLES;
+				patch.initHarryEdwardStylesBladeMatrices(false);
+				transferInstanceMatrixBuffer(patch.getBladeMatrices(), MAX_PATCH_DENSITY_BLADES);
+			} ImGui::SameLine();
+			if (ImGui::RadioButton("One Direction", scene.config.bladeDistribution == BladeDistribution::ONE_DIRECTION)) {
+				scene.config.bladeDistribution = BladeDistribution::ONE_DIRECTION;
+				patch.initOneDirectionBladeMatrices();
+				transferInstanceMatrixBuffer(patch.getBladeMatrices(), MAX_PATCH_DENSITY_BLADES);
+			}
+
+		}
+		
+		if (ImGui::CollapsingHeader("Perlin Noise Settings"))
+		{
+
+			ImGui::SliderInt("Octaves", &scene.config.perlinConfig.octaves, 2, 10);
+
+			ImGui::SliderFloat("Bias", &scene.config.perlinConfig.bias, 0.2f, 2.0f);
+
+
+
+			if (ImGui::Button("Generate")) {
+				generatePerlinNoise();
+			}
+			float width = PERLIN_NOISE_TEXTURE_WIDTH;
+			// perlinSampleScale zooms the image in
+		/*	ImGui::Image((ImTextureID)(long long)scene.perlinNoiseID, { width, width }, { 0,0 }, { scene.config.perlinSampleScale, scene.config.perlinSampleScale } );*/
+
+			ImGui::Image((ImTextureID)(long long)scene.perlinNoiseID, { width, width }, { 0.0f,0.0f }, { scene.config.perlinSampleScale, scene.config.perlinSampleScale });
+
+			//ImGui::Image()
+
+
+			ImGui::SliderFloat("Perlin Sample Scale", &scene.config.perlinSampleScale, 0.05f, 1.0f);
+		}
+
+
+		if (ImGui::CollapsingHeader("Light Settings"))
+		{
+			ImGui::SliderFloat("Ambient Light Strength", &scene.config.ambientStrength, 0.1f, 1.0f);
+			ImGui::DragFloat3("Light Position", (float*)&scene.config.lightPosition, 0.1f, -100, 100);
+			ImGui::ColorEdit4("Light Color", (float*)&scene.config.lightColor);
+			ImGui::SliderFloat("Light Intensity", &scene.config.lightIntensity, 0.0f, 10);
+
+			ImGui::Separator();
+
+			ImGui::Text("Skybox Settings");
+			if (ImGui::RadioButton("Day", scene.config.skyboxType == SkyboxType::DAY)) {
+				scene.config.skyboxType = SkyboxType::DAY;
+				scene.currentTexture = scene.cubemapTextureDay;
+			} ImGui::SameLine();
+			if (ImGui::RadioButton("Night", scene.config.skyboxType == SkyboxType::NIGHT)) {
+				scene.config.skyboxType = SkyboxType::NIGHT;
+				scene.currentTexture = scene.cubemapTextureNight;
+			}
+		}
+		
+		if (ImGui::CollapsingHeader("Grass Settings"))
+		{
+
+			ImGui::SliderInt("Number of patches", &scene.config.numPatches, 1, MAX_PATCHES);
+			ImGui::SliderInt("Patch density", &scene.config.patchDensity, 0, MAX_PATCH_DENSITY_BLADES);
+			//ImGui::InputInt("Patch density value:", &scene.config.patchDensity, 100, 1000);
+			scene.config.patchDensity = glm::clamp(scene.config.patchDensity, 0, (int)MAX_PATCH_DENSITY_BLADES);
+		}
+
+		if (ImGui::CollapsingHeader("Wind Settings"))
+		{
+			ImGui::SliderFloat("Sway Reach", &scene.config.swayReach, 0.0f, 1.0f);
+			ImGui::SliderFloat("Wind Strength", &scene.config.windStrength, 0, 0.5f);
+		}
+
+		
 		ImGui::End();
 	}
 	ImGui::Render();

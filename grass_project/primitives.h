@@ -29,8 +29,12 @@ static std::vector<float> grassPatchPositions{ -5.0f, 0.0f, -5.0f,
 								   5.0f, 0.0f, 5.0f,
 								   -5.0f, 0.0f, 5.0f};
 
+//static std::vector<unsigned int> grassPatchIndices{ 0, 1, 3,
+//											 1, 2, 3};
+
+
 static std::vector<unsigned int> grassPatchIndices{ 0, 1, 3,
-											 1, 2, 3};
+											 1, 2, 3 };
 
 static std::vector<float> grassPatchColors{ .6f, .58f, .27f, 1.f,
 								.6f, .58f, .27f, 1.f,

@@ -18,6 +18,12 @@ enum class SkyboxType {
 	NIGHT
 };
 
+enum class BladeDistribution {
+	HARRY_STYLES_WITH_RANDOS,
+	HARRY_STYLES,
+	ONE_DIRECTION
+};
+
 /* All variables that can be configured using the GUI
  */
 struct Config {
@@ -32,9 +38,9 @@ struct Config {
 	float ambientStrength = 0.5f;
 	SkyboxType skyboxType = SkyboxType::NIGHT;
 	int numPatches = 9;
-	glm::vec2 windDirection = { 1.0, 1.0 };
 	glm::vec4 lightColor = { 1.0, 1.0, 1.0, 1.0 };
 	float lightIntensity = 10;
+	BladeDistribution bladeDistribution = BladeDistribution::HARRY_STYLES_WITH_RANDOS;
 };
 
 

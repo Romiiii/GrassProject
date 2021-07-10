@@ -48,16 +48,18 @@ void main()
 	vec4 actual_pos;
 	vec2 texture_pixel;
 	if(gl_VertexID == 2) { // only sway the top vertex
-		vec4 world_pos = model * instanceMatrix * vec4(pos, 1.0);
-		actual_pos = world_pos * perlinSampleScale; // get the world coordinates of the vertices instead of the model coordinates
+		vec3 patch_pos = pos + vec3(5.0f, 0.0f, 5.0f);
+		vec4 world_pos = model * instanceMatrix * vec4(patch_pos, 1.0);
+
+		actual_pos = (world_pos * perlinSampleScale);// - vec4(5.0f, 0.0f, 5.0f, 0.0f); // get the world coordinates of the vertices instead of the model coordinates
 		//actual_pos = world_pos * perlinSampleScale; // get the world coordinates of the vertices instead of the model coordinates
 		actual_pos.x = map2(actual_pos.x, -5.0f, 5.0f, 0.0f, 1.0f);
 		actual_pos.z = map2(actual_pos.z, -5.0f, 5.0f, 0.0f, 1.0f);
 
 
 		// texture_pixel = vec2(actual_pos.x + currentTime * windStrength, actual_pos.z + currentTime * windStrength);
+		//texture_pixel = vec2(actual_pos.x - 5.0f, actual_pos.z - 5.0f + currentTime * windStrength);
 		texture_pixel = vec2(actual_pos.x, actual_pos.z + currentTime * windStrength);
-
 
 		//float noise = texture(perlinNoise, actual_pos.xz).r;
 		float noise = texture(perlinNoise, texture_pixel).r;
@@ -76,6 +78,7 @@ void main()
 //		gl_Position = projection * view * model * instanceMatrix * vec4(pos.x, pos.y, z, 1.0);
 	} else {
 		gl_Position = projection * view * model * instanceMatrix * vec4(pos, 1.0);
+		//gl_Position = gl_Position.zyxw;
 	}
 	//gl_Position = projection * view * instanceMatrix * vec4(pos, 1.0);	
 	Normal = mat3(model * instanceMatrix) * normal;  

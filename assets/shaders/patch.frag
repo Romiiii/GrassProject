@@ -45,7 +45,7 @@ void main()
 	//vec2 uv = UV + currentTime * windStrength;
 
 	vec2 uv = UV * perlinSampleScale;
-	uv.y += currentTime * windStrength;
+	uv.x += currentTime * windStrength;
 	vec4 textureColor = texture(perlinNoise, uv);
 	FragColor = textureColor; 
 
