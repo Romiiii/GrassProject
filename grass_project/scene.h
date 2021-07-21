@@ -41,6 +41,7 @@ struct Config {
 	glm::vec4 lightColor = { 1.0, 1.0, 1.0, 1.0 };
 	float lightIntensity = 10;
 	BladeDistribution bladeDistribution = BladeDistribution::HARRY_STYLES_WITH_RANDOS;
+	bool visualizeTexture = false;
 };
 
 

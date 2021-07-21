@@ -57,7 +57,6 @@ void PerlinNoise2DGPU(Texture& seedTexture, float* seedTextureData, ShaderProgra
 	GLCall(glBindImageTexture(0, computeShaderTexture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_R8));
 	GLCall(glBindImageTexture(1, seedTexture.getTextureID(), 0, GL_FALSE, 0,  GL_READ_ONLY, GL_R8));
 
-	computeShaderProgram->setInt("height", PERLIN_NOISE_TEXTURE_WIDTH);
 	computeShaderProgram->setInt("width", PERLIN_NOISE_TEXTURE_WIDTH);
 	computeShaderProgram->setInt("octaves", octaves);
 	computeShaderProgram->setFloat("bias", bias);

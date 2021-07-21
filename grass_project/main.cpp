@@ -457,7 +457,7 @@ void drawGui() {
 
 		if (ImGui::CollapsingHeader("Debug Settings"))
 		{
-
+			ImGui::Checkbox("Visualize Texture", &scene.config.visualizeTexture);
 
 
 			if (ImGui::Checkbox("Turn On Checker Mode", &scene.config.perlinConfig.makeChecker))

@@ -36,7 +36,7 @@ void main()
 	diffuse *= attenuation * lightIntensity;
 
 	vec4 result = (vec4(ambient,1.0f) + vec4(diffuse,1.0f)) * objectColor;
-	result = objectColor;
+	//result = objectColor;
 	FragColor = result; 
   
 	//if (FragPos.x < 10.0f)

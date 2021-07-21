@@ -84,6 +84,10 @@ void SceneObject::setUniforms(Scene& scene) {
 				scene.config.perlinSampleScale);
 			//std::cout << "hi" << std::endl;
 		}
+		else if (name == "visualizeTexture") {
+			shaderProgram.setBool("visualizeTexture", 
+				scene.config.visualizeTexture);
+		}
 
 		//printf("Uniform #%d Type: %u Name: %s\n", i, type, name);
 		// Get info and pass it to shaderProgram

@@ -1,7 +1,6 @@
 #version 430 core
 
 uniform int width;
-uniform int height;
 uniform int octaves;
 uniform float bias;
 uniform bool makeChecker;
