@@ -15,6 +15,7 @@ uniform float windStrength;
 uniform float currentTime;
 uniform float perlinSampleScale;
 uniform bool visualizeTexture;
+uniform vec2 windDirection;
 
 uniform sampler2D perlinNoise;
 
@@ -27,7 +28,6 @@ void main()
 	float distance = length(lightPos - FragPos);
 	float attenuation = 1.0 / (constant + linear * distance + quadratic * (distance * distance));
 
-	//vec3 lightColor = vec3(1.0, 1.0, 1.0);
 	vec3 norm = normalize(Normal);
 	vec3 lightDir = normalize(lightPos - FragPos);  
 	
@@ -37,24 +37,19 @@ void main()
 
 	vec4 objectColor = vtxColor;
 
-	//ambient *= attenuation;
 	diffuse *= attenuation * lightIntensity;
 
 	
 	vec4 result = (vec4(ambient,1.0f) + vec4(diffuse,1.0f)) * objectColor;
 	FragColor = result; 
 
-	//vec2 uv = UV + currentTime * windStrength;
 	if (visualizeTexture)
 	{
 		vec2 uv = UV * perlinSampleScale;
-		uv.x += currentTime * windStrength;
+		uv += currentTime * windStrength * windDirection;
 		vec4 textureColor = texture(perlinNoise, uv);
 		FragColor = textureColor; 
 	}
-
-	// Visualize UVs
-	//FragColor = vec4(UV.xy, 0, 1);
   
 	if(FragColor.a < 0.1) discard;
 }

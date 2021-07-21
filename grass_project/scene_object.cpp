@@ -88,6 +88,9 @@ void SceneObject::setUniforms(Scene& scene) {
 			shaderProgram.setBool("visualizeTexture", 
 				scene.config.visualizeTexture);
 		}
+		else if (name == "windDirection") {
+			shaderProgram.setVec2("windDirection", scene.config.windDirection);
+		}
 
 		//printf("Uniform #%d Type: %u Name: %s\n", i, type, name);
 		// Get info and pass it to shaderProgram

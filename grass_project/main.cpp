@@ -540,6 +540,10 @@ void drawGui() {
 		{
 			ImGui::SliderFloat("Sway Reach", &scene.config.swayReach, 0.0f, 1.0f);
 			ImGui::SliderFloat("Wind Strength", &scene.config.windStrength, 0, 0.5f);
+			if (ImGui::DragFloat2("Wind Direction", (float*)&scene.config.windDirection, 
+				0.1f, -1.0f, 1.0f)) {
+				scene.config.windDirection = glm::normalize(scene.config.windDirection);
+			}
 		}
 
 		

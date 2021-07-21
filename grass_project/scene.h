@@ -42,6 +42,7 @@ struct Config {
 	float lightIntensity = 10;
 	BladeDistribution bladeDistribution = BladeDistribution::HARRY_STYLES_WITH_RANDOS;
 	bool visualizeTexture = false;
+	glm::vec2 windDirection = { 0.0f, -1.0f };
 };
 
 
