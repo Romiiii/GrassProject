@@ -45,6 +45,7 @@ void main()
 //	}
 //
 //
+	vec4 wind_direction = vec4(0.0f, 0.0f, 1.0f, 0.0f);
 	vec4 actual_pos;
 	vec2 texture_pixel;
 	if(gl_VertexID == 2) { // only sway the top vertex
@@ -66,9 +67,10 @@ void main()
 		noise = (noise - 0.5f) * 2.0f;
 		float swag = swayReach * noise;
 
+		vec4 world_space_position = model * instanceMatrix * vec4(pos.xyz, 1.0);
 		//float noise = 0.0f;
 		//gl_Position = projection * view * model * instanceMatrix * vec4(pos.x, pos.y, pos.z + noise, 1.0);
-		gl_Position = projection * view * model * instanceMatrix * vec4(pos.x + swag, pos.y, pos.z + swag, 1.0);
+		gl_Position = projection * view * (world_space_position + wind_direction * swag);
 		//gl_Position = projection * view * model * instanceMatrix * vec4(pos.x, noise_y, pos.z, 1.0);
 		//gl_Position.y = perlinSampleScale;
 		// SINUS WAVE WIND
