@@ -91,6 +91,9 @@ void SceneObject::setUniforms(Scene& scene) {
 		else if (name == "windDirection") {
 			shaderProgram.setVec2("windDirection", scene.config.windDirection);
 		}
+		else if (name == "debugBlades") {
+			shaderProgram.setBool("debugBlades", scene.config.debugBlades);
+		}
 
 		//printf("Uniform #%d Type: %u Name: %s\n", i, type, name);
 		// Get info and pass it to shaderProgram

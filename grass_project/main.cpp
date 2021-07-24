@@ -372,7 +372,16 @@ glm::vec2 calculateSpiralPosition(int n) {
 void initSceneObjects(Patch& patch) {
 
 	patch.init(MAX_PATCH_DENSITY_BLADES, patchShaderProgram);
-	patch.initHarryEdwardStylesBladeMatrices();
+	if (scene.config.bladeDistribution == BladeDistribution::HARRY_STYLES_WITH_RANDOS) {
+		patch.initHarryEdwardStylesBladeMatrices();
+	}
+	else if (scene.config.bladeDistribution == BladeDistribution::HARRY_STYLES) {
+		patch.initHarryEdwardStylesBladeMatrices(false);
+	}
+	else if (scene.config.bladeDistribution == BladeDistribution::ONE_DIRECTION) {
+		patch.initOneDirectionBladeMatrices();
+	}
+	
 	createInstanceMatrixBuffer(patch.getBladeMatrices(), MAX_PATCH_DENSITY_BLADES);
 
 	SceneObjectArrays* skybox = new SceneObjectArrays(cubePositions, *skyboxShaderProgram);
@@ -458,6 +467,8 @@ void drawGui() {
 		if (ImGui::CollapsingHeader("Debug Settings"))
 		{
 			ImGui::Checkbox("Visualize Texture", &scene.config.visualizeTexture);
+			ImGui::SameLine;
+			ImGui::Checkbox("Debug Blades", &scene.config.debugBlades);
 
 
 			if (ImGui::Checkbox("Turn On Checker Mode", &scene.config.perlinConfig.makeChecker))
@@ -540,10 +551,11 @@ void drawGui() {
 		{
 			ImGui::SliderFloat("Sway Reach", &scene.config.swayReach, 0.0f, 1.0f);
 			ImGui::SliderFloat("Wind Strength", &scene.config.windStrength, 0, 0.5f);
-			if (ImGui::DragFloat2("Wind Direction", (float*)&scene.config.windDirection, 
-				0.1f, -1.0f, 1.0f)) {
+			ImGui::DragFloat2("Wind Direction", (float*)&scene.config.windDirection,
+				0.1f, -1.0f, 1.0f);
+			if (ImGui::Button("Normalize"))
 				scene.config.windDirection = glm::normalize(scene.config.windDirection);
-			}
+
 		}
 
 		

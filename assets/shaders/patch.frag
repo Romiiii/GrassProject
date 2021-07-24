@@ -6,6 +6,7 @@ in  vec4 vtxColor;
 in vec3 Normal;
 in vec3 FragPos;
 in vec2 UV;
+in vec3 vtxPos;
 
 uniform float ambientStrength; 
 uniform vec3 lightPos; 
@@ -18,6 +19,11 @@ uniform bool visualizeTexture;
 uniform vec2 windDirection;
 
 uniform sampler2D perlinNoise;
+
+float map2(float x, float in_min, float in_max, float out_min, float out_max)
+{
+  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
 
 void main()
 {
@@ -37,19 +43,29 @@ void main()
 
 	vec4 objectColor = vtxColor;
 
+	if (visualizeTexture)
+	{
+		//vec2 uv = (UV * perlinSampleScale) + vtxPos.xz;
+		//uv += currentTime * windStrength * windDirection.yx;
+		
+		vec4 actual_pos = vec4(vtxPos, 1.0f) * perlinSampleScale;
+		actual_pos.x = map2(actual_pos.x, -5.0f, 5.0f, 0.0f, 1.0f);
+		actual_pos.z = map2(actual_pos.z, -5.0f, 5.0f, 0.0f, 1.0f);
+		
+		vec2 texture_pixel = actual_pos.xz + (currentTime * windStrength * windDirection);
+
+
+		vec4 textureColor = texture(perlinNoise, texture_pixel);
+		objectColor = textureColor; 
+	}
+
 	diffuse *= attenuation * lightIntensity;
 
 	
 	vec4 result = (vec4(ambient,1.0f) + vec4(diffuse,1.0f)) * objectColor;
 	FragColor = result; 
 
-	if (visualizeTexture)
-	{
-		vec2 uv = UV * perlinSampleScale;
-		uv += currentTime * windStrength * windDirection;
-		vec4 textureColor = texture(perlinNoise, uv);
-		FragColor = textureColor; 
-	}
+
   
 	if(FragColor.a < 0.1) discard;
 }

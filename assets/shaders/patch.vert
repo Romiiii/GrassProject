@@ -9,6 +9,7 @@ out vec4 vtxColor;
 out vec3 Normal;
 out vec3 FragPos;
 out vec2 UV;
+out vec3 vtxPos;
 
 uniform mat4 projection;
 uniform mat4 view;
@@ -23,5 +24,8 @@ void main()
    FragPos = vec3(model * vec4(pos, 1.0));
    vtxColor = color;
    UV = uvs;
+
+   vec3 patch_pos = pos + vec3(5.0f, 0.0f, 5.0f);
+   vtxPos = (model * vec4(patch_pos, 1.0)).xyz;
 }
 
