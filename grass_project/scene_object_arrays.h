@@ -16,6 +16,10 @@
 #include "scene_object.h"
 #include "scene.h"
 
+ /*
+  * The SceneObjectsArrays class handles the vertex information of the
+  * objects using arrays and draws them on the screen.
+  */
 class SceneObjectArrays : public SceneObject {
 public:
 	SceneObjectArrays(const std::vector<float>& positions, ShaderProgram& shaderProgram);

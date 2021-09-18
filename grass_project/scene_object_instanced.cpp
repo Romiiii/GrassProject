@@ -66,8 +66,9 @@ void SceneObjectInstanced::draw(Scene& scene) {
 
 	GLCall(glBindVertexArray(VAO));
 	//glBindBuffer(GL_ARRAY_BUFFER, instanceMatrixBuffer);
-	// Draw patchDensity triangles of 3 vertices each
-	GLCall(glDrawArraysInstanced(GL_TRIANGLES, 0, 3, scene.config.patchDensity));
+	// Draw patchDensity triangles of 12 indices each
+	//GLCall(glDrawArraysInstanced(GL_TRIANGLES, 0, 5, scene.config.patchDensity));
+	GLCall(glDrawElementsInstanced(GL_TRIANGLES, vertexCount, GL_UNSIGNED_INT, NULL, scene.config.patchDensity));
 	GLCall(glBindVertexArray(0));
 }
 

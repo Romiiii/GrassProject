@@ -10,19 +10,44 @@
 #include <string>
 
 
-static std::vector<float> grassPositions{ 0.0f, 0.0f, 0.0f,
-								   0.1f, 0.0f, 0.0f,
-								   0.1f, 0.5f, 0.0f };
+static std::vector<float> grassPositions{	0.0f, 0.0f, 0.0f,
+											-0.02f, 0.1f, 0.0f,
+											0.0f, 0.2f, 0.0f,
+											0.02f, 0.1f, 0.0f,
+											0.0f, 0.5f, 0.0f,
+															};
 
-static std::vector<unsigned int> grassIndices{ 0, 1, 2 };
 
-static std::vector<float> grassColors{ .46f, .50f, .17f, 1.f,
-								 .46f, .50f, .17f, 1.f,
-								.38f, .47f, .17f, 1.f};
+static std::vector<float> grassUVs{ 0.0f, 0.0f, 
+									0.0f, 0.2f,
+									0.5f, 0.4f,
+									1.0f, 0.2f,
+									0.5f, 1.0f
+											};
+
+//static std::vector<unsigned int> grassIndices{	0, 3, 2,
+//												0, 2, 1,
+//												1, 2, 4,
+//												2, 3, 4};
+
+
+static std::vector<unsigned int> grassIndices{ 0, 2, 3,
+												0, 1, 2,
+												1, 4, 2,
+												2, 4, 3 };
+
+static std::vector<float> grassColors{	.56f, .60f, .17f, 1.f,
+										.46f, .50f, .17f, 1.f,
+										.56f, .60f, .17f, 1.f,
+										.46f, .50f, .17f, 1.f,
+										.46f, .50f, .17f, 1.f,
+										};
 
 static std::vector<float> grassNormals{ 0.0f, 0.0f, 1.0f,
-								   0.0f, 0.0f, 1.0f,
-								   0.0f, 0.0f, 1.0f };
+										0.0f, 0.0f, 1.0f,
+										0.0f, 0.0f, 1.0f,
+										0.0f, 0.0f, 1.0f,
+										0.0f, 0.0f, 1.0f };
 
 static std::vector<float> grassPatchPositions{ -5.0f, 0.0f, -5.0f,
 								   5.0f, 0.0f, -5.0f,

@@ -22,7 +22,7 @@ public:
 	SceneObject(ShaderProgram& shaderProgram);
 	virtual void draw(Scene& scene) = 0;
 	void setUniforms(Scene& scene);
-	glm::mat4 model = glm::mat4(1) * glm::translate(glm::mat4(1), { 2,3,4 });
+	glm::mat4 model;// = glm::mat4(1) * glm::translate(glm::mat4(1), { 2,3,4 });
 
 protected:
 	unsigned int VAO = 0;

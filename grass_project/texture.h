@@ -4,11 +4,14 @@
 #ifndef TEXTURE_H
 #define TEXTURE_H
 
+ // Supress third party warnings
+#pragma warning (push, 0)
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include <stb_image.h>  // For loading textures from images
 #include <vector>
+#pragma warning (pop)
 
 #include "debug.h"
 
@@ -23,6 +26,8 @@ public:
 	 * \return textureID
 	 */
 	unsigned int loadTexture(std::string fileName, bool alpha = true);
+
+	unsigned int loadTextureSingleChannel(const std::string& name, int perlinNoiseSize);
 
 	void generateTexture(void* data, int width, int height, GLenum format);
 	
@@ -44,7 +49,7 @@ public:
 	unsigned int getTextureID();
 
 private:
-	unsigned int textureID;
+	GLuint textureID;
 };
 
 #endif

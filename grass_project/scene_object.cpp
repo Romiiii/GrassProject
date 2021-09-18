@@ -75,13 +75,13 @@ void SceneObject::setUniforms(Scene& scene) {
 		else if (name == "perlinNoise") {
 			//glBindTexture(GL_TEXTURE_2D, scene.perlinNoiseID);
 			//GLCall(glBindImageTexture(1, scene.perlinNoiseID, 0, GL_FALSE, 0, GL_READ_ONLY, GL_R8));
-			GLCall(glActiveTexture(GL_TEXTURE0 + scene.perlinNoiseID));
-			GLCall(glBindTexture(GL_TEXTURE_2D, scene.perlinNoiseID));
-			shaderProgram.setInt("perlinNoise", scene.perlinNoiseID);
+			GLCall(glActiveTexture(GL_TEXTURE0 + scene.perlinNoise->getTextureID()));
+			GLCall(glBindTexture(GL_TEXTURE_2D, scene.perlinNoise->getTextureID()));
+			shaderProgram.setInt("perlinNoise", scene.perlinNoise->getTextureID());
 		}
 		else if (name == "perlinSampleScale") {
 			shaderProgram.setFloat("perlinSampleScale",
-				scene.config.perlinSampleScale);
+				scene.config.perlinConfig.perlinSampleScale);
 			//std::cout << "hi" << std::endl;
 		}
 		else if (name == "visualizeTexture") {

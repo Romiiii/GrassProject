@@ -32,8 +32,6 @@ struct Config {
 	WindType windType = WindType::TRIG_SIMPLE;
 	float windStrength = 0.0f;
 	float swayReach = 0.3f;
-	float perlinSampleScale = 1.0f;
-	int perlinTexture = 1;  // Either 1 or 2
 	glm::vec3 lightPosition = glm::vec3(0.0, 15.0, 0.0);
 	float ambientStrength = 0.5f;
 	SkyboxType skyboxType = SkyboxType::NIGHT;
@@ -60,7 +58,6 @@ public:
 	Texture* cubemapTextureDay = nullptr;
 	Texture* cubemapTextureNight = nullptr;
 	Texture* perlinNoise = nullptr;
-	GLuint perlinNoiseID = 0;
 	glm::mat4 projection = glm::mat4(1);
 	glm::mat4 view = glm::mat4(1);
 	SceneObject* light = nullptr;

@@ -10,6 +10,7 @@ struct PerlinConfig {
 	bool makeChecker = false;
 	int octaves = 9;
 	float bias = 2.0f;
+	float perlinSampleScale = 1.0f;
 };
 
 void PerlinNoise2DCPU(int nWidth, int nHeight, int nOctaves, float fBias, float* fOutput, float* fSeed);

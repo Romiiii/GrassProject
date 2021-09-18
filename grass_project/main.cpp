@@ -4,8 +4,9 @@
  * This project was created as part of the Graphics Programming course
  * at the IT University of Copenhagen.
 */
-#define STB_IMAGE_IMPLEMENTATION
 
+// Supress third party warnings
+#pragma warning (push, 0)
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
@@ -19,6 +20,10 @@
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
+#pragma warning (pop)
+#define STB_IMAGE_IMPLEMENTATION
+
+
 
 #include "patch.h"
 #include "shader.h"
@@ -190,15 +195,6 @@ int main()
 		scene.updateDynamic();
 		scene.render();
 
-		//GLCall(glActiveTexture(GL_TEXTURE0 + computeShaderTexture));
-		//GLCall(glBindTexture(GL_TEXTURE_2D, computeShaderTexture));
-
-
-		//computeFragmentShaderProgram->use();
-
-
-		
-
 
 
 		if (isPaused) {
@@ -284,23 +280,11 @@ void initShadersAndTextures() {
 	lightFragmentShader = new Shader("assets/shaders/light.frag", GL_FRAGMENT_SHADER);
 	lightShaderProgram = new ShaderProgram({ lightVertexShader, lightFragmentShader }, "LIGHT SHADER");
 
-	GLCall(glGenTextures(1, &scene.perlinNoiseID));
-	GLCall(glObjectLabel(GL_TEXTURE, scene.perlinNoiseID, -1, "perlinNoise"));
-	GLCall(glBindTexture(GL_TEXTURE_2D, scene.perlinNoiseID));
-	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
-	GLCall(glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, PERLIN_NOISE_TEXTURE_WIDTH, PERLIN_NOISE_TEXTURE_WIDTH, 0, GL_RED, GL_FLOAT, 0));
-	GLCall(glBindImageTexture(0, scene.perlinNoiseID, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_R8));
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	scene.perlinNoise = new Texture();
+	scene.perlinNoise->loadTextureSingleChannel("perlinNoise", PERLIN_NOISE_TEXTURE_WIDTH);
 
 	computeShader = new Shader("assets/shaders/compute.comp", GL_COMPUTE_SHADER);
 	computeShaderProgram = new ShaderProgram({ computeShader }, "COMPUTE SHADER");
-	
-	//computeFragmentShader = new Shader("assets/shaders/compute.frag", GL_FRAGMENT_SHADER);
-	//computeFragmentShaderProgram = new ShaderProgram({ computeFragmentShader }, "COMPUTE FRAGMENT SHADER
-
-
 
 	scene.cubemapTextureDay = &cubemapTextureDay;
 	scene.cubemapTextureNight = &cubemapTextureNight;
@@ -309,23 +293,7 @@ void initShadersAndTextures() {
 	int width = PERLIN_NOISE_TEXTURE_WIDTH;
 	int height = PERLIN_NOISE_TEXTURE_WIDTH;
 
-	//perlinNoiseTextureData = new float[(long)width * height];
-
-
-
-	seedTextureData = new float[width * height];
-	//for (int i = 0; i < PERLIN_NOISE_TEXTURE_WIDTH * PERLIN_NOISE_TEXTURE_WIDTH; i++) seedTextureData[i] = (float)rand() / (float)RAND_MAX;
-
-
-	/*perlinNoiseTexture.generateTexture(perlinNoiseTextureData, width, height, GL_RED);
-
-	GLCall(glBindTexture(GL_TEXTURE_2D, seedTexture.getTextureID()));
-	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
-	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
-	GLCall(glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, PERLIN_NOISE_TEXTURE_WIDTH, PERLIN_NOISE_TEXTURE_WIDTH, 0, GL_RED, GL_FLOAT, 0));*/
-
-	//PerlinNoise2DCPU(width, height, 9, 2.0f, perlinNoiseTextureData, seedTextureData);
-
+	seedTextureData = new float[(size_t)(width) * (size_t)height];
 	seedTexture.generateTexture(seedTextureData, width, height, GL_RED);
 
 	// Set up the z-buffer
@@ -395,12 +363,12 @@ void initSceneObjects(Patch& patch) {
 		
 		glm::vec2 position = calculateSpiralPosition(i) * 10.0f;
 		SceneObjectIndexed* patchSceneObject = new SceneObjectIndexed(grassPatchPositions, grassPatchColors,
-			grassPatchIndices, grassPatchNormals, *patchShaderProgram, grassPatchUVs);
+			grassPatchIndices, grassPatchNormals, *patchShaderProgram);
 		patchSceneObject->model = glm::translate(position.x, 0, position.y);
 		scene.patches.push_back(patchSceneObject);
 
 		SceneObjectInstanced* blades = new SceneObjectInstanced(grassPositions, grassColors,
-			grassIndices, grassNormals, instanceMatrixBuffer, *bladesShaderProgram);
+			grassIndices, grassNormals, instanceMatrixBuffer, *bladesShaderProgram, &grassUVs);
 		blades->model = patchSceneObject->model;
 		scene.blades.push_back(blades);
 	}
@@ -411,7 +379,7 @@ void generatePerlinNoise() {
 	// Initialize seed data
 	for (int i = 0; i < PERLIN_NOISE_TEXTURE_WIDTH * PERLIN_NOISE_TEXTURE_WIDTH; i++) seedTextureData[i] = (float)rand() / (float)RAND_MAX;
 
-	PerlinNoise2DGPU(seedTexture, seedTextureData, computeShaderProgram, scene.perlinNoiseID, scene.config.perlinConfig.octaves, scene.config.perlinConfig.bias, scene.config.perlinConfig.makeChecker);
+	PerlinNoise2DGPU(seedTexture, seedTextureData, computeShaderProgram, scene.perlinNoise->getTextureID(), scene.config.perlinConfig.octaves, scene.config.perlinConfig.bias, scene.config.perlinConfig.makeChecker);
 
 	// Upload texture to IMGUI
 	perlinNoiseTexture.loadTextureData(perlinNoiseTextureData, PERLIN_NOISE_TEXTURE_WIDTH, PERLIN_NOISE_TEXTURE_WIDTH, GL_RED);
@@ -467,13 +435,12 @@ void drawGui() {
 		if (ImGui::CollapsingHeader("Debug Settings"))
 		{
 			ImGui::Checkbox("Visualize Texture", &scene.config.visualizeTexture);
-			ImGui::SameLine;
+			ImGui::SameLine();
 			ImGui::Checkbox("Debug Blades", &scene.config.debugBlades);
-
+			ImGui::SameLine();
 
 			if (ImGui::Checkbox("Turn On Checker Mode", &scene.config.perlinConfig.makeChecker))
 				generatePerlinNoise();
-			ImGui::SameLine;
 			ImGui::Text("Harry Styles Settings");
 			if (ImGui::RadioButton("Harry Styles With Randos", scene.config.bladeDistribution == BladeDistribution::HARRY_STYLES_WITH_RANDOS)) {
 				scene.config.bladeDistribution = BladeDistribution::HARRY_STYLES_WITH_RANDOS;
@@ -509,12 +476,12 @@ void drawGui() {
 			// perlinSampleScale zooms the image in
 		/*	ImGui::Image((ImTextureID)(long long)scene.perlinNoiseID, { width, width }, { 0,0 }, { scene.config.perlinSampleScale, scene.config.perlinSampleScale } );*/
 
-			ImGui::Image((ImTextureID)(long long)scene.perlinNoiseID, { width, width }, { 0.0f,0.0f }, { scene.config.perlinSampleScale, scene.config.perlinSampleScale });
+			ImGui::Image((ImTextureID)(long long)scene.perlinNoise->getTextureID(), { width, width }, { 0.0f,0.0f }, { scene.config.perlinConfig.perlinSampleScale, scene.config.perlinConfig.perlinSampleScale });
 
 			//ImGui::Image()
 
 
-			ImGui::SliderFloat("Perlin Sample Scale", &scene.config.perlinSampleScale, 0.05f, 1.0f);
+			ImGui::SliderFloat("Perlin Sample Scale", &scene.config.perlinConfig.perlinSampleScale, 0.05f, 1.0f);
 		}
 
 

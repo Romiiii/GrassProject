@@ -2,7 +2,10 @@
 layout (location = 0) in vec3 pos;
 layout (location = 1) in vec4 color;
 layout (location = 2) in vec3 normal;
-layout (location = 3) in mat4 instanceMatrix;
+layout (location = 3) in vec2 uvs;
+// instanceMatrix also uses locations 5, 6 & 7
+layout (location = 4) in mat4 instanceMatrix;
+
 
 out vec4 vtxColor;
 out vec3 Normal;
@@ -39,34 +42,33 @@ void main()
 			vtxColor = vec4(0.0f, 0.0f, 1.0f, 1.0f);
 		}
 	}
-	if(gl_VertexID == 2) { // only sway the top vertex
-		vec3 patch_pos = pos + vec3(5.0f, 0.0f, 5.0f);
-		vec4 world_pos = model * instanceMatrix * vec4(patch_pos, 1.0);
 
-		// Get the world coordinates of the vertices instead of the model coordinates
-		actual_pos = (world_pos * perlinSampleScale);  
-		actual_pos.x = map2(actual_pos.x, -5.0f, 5.0f, 0.0f, 1.0f);
-		actual_pos.z = map2(actual_pos.z, -5.0f, 5.0f, 0.0f, 1.0f);
+	vec3 patch_pos = pos + vec3(5.0f, 0.0f, 5.0f);
+	vec4 world_pos = model * instanceMatrix * vec4(patch_pos, 1.0);
 
-		vec2 wind_direction = windDirection;
+	// Get the world coordinates of the vertices instead of the model coordinates
+	actual_pos = (world_pos * perlinSampleScale);  
+	actual_pos.x = map2(actual_pos.x, -5.0f, 5.0f, 0.0f, 1.0f);
+	actual_pos.z = map2(actual_pos.z, -5.0f, 5.0f, 0.0f, 1.0f);
 
-		texture_pixel = actual_pos.xz + (currentTime * windStrength * wind_direction);
+	vec2 wind_direction = windDirection;
 
-		float noise = texture(perlinNoise, texture_pixel).r;
-		if (debugBlades)
-			vtxColor = vec4(noise, 0.0f, 0.0f, 1.0f); 
-		noise = (noise - 0.5f) * 2.0f;
-		float swag = swayReach * noise;
+	texture_pixel = actual_pos.xz + (currentTime * windStrength * wind_direction);
+
+	float noise = texture(perlinNoise, texture_pixel).r;
+	if (debugBlades)
+		vtxColor = vec4(noise, 0.0f, 0.0f, 1.0f); 
+	noise = (noise - 0.5f) * 2.0f;
+	// Multiply by the y value of the UV which represents how the wind affects the specific vertex
+	float swag = swayReach * noise* uvs.y * uvs.y;
 
 	
 
-		vec4 world_space_position = model * instanceMatrix * vec4(pos.xyz, 1.0);
-		vec4 wind_contribution = vec4(wind_direction.x, 0.0f, wind_direction.y, 0.0f) * swag;
+	vec4 world_space_position = model * instanceMatrix * vec4(pos, 1.0);
+	vec4 wind_contribution = vec4(wind_direction.x, 0.0f, wind_direction.y, 0.0f) * swag;
 
-		gl_Position = projection * view * (world_space_position + wind_contribution);
-	} else {
-		gl_Position = projection * view * model * instanceMatrix * vec4(pos, 1.0);
-	}	
+	gl_Position = projection * view * (world_space_position + wind_contribution);
+
 	Normal = mat3(model * instanceMatrix) * normal;  
 	FragPos = vec3(model * instanceMatrix * vec4(pos, 1.0));
 }
