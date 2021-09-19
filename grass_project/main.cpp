@@ -236,6 +236,7 @@ GLFWwindow* initGLFWWindow() {
 		return NULL;
 	}
 	glfwMakeContextCurrent(window);
+	glfwSwapInterval(0);
 	glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
 	glfwSetCursorPosCallback(window, cursorInputCallback);
 	// Hide the cursor and capture it
