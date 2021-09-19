@@ -68,7 +68,7 @@ void SceneObject::setUniforms(Scene& scene) {
 				scene.config.lightIntensity);
 		}
 		else if (name == "skybox") {
-			scene.currentTexture->bindTextureCubeMap();
+			scene.currentTexture->bind();
 			shaderProgram.setInt("skybox", 
 				scene.currentTexture->getTextureID());
 		}

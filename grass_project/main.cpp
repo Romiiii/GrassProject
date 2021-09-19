@@ -21,7 +21,6 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 #pragma warning (pop)
-#define STB_IMAGE_IMPLEMENTATION
 
 
 
@@ -236,6 +235,7 @@ GLFWwindow* initGLFWWindow() {
 		return NULL;
 	}
 	glfwMakeContextCurrent(window);
+
 	glfwSwapInterval(0);
 	glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
 	glfwSetCursorPosCallback(window, cursorInputCallback);
