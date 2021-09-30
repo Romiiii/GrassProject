@@ -34,7 +34,6 @@ void SceneObjectIndexed::createVertexArray(
 		setVertexShaderAttribute("uvs", *uvs, 2, shaderProgram);
 	}
 	
-
 	// Create and bind the EBO
 	createElementArrayBuffer(indices);
 

@@ -5,14 +5,6 @@
 void PerlinNoise2DCPU(int nWidth, int nHeight, int nOctaves, float fBias, float* fOutput, float* fSeed)
 
 {
-
-	//float* fSeed = new float[(long)nWidth * (long)nHeight];
-
-	//for (int i = 0; i < nWidth * nHeight; i++) fSeed[i] = (float)rand() / (float)RAND_MAX;
-
-	//for (int i = 0; i < nWidth * nHeight; i++) fSeed[i] = i/((float)nWidth*nHeight);
-
-
 	for (int x = 0; x < nWidth; x++)
 	{
 		for (int y = 0; y < nHeight; y++)
@@ -62,6 +54,5 @@ void PerlinNoise2DGPU(Texture& seedTexture, float* seedTextureData, ShaderProgra
 	computeShaderProgram->setFloat("bias", bias);
 	computeShaderProgram->setBool("makeChecker", makeChecker);
 	
-
 	GLCall(glDispatchCompute(PERLIN_NOISE_TEXTURE_WIDTH / 16, PERLIN_NOISE_TEXTURE_WIDTH / 16, 1));
 }

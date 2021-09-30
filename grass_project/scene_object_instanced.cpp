@@ -27,7 +27,8 @@ void SceneObjectInstanced::createVertexArray(
 	int instanceMatrixAttributeLocation = glGetAttribLocation(shaderProgram.getShaderProgramId(), "instanceMatrix");
 	GLCall(glEnableVertexAttribArray(instanceMatrixAttributeLocation));
 	GLCall(glBindBuffer(GL_ARRAY_BUFFER, instanceMatrixBuffer)); // this attribute comes from a different vertex buffer
-			// set attribute pointers for matrix (4 times vec4)
+	
+	// set attribute pointers for matrix (4 times vec4)
 	GLCall(glVertexAttribPointer(instanceMatrixAttributeLocation, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)0));
 	GLCall(glEnableVertexAttribArray(instanceMatrixAttributeLocation + 1));
 	GLCall(glVertexAttribPointer(instanceMatrixAttributeLocation + 1, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(glm::vec4))));
@@ -40,8 +41,6 @@ void SceneObjectInstanced::createVertexArray(
 	GLCall(glVertexAttribDivisor(instanceMatrixAttributeLocation + 1, 1));
 	GLCall(glVertexAttribDivisor(instanceMatrixAttributeLocation + 2, 1));
 	GLCall(glVertexAttribDivisor(instanceMatrixAttributeLocation + 3, 1));
-
-
 
 	// Set attributes
 	setVertexShaderAttribute("pos", positions, 3, shaderProgram);
@@ -65,9 +64,6 @@ void SceneObjectInstanced::draw(Scene& scene) {
 	setUniforms(scene);
 
 	GLCall(glBindVertexArray(VAO));
-	//glBindBuffer(GL_ARRAY_BUFFER, instanceMatrixBuffer);
-	// Draw patchDensity triangles of 12 indices each
-	//GLCall(glDrawArraysInstanced(GL_TRIANGLES, 0, 5, scene.config.patchDensity));
 	GLCall(glDrawElementsInstanced(GL_TRIANGLES, vertexCount, GL_UNSIGNED_INT, NULL, scene.config.patchDensity));
 	GLCall(glBindVertexArray(0));
 }

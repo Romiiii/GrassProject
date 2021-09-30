@@ -6,6 +6,11 @@
 #include "shader.h"
 #include "perlin_noise.h"
 
+
+/**
+* \brief Represents different types of techniques for simulating wind. 
+* Currently suports trigonometric functions and perlin noise
+*/
 enum class WindType {
 	TRIG_SIMPLE,
 	TRIG_COMPLEX_1,
@@ -13,18 +18,32 @@ enum class WindType {
 	PERLIN
 };
 
+/**
+* \brief Sets the appearance of the skybox
+*/
 enum class SkyboxType {
 	DAY,
 	NIGHT
 };
 
+/**
+* Represents how the blades are distributed
+*
+* HARRY_STYLES_WITH_RANDOS: Blades are distributed uniformly within the patch
+*							and have random rotations.
+* HARRY_STYLES:				Blades are distributed uniformly within the patch 
+*							and have no rotation.
+* ONE_DIRECTION:			Blades are places in a straight line in	the 
+*							middle of the patch and have no rotation.
+*/
 enum class BladeDistribution {
 	HARRY_STYLES_WITH_RANDOS,
 	HARRY_STYLES,
 	ONE_DIRECTION
 };
 
-/* All variables that can be configured using the GUI
+/**
+* All variables that can be configured using the GUI
  */
 struct Config {
 	PerlinConfig perlinConfig;
@@ -44,16 +63,23 @@ struct Config {
 	bool debugBlades = false;
 };
 
-
+/**
+* Contains all the elements contained in a scene, like the sceneObject
+* patches, blades, textures and lights. Updates and renders the scene accordingly.
+*/
 class Scene {
 public:
 	void addSceneObject(SceneObject* sceneObject);
+	/**
+	* Updates the dynamic scene objects, based on the user's settings.
+	* Currently only updates lights based on the position the user set.
+	*/
+	void updateDynamic();
+	void render();
+
 	std::vector<SceneObject*> sceneObjects;
 	std::vector<SceneObject*> patches;
 	std::vector<SceneObject*> blades;
-
-	void updateDynamic();
-	void render();
 	Texture* currentTexture = nullptr;
 	Texture* cubemapTextureDay = nullptr;
 	Texture* cubemapTextureNight = nullptr;
@@ -61,12 +87,10 @@ public:
 	glm::mat4 projection = glm::mat4(1);
 	glm::mat4 view = glm::mat4(1);
 	SceneObject* light = nullptr;
-
-
+	/**
+	* \brief All variables that can be configured using the GUI
+	*/
 	Config config;
-
-
 };
-
 
 #endif

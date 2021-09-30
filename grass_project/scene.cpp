@@ -8,25 +8,17 @@ void Scene::addSceneObject(SceneObject* sceneObject) {
 
 void Scene::updateDynamic() {
 	light->model = glm::translate(glm::mat4(1), config.lightPosition);
-	//light->model = glm::translate(scene.config.lightPosition.x, scene.config.lightPosition.y, scene.config.lightPosition.z);
 }
 
 void Scene::render() {
-	GLCall(glDepthFunc(GL_LEQUAL));
+	GLCall(glDepthFunc(GL_LEQUAL)); // Why do we have this?
+
 	for (auto object : sceneObjects) {
 		object->draw(*this);
 	}
+
 	for (int i = 0; i < config.numPatches; i++) {
 		patches[i]->draw(*this);
 		blades[i]->draw(*this);
 	}
 }
-//
-//void Scene::setModelMatrices() {
-//	for (auto object : sceneObjects) {
-//		if (patch) {
-//			
-//		}
-//		object->draw(*this, );
-//	}
-//}

@@ -19,10 +19,6 @@ void Patch::init(int numBlades, ShaderProgram* shaderProgram) {
 	this->bladeMatrices = new glm::mat4[numBlades];
 }
 
-/* Initializes the patch by calculating the coordinates of the blades.
-* Coordinates are sampled uniformly. A random rotation of the grass is
-* generated as well.
-*/
 void Patch::initHarryEdwardStylesBladeMatrices(bool useRandomRotations) {
 	float upperBoundX = std::max({ grassPatchPositions[0], grassPatchPositions[3], grassPatchPositions[6], grassPatchPositions[9] });
 	float lowerBoundX = std::min({ grassPatchPositions[0], grassPatchPositions[3], grassPatchPositions[6], grassPatchPositions[9] });
@@ -35,7 +31,7 @@ void Patch::initHarryEdwardStylesBladeMatrices(bool useRandomRotations) {
 
 	float middleX = (upperBoundX + lowerBoundX) / 2;
 
-	// Distribute the grass blades uniformly within the patch
+	// Distribute the blades uniformly within the patch
 	for (int x = 0; x < numBlades; x += 1) {
 		float randomPosX = generateRandomNumber(lowerBoundX, upperBoundX);
 		float randomPosZ = generateRandomNumber(lowerBoundZ, upperBoundZ);
@@ -46,6 +42,7 @@ void Patch::initHarryEdwardStylesBladeMatrices(bool useRandomRotations) {
 
 		bladeMatrices[x] = glm::translate(grassCoordinate);
 
+		// Apply a random rotation within the sway bounds to each blade
 		if (useRandomRotations) {
 
 			float randomRotX = generateRandomNumber(-swayX, swayX);
@@ -56,10 +53,6 @@ void Patch::initHarryEdwardStylesBladeMatrices(bool useRandomRotations) {
 	}
 }
 
-/* Initializes the patch by calculating the coordinates of the blades.
-* Coordinates are sampled uniformly. A random rotation of the grass is
-* generated as well.
-*/
 void Patch::initOneDirectionBladeMatrices() {
 	float upperBoundX = std::max({ grassPatchPositions[0], grassPatchPositions[3], grassPatchPositions[6], grassPatchPositions[9] });
 	float lowerBoundX = std::min({ grassPatchPositions[0], grassPatchPositions[3], grassPatchPositions[6], grassPatchPositions[9] });
@@ -72,7 +65,7 @@ void Patch::initOneDirectionBladeMatrices() {
 
 	float middleX = (upperBoundX + lowerBoundX) / 2;
 
-	// Distribute the grass blades uniformly within the patch
+	// Distribute the blades in the middle of the patch
 	for (int x = 0; x < numBlades; x += 1) {
 		float z = lowerBoundZ + ((upperBoundZ - lowerBoundZ) / (numBlades)) * x;
 

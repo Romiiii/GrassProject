@@ -15,8 +15,6 @@ void SceneObject::setUniforms(Scene& scene) {
 
 	const GLsizei bufSize = 128; // maximum name length
 	GLchar nameBuf[bufSize]; // variable name in GLSL
-	//std::string name;
-	//name.reserve(bufSize);
 	GLsizei length; // name length
 
 	glGetProgramiv(shaderProgram.getShaderProgramId(), GL_ACTIVE_UNIFORMS, 
@@ -27,6 +25,7 @@ void SceneObject::setUniforms(Scene& scene) {
 		glGetActiveUniform(shaderProgram.getShaderProgramId(), 
 			(GLuint)i, bufSize, &length, &size, &type, nameBuf);
 		std::string name = nameBuf;
+
 		if (name == "model") {
 			shaderProgram.setMat4("model", this->model);
 		}
@@ -58,7 +57,6 @@ void SceneObject::setUniforms(Scene& scene) {
 		}
 		else if (name == "swayReach") {
 			shaderProgram.setFloat("swayReach", scene.config.swayReach);
-			//std::cout << "hi" << std::endl;
 		}
 		else if (name == "lightColor") {
 			shaderProgram.setVec4("lightColor", scene.config.lightColor);
@@ -73,8 +71,6 @@ void SceneObject::setUniforms(Scene& scene) {
 				scene.currentTexture->getTextureID());
 		}
 		else if (name == "perlinNoise") {
-			//glBindTexture(GL_TEXTURE_2D, scene.perlinNoiseID);
-			//GLCall(glBindImageTexture(1, scene.perlinNoiseID, 0, GL_FALSE, 0, GL_READ_ONLY, GL_R8));
 			GLCall(glActiveTexture(GL_TEXTURE0 + scene.perlinNoise->getTextureID()));
 			GLCall(glBindTexture(GL_TEXTURE_2D, scene.perlinNoise->getTextureID()));
 			shaderProgram.setInt("perlinNoise", scene.perlinNoise->getTextureID());
@@ -82,7 +78,6 @@ void SceneObject::setUniforms(Scene& scene) {
 		else if (name == "perlinSampleScale") {
 			shaderProgram.setFloat("perlinSampleScale",
 				scene.config.perlinConfig.perlinSampleScale);
-			//std::cout << "hi" << std::endl;
 		}
 		else if (name == "visualizeTexture") {
 			shaderProgram.setBool("visualizeTexture", 
@@ -94,9 +89,6 @@ void SceneObject::setUniforms(Scene& scene) {
 		else if (name == "debugBlades") {
 			shaderProgram.setBool("debugBlades", scene.config.debugBlades);
 		}
-
-		//printf("Uniform #%d Type: %u Name: %s\n", i, type, name);
-		// Get info and pass it to shaderProgram
 	}
 }
 

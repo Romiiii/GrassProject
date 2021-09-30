@@ -31,8 +31,6 @@
 #include <glm/gtx/transform.hpp>
 #include <glm/gtx/transform2.hpp>
 
-//#include "traceinfo.h"
-
 namespace glm {
     /**
      * Creates a 4x4 matrix which performs a translation
