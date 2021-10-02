@@ -1,6 +1,8 @@
 #include "perlin_noise.h"
 #include <stdlib.h>  
 
+#include "debug.h"
+
 
 void PerlinNoise2DCPU(int nWidth, int nHeight, int nOctaves, float fBias, float* fOutput, float* fSeed)
 
