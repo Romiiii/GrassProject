@@ -16,6 +16,11 @@
 #include "scene_object.h"
 #include "scene.h"
 
+ /*
+  * Handles the vertex information of the SceneObjects that use instancing.
+  * Instancing allows drawing multiple instances of the same SceneObject at
+  * at once, improving performance.
+  */
 class SceneObjectInstanced : public SceneObject {
 public:
 	SceneObjectInstanced(
@@ -36,6 +41,5 @@ public:
 
 	void draw(Scene& scene) override;
 };
-
 
 #endif

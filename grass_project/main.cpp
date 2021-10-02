@@ -416,12 +416,8 @@ int main()
 		scene.projection = projection;
 		scene.view = view;
 
-
-		//drawScene();
 		scene.updateDynamic();
 		scene.render();
-
-
 
 		if (isPaused) {
 			drawGui();
@@ -556,6 +552,7 @@ glm::vec2 calculateSpiralPosition(int n) {
 void initSceneObjects(Patch &patch) {
 
 	patch.init(MAX_PATCH_DENSITY_BLADES, patchShaderProgram);
+
 	if (scene.config.bladeDistribution == BladeDistribution::HARRY_STYLES_WITH_RANDOS) {
 		patch.initHarryEdwardStylesBladeMatrices();
 	}

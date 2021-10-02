@@ -17,29 +17,38 @@
 
 class Scene;
 
+/**
+* Represents the elements of the scene. Contains functionality to draw
+* the object.
+*/
 class SceneObject {
 public:
 	SceneObject(ShaderProgram& shaderProgram);
 	virtual void draw(Scene& scene) = 0;
+	/**
+	* \brief Sets all active uniforms, based on the user's settings
+	*/
 	void setUniforms(Scene& scene);
-	glm::mat4 model;// = glm::mat4(1) * glm::translate(glm::mat4(1), { 2,3,4 });
+	glm::mat4 model;
 
 protected:
-	unsigned int VAO = 0;
-	unsigned int VBO = 0;
-	unsigned int vertexCount = 0;
 	void createArrayBuffer(const std::vector<float>& array);
-	ShaderProgram& shaderProgram;
-
-	/* Sets the specified attribute of the vertex shaderProgram
-		*/
+	unsigned int createElementArrayBuffer(const std::vector<unsigned int>& array);
+	/**
+	* \brief Sets the specified attribute of the vertex shaderProgram
+	*/
 	void setVertexShaderAttribute(
-		char *attributeName,
+		char* attributeName,
 		const std::vector<float>& data,
 		int dataSize,
 		ShaderProgram& shaderProgram);
 
-	unsigned int createElementArrayBuffer(const std::vector<unsigned int>& array);
+	unsigned int VAO = 0;
+	unsigned int VBO = 0;
+	unsigned int vertexCount = 0;
+	ShaderProgram& shaderProgram;
+
+
 };
 
 #endif

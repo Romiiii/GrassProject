@@ -17,8 +17,9 @@
 #include "scene.h"
 
  /*
-  * The SceneObjectsArrays class handles the vertex information of the
+  * Handles the vertex information of the
   * objects using arrays and draws them on the screen.
+  * Supports positions only.
   */
 class SceneObjectArrays : public SceneObject {
 public:
