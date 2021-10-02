@@ -21,7 +21,6 @@ public:
 	 */
 	explicit Texture(const std::string &label, GLuint textureType);
 
-
 	/**
 	 * \brief Activates the slot of this texture
 	 */

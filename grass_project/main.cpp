@@ -243,8 +243,8 @@ GLFWwindow *initGLFWWindow();
 void initIMGUI(GLFWwindow *window);
 
 /**
- * \brief Initialize shaders and textures
-*/
+ * \brief Initialize shaders, textures, and the Z buffer
+ */
 void initShadersAndTextures();
 
 /**
@@ -473,11 +473,6 @@ GLFWwindow *initGLFWWindow() {
 	return window;
 }
 
-
-/* Initializes shaders. Loads the information about the vertices, colors, normals
- * and indices (and uvs) from the primitives file. Loads textures.
- * Sets up the z-buffer.
- */
 void initShadersAndTextures() {
 	bladesVertexShader = new Shader("assets/shaders/blades.vert", GL_VERTEX_SHADER);
 	bladesFragmentShader = new Shader("assets/shaders/blades.frag", GL_FRAGMENT_SHADER);
@@ -625,16 +620,12 @@ void createInstanceMatrixBuffer(glm::mat4 *modelMatrices, const unsigned int num
 	transferInstanceMatrixBuffer(modelMatrices, numInstances);
 }
 
-/* Upload the matrices to the GPU.
- */
 void transferInstanceMatrixBuffer(glm::mat4 *modelMatrices, const unsigned int numInstances) {
 	GLCall(glBindBuffer(GL_ARRAY_BUFFER, instanceMatrixBuffer));
 	GLCall(glBufferData(GL_ARRAY_BUFFER, numInstances * sizeof(glm::mat4), modelMatrices, GL_STATIC_DRAW));
 	GLCall(glBindBuffer(GL_ARRAY_BUFFER, 0));
 }
 
-/* Draws the GUI that lets the user control the light, skybox, grass and wind.
- */
 void drawGui() {
 	// Slider will be 65% of the window width (this is the default)
 
@@ -766,9 +757,6 @@ void cursorInRange(
 	y = -yInRange; // Flip screen space on the y-axis
 }
 
-/* GLFW: Whenever the window size changed (by OS or user resize) this
- * callback function executes.
- */
 void framebufferSizeCallback(GLFWwindow *window, int width, int height)
 {
 	// Makes sure the viewport matches the new window dimensions; note that width and
