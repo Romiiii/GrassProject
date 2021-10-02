@@ -2,34 +2,32 @@
 #define DEBUG_H 
 
 #include <glad/glad.h>
-#include <GLFW/glfw3.h>
-
 
 /**
-* \brief An assert.
-*/
+ * \brief An assert.
+ */
 #define ASSERT(x) if (!(x)) {__debugbreak();} else{}
 
 /**
-* \brief Wraps an OpenGL call in error handling, for debugging.
-*/
+ * \brief Wraps an OpenGL call in error handling, for debugging.
+ */
 #define GLCall(x) GLClearError();\
 	x;\
 	ASSERT(GLLogCall(#x, __FILE__, __LINE__))
 
 /**
-* \brief Clears the OpenGL error stack.
-*/
+ * \brief Clears the OpenGL error stack.
+ */
 static void GLClearError()
 {
 	while (glGetError() != GL_NO_ERROR);
 }
 
 /**
-* \brief A lookup table for converting error codes to readable names.
-Remember to subtract the base value (0x500) to get to the correct index.
-*/
-static char *errorCodeToErrorNameLookupTable[] = {
+ * \brief A lookup table for converting error codes to readable names.
+ * Remember to subtract the base value (0x500) to get to the correct index.
+ */
+static const char *errorCodeToErrorNameLookupTable[] = {
 	"GL_INVALID_ENUM",
 	"GL_INVALID_VALUE",
 	"GL_INVALID_OPERATION",
@@ -56,7 +54,7 @@ static bool GLLogCall(const char* function, const char* file, int line)
 		std::cout << "[OpenGL Error] (";
 		if (error <= 0x507)
 		{
-			char *errorName = errorCodeToErrorNameLookupTable[error - 0x0500];
+			const char *errorName = errorCodeToErrorNameLookupTable[error - 0x0500];
 			std::cout << errorName;
 		}
 		else

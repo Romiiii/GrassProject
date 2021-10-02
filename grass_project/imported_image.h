@@ -4,7 +4,7 @@
 #include <string>
 
 /**
- * \brief RAII wrapper for an STBI-imported image.
+ * \brief RAII wrapper for an image imported by STB_Image.
  * Constructor loads the image, destructor deletes it. 
  * Remember to copy the data you want before the destructor fires.
  */
@@ -16,7 +16,7 @@ public:
 	 * \param file Path the the file you want to load.
 	 * \exception std::invalid_argument If the file found not be found.
 	 */
-	ImportedImage(const std::string &file);
+	explicit ImportedImage(const std::string &file);
 
 	/**
 	 * \brief Unloads the image, frees ImportedImage::data

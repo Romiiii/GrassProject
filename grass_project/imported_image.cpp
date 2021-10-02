@@ -3,10 +3,12 @@
 #include <exception>
 #include <sstream>
 
-// Supress third party warnings
-#pragma warning (push, 0)
+#pragma warning (push)
+#pragma warning (disable : 26451 6011 6262 6308 28182 6387)
+
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>  // For loading textures from images
+
 #pragma warning (pop)
 
 ImportedImage::ImportedImage(const std::string &file)
