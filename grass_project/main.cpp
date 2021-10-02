@@ -4,25 +4,18 @@
  * This project was created as part of the Graphics Programming course
  * at the IT University of Copenhagen.
 */
-
-// Supress third party warnings
-#pragma warning (push, 0)
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
 #include <iostream>
 #include <cassert>
 #include <algorithm>
 #include <cmath>
-
 #include <vector>
 #include <chrono>
 
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
-#pragma warning (pop)
-
-
 
 #include "patch.h"
 #include "shader.h"
@@ -39,80 +32,313 @@
 #include "perlin_noise.h"
 
 // Constants
+/**
+ * \brief Initial screen width 
+ */
 const unsigned int INIT_SCR_WIDTH = 1000;
+
+/**
+ * \brief Initial screen height
+ */
 const unsigned int INIT_SCR_HEIGHT = 1000;
+
 // Maximum amount of grass blades per patch
-//const unsigned int MAX_PATCH_DENSITY_BLADES = 100;
+
+/**
+ * \brief Blades density
+ */
 const unsigned int MAX_PATCH_DENSITY_BLADES = 4000;
+
+/**
+ * \brief Max number patches
+ */
 const unsigned int MAX_PATCHES = 81;
 
+
+/**
+ * \brief The scene currently loaded (We don't support multiple scenes, but we 
+ * could with this.)
+ */
 Scene scene;
 
+/**
+ * \brief The patch creator
+ */
 Patch patch;
 
-glm::mat4 lightMatrix;
+//
+// Shaders
+//
 
-Shader* bladesVertexShader;
-Shader* patchVertexShader;
-Shader* skyboxVertexShader;
-Shader* lightVertexShader;
-Shader* bladesFragmentShader;
-Shader* patchFragmentShader;
-Shader* skyboxFragmentShader;
-Shader* lightFragmentShader;
-Shader* computeShader;
-Shader* computeFragmentShader;
+/**
+ * \brief Vertex shader for the blades
+*/
+Shader *bladesVertexShader;
 
-ShaderProgram* bladesShaderProgram;
-ShaderProgram* patchShaderProgram;
-ShaderProgram* skyboxShaderProgram;
-ShaderProgram* lightShaderProgram;
-ShaderProgram* computeShaderProgram;
-ShaderProgram* computeFragmentShaderProgram;
+/**
+ * \brief Fragment shader for the blades
+*/
+Shader *bladesFragmentShader;
+
+/**
+ * \brief Shader program for blades rendering
+*/
+ShaderProgram *bladesShaderProgram;
+
+/**
+ * \brief Vertex shader for the patch
+*/
+Shader *patchVertexShader;
+
+/**
+ * \brief Fragment shader for the patch.
+ */
+Shader *patchFragmentShader;
+
+/**
+ * \brief Shader program for patch rendering
+*/
+ShaderProgram *patchShaderProgram;
+
+/**
+ * \brief Vertex shader for the Skybox
+*/
+Shader *skyboxVertexShader;
+
+/**
+ * \brief Fragment shader for the skybox
+*/
+Shader *skyboxFragmentShader;
+
+/**
+ * \brief Shader program for Skybox rendering
+*/
+ShaderProgram *skyboxShaderProgram;
+
+/**
+ * \brief Vertex shader for the Light objects
+*/
+Shader *lightVertexShader;
+
+/**
+ * \brief Fragment shader for the blades
+*/
+Shader *lightFragmentShader;
+
+/**
+ * \brief Shader program for light object rendering
+*/
+ShaderProgram *lightShaderProgram;
+
+/**
+ * \brief Perlin noise compute shader
+*/
+Shader *perlinNoiseComputeShader;
+
+/**
+ * \brief Perlin noise compute shader program
+*/
+ShaderProgram *perlinNoiseComputeShaderProgram;
+
+/**
+ * \brief Id of the instance matrix buffer for rendering blade-instances
+*/
 unsigned int instanceMatrixBuffer;
 
-Texture billboardGrassNoise1;
-Texture billboardGrassNoise2;
+//
+// Textures
+//
 
-Texture cubemapTextureDay;
-Texture cubemapTextureNight;
+/**
+ * \brief Skybox day texture
+*/
+Texture *cubemapTextureDay;
+
+/**
+ * \brief Skybox night texture
+ */
+Texture *cubemapTextureNight;
 
 
-Texture perlinNoiseTexture;
-Texture seedTexture;
+/**
+ * \brief Perlin noise texture
+*/
+Texture *perlinNoiseTexture;
 
-float* perlinNoiseTextureData;
-float* seedTextureData;
+/**
+ * \brief PerlinSeed texture
+*/
+Texture *perlinNoiseSeedTexture;
 
+/**
+ * \brief Perlin noise texture data, used for uploading perlin noise data
+*/
+float *perlinNoiseTextureData;
+
+/**
+ * \brief Perlin noise seed texture data, used for uploading perlin noise
+ * seed data.
+*/
+float *perlinNoiseSeedTextureData;
+
+//
 // Camera setup
+//
+
+/**
+ * \brief The camera used for scene rendering
+*/
 Camera camera;
-bool isPaused = false;  // Used to stop camera movement when GUI is open
+
+
+/**
+ * \brief Used to stop camera movement when GUI is open
+*/
+bool isPaused = false;  
+
+/**
+ * \brief Should the mouse start enabled?
+*/
 bool firstMouse = false;
+
+/**
+ * \brief mouse position X last frame. Initialized to center.
+*/
 float lastX = (float)INIT_SCR_WIDTH / 2.0;
+
+/**
+ * \brief mouse position Y last frame. Initialized to center.
+*/
 float lastY = (float)INIT_SCR_HEIGHT / 2.0;
 
+//
 // Timing 
-float deltaTime = 0.0f;	// Time between current frame and last frame
-float lastFrame = 0.0f; // Time of last frame
+//
 
-GLFWwindow* window;
+/**
+ * \brief Time between current frame and last frame
+ */
+float deltaTime = 0.0f;
 
-GLFWwindow* initGLFWWindow();
-void initIMGUI(GLFWwindow* window);
+/**
+ * \brief Time of last frame
+*/
+float lastFrame = 0.0f;
+
+/**
+ * \brief The window being rendered to
+*/
+GLFWwindow *window;
+
+/**
+ * \brief Initialize the window
+ * \return Return the created window
+*/
+GLFWwindow *initGLFWWindow();
+
+/**
+ * \brief Initialize ImGUI
+ * \param window Window to initialize for
+*/
+void initIMGUI(GLFWwindow *window);
+
+/**
+ * \brief Initialize shaders and textures
+*/
 void initShadersAndTextures();
-glm::vec2 calculateSpiralPosition(int n);
-void initSceneObjects(Patch& patch);
-void generatePerlinNoise();
-void createInstanceMatrixBuffer(glm::mat4* modelMatrices, const unsigned int MAX_PATCH_DENSITY_BLADES);
-void transferInstanceMatrixBuffer(glm::mat4* modelMatrices, const unsigned int numInstances);
 
+/**
+ * \brief Calculate the spiral position given an index. See this documentation
+ * for details.
+ * \details The spiral position is defined as starting in the middle, and 
+ * spiraling right-around as shown below:
+ * 6 7 8
+ * 5 0 1
+ * 4 3 2
+ * \param n Index to calculate position for
+ * \return The coordinates of the calculated position
+*/
+glm::vec2 calculateSpiralPosition(int n);
+
+/**
+ * \brief Initialize the scene.
+ * \param patch Patch object to use to creates patches.
+*/
+void initSceneObjects(Patch &patch);
+
+/**
+ * \brief Generate perlin noise.
+*/
+void generatePerlinNoise();
+
+/**
+ * @brief Creates the blades instance buffer.
+ * @param modelMatrices The matrix data.
+ * @param maxBlades The maximum number of blades.
+*/
+void createInstanceMatrixBuffer(glm::mat4 *modelMatrices, const unsigned int maxBlades);
+
+/**
+ * @brief Transfers the instance matrix buffer to the GPU.
+ * @param modelMatrices The matrix data to transfer.
+ * @param numInstances The number of instances. 
+*/
+void transferInstanceMatrixBuffer(glm::mat4 *modelMatrices, const unsigned int numInstances);
+
+/**
+ * \brief Draws the GUI
+*/
 void drawGui();
 
-void cursorInRange(float screenX, float screenY, int screenW, int screenH, float min, float max, float& x, float& y);
-void framebufferSizeCallback(GLFWwindow* window, int width, int height);
-void processInput(GLFWwindow* window);
-void keyInputCallback(GLFWwindow* window, int button, int other, int action, int mods);
-void cursorInputCallback(GLFWwindow* window, double posX, double posY);
+/**
+ * @brief Restrict the cursor to a range.
+ * @param screenX Cursor X position.
+ * @param screenY Cursor Y Position.
+ * @param screenW Width of the screen.
+ * @param screenH Height of the screen.
+ * @param min Minimum x and y value.
+ * @param max Maximum x and y value.
+ * @param x The restricted x.
+ * @param y The restricted y.
+*/
+void cursorInRange(float screenX, float screenY, int screenW, int screenH, float min, float max, float &x, float &y);
+
+/**
+ * @brief The GLFW callback for screen resize. Resizes the viewport.
+ * @param window The resized window.
+ * @param width New width.
+ * @param height New height.
+*/
+void framebufferSizeCallback(GLFWwindow *window, int width, int height);
+
+/**
+ * @brief Process input for a window
+ * @param window Window to process input for
+*/
+void processInput(GLFWwindow *window);
+
+/**
+ * @brief GLFW key input callback
+ * 
+ * @param window The window to process input for
+ * @param button The pressed button
+ * @param other Dunno
+ * @param action Was the key pressed or released?
+ * @param mods Any key modifiers?
+*/
+void keyInputCallback(GLFWwindow *window, int button, int other, int action, int mods);
+
+/**
+ * @brief GLFW cursor input callback
+ * @param window Window to process input for.
+ * @param posX The new x position of the cursor
+ * @param posY The new y position of the cursor
+*/
+void cursorInputCallback(GLFWwindow *window, double posX, double posY);
+
+/**
+ * @brief Cleans up the scene.
+*/
 void cleanUp();
 
 int main()
@@ -128,6 +354,7 @@ int main()
 		return -1;
 	}
 
+	// check OpenGL version
 	GLint major, minor;
 	glGetIntegerv(GL_MAJOR_VERSION, &major);
 	glGetIntegerv(GL_MINOR_VERSION, &minor);
@@ -141,6 +368,7 @@ int main()
 	initSceneObjects(patch);
 	generatePerlinNoise();
 
+	// Initialize camera
 	camera.camPosition = { 0, 20, 0 };
 	camera.yaw = 0;
 	camera.pitch = -90;
@@ -154,8 +382,7 @@ int main()
 
 	initIMGUI(window);
 
-
-
+	glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -172,17 +399,17 @@ int main()
 
 		processInput(window);
 
-		glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
 
-		// Clear the depth buffer (aka z-buffer) every new frame
+		// Clear the color depth buffer (aka z-buffer) every new frame
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		// TODO: Check if this is needed
 		bladesShaderProgram->use();
 
 		int width, height;
-		glfwGetWindowSize(window, &width, &height); 
-		glm::mat4 projection = glm::perspective(70.0f, 
-			(float)width/(float)height, .01f, 1000.0f); // FIX: not every frame
+		glfwGetWindowSize(window, &width, &height);
+		glm::mat4 projection = glm::perspective(70.0f,
+												(float)width / (float)height, .01f, 1000.0f); // FIX: not every frame
 		glm::mat4 view = glm::lookAt(
 			camera.getCamPosition(),
 			camera.getCamPosition() + camera.getCamForward(), glm::vec3(0, 1, 0));
@@ -214,7 +441,7 @@ int main()
 	return 0;
 }
 
-GLFWwindow* initGLFWWindow() {
+GLFWwindow *initGLFWWindow() {
 	// GLFW: initialize and configure
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -222,12 +449,12 @@ GLFWwindow* initGLFWWindow() {
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_SAMPLES, 4);
 
-	#ifdef __APPLE__
+#ifdef __APPLE__
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // Fix compilation on OS X
-	#endif
+#endif
 
-	// GLFW window creation
-	GLFWwindow* window = glfwCreateWindow(INIT_SCR_WIDTH, INIT_SCR_HEIGHT, "GrassProject", NULL, NULL);
+// GLFW window creation
+	GLFWwindow *window = glfwCreateWindow(INIT_SCR_WIDTH, INIT_SCR_HEIGHT, "GrassProject", NULL, NULL);
 	if (window == NULL)
 	{
 		std::cout << "Failed to create GLFW window" << std::endl;
@@ -262,40 +489,39 @@ void initShadersAndTextures() {
 
 	patchShaderProgram = new ShaderProgram({ patchVertexShader, patchFragmentShader }, "PATCH SHADER");
 
-	std::string billboardGrassFileNameNoise1 = "assets/textures/misc/perlin_noise_1.tga";
-	std::string billboardGrassFileNameNoise2 = "assets/textures/misc/perlin_noise_2.tga";
-	billboardGrassNoise1.loadTexture(billboardGrassFileNameNoise1, false);
-	billboardGrassNoise2.loadTexture(billboardGrassFileNameNoise2, false);
-
 
 	// Setup the Skybox Shaders
 	skyboxVertexShader = new Shader("assets/shaders/skybox.vert", GL_VERTEX_SHADER);
 	skyboxFragmentShader = new Shader("assets/shaders/skybox.frag", GL_FRAGMENT_SHADER);
 	skyboxShaderProgram = new ShaderProgram({ skyboxVertexShader, skyboxFragmentShader }, "SKYBOX SHADER");
 
-	//skyboxShader.use();
-	cubemapTextureDay.loadTextureCubeMap(facesDay, false);
-	cubemapTextureNight.loadTextureCubeMap(facesNight);
+	cubemapTextureDay = new Texture("Day skybox", GL_TEXTURE_CUBE_MAP);
+	cubemapTextureDay->loadTextureCubeMap(facesDay, false);
+
+	cubemapTextureNight = new Texture("Night skybox", GL_TEXTURE_CUBE_MAP);
+	cubemapTextureNight->loadTextureCubeMap(facesNight);
 
 	lightVertexShader = new Shader("assets/shaders/light.vert", GL_VERTEX_SHADER);
 	lightFragmentShader = new Shader("assets/shaders/light.frag", GL_FRAGMENT_SHADER);
 	lightShaderProgram = new ShaderProgram({ lightVertexShader, lightFragmentShader }, "LIGHT SHADER");
 
-	scene.perlinNoise = new Texture();
-	scene.perlinNoise->loadTextureSingleChannel("perlinNoise", PERLIN_NOISE_TEXTURE_WIDTH);
+	scene.perlinNoise = new Texture("Perlin Noise", GL_TEXTURE_2D);
+	scene.perlinNoise->loadTextureSingleChannel(PERLIN_NOISE_TEXTURE_WIDTH);
 
-	computeShader = new Shader("assets/shaders/compute.comp", GL_COMPUTE_SHADER);
-	computeShaderProgram = new ShaderProgram({ computeShader }, "COMPUTE SHADER");
+	perlinNoiseComputeShader = new Shader("assets/shaders/compute.comp", GL_COMPUTE_SHADER);
+	perlinNoiseComputeShaderProgram = new ShaderProgram({ perlinNoiseComputeShader }, "COMPUTE SHADER");
 
-	scene.cubemapTextureDay = &cubemapTextureDay;
-	scene.cubemapTextureNight = &cubemapTextureNight;
+	scene.cubemapTextureDay = cubemapTextureDay;
+	scene.cubemapTextureNight = cubemapTextureNight;
 	scene.currentTexture = scene.cubemapTextureNight;
 
 	int width = PERLIN_NOISE_TEXTURE_WIDTH;
 	int height = PERLIN_NOISE_TEXTURE_WIDTH;
 
-	seedTextureData = new float[(size_t)(width) * (size_t)height];
-	seedTexture.generateTexture(seedTextureData, width, height, GL_RED);
+	// Should this not be set to random?
+	perlinNoiseSeedTextureData = new float[width * height];
+	perlinNoiseSeedTexture = new Texture("Perlin Seed Texture", GL_TEXTURE_2D);
+	perlinNoiseSeedTexture->generateTexture(perlinNoiseSeedTextureData, width, height, GL_RED);
 
 	// Set up the z-buffer
 	glDepthRange(-1, 1);  // Make the NDC a right handed coordinate system, 
@@ -315,7 +541,7 @@ glm::vec2 calculateSpiralPosition(int n) {
 	n++;
 	int k = (int)std::ceil((std::sqrt(n) - 1.0) / 2.0);
 	int t = 2 * k + 1;
-	int m = t*t;
+	int m = t * t;
 
 	t -= 1;
 
@@ -338,7 +564,7 @@ glm::vec2 calculateSpiralPosition(int n) {
 	return { k, k - (m - n - t) };
 }
 
-void initSceneObjects(Patch& patch) {
+void initSceneObjects(Patch &patch) {
 
 	patch.init(MAX_PATCH_DENSITY_BLADES, patchShaderProgram);
 	if (scene.config.bladeDistribution == BladeDistribution::HARRY_STYLES_WITH_RANDOS) {
@@ -350,26 +576,26 @@ void initSceneObjects(Patch& patch) {
 	else if (scene.config.bladeDistribution == BladeDistribution::ONE_DIRECTION) {
 		patch.initOneDirectionBladeMatrices();
 	}
-	
+
 	createInstanceMatrixBuffer(patch.getBladeMatrices(), MAX_PATCH_DENSITY_BLADES);
 
-	SceneObjectArrays* skybox = new SceneObjectArrays(cubePositions, *skyboxShaderProgram);
+	SceneObjectArrays *skybox = new SceneObjectArrays(cubePositions, *skyboxShaderProgram);
 	scene.sceneObjects.push_back(skybox);
 
-	SceneObjectArrays* light = new SceneObjectArrays(cubePositions, *lightShaderProgram);
+	SceneObjectArrays *light = new SceneObjectArrays(cubePositions, *lightShaderProgram);
 	scene.sceneObjects.push_back(light);
 	scene.light = light;
 
 	for (int i = 0; i < MAX_PATCHES; i++) {
-		
+
 		glm::vec2 position = calculateSpiralPosition(i) * 10.0f;
-		SceneObjectIndexed* patchSceneObject = new SceneObjectIndexed(grassPatchPositions, grassPatchColors,
-			grassPatchIndices, grassPatchNormals, *patchShaderProgram);
+		SceneObjectIndexed *patchSceneObject = new SceneObjectIndexed(grassPatchPositions, grassPatchColors,
+																	  grassPatchIndices, grassPatchNormals, *patchShaderProgram);
 		patchSceneObject->model = glm::translate(position.x, 0, position.y);
 		scene.patches.push_back(patchSceneObject);
 
-		SceneObjectInstanced* blades = new SceneObjectInstanced(grassPositions, grassColors,
-			grassIndices, grassNormals, instanceMatrixBuffer, *bladesShaderProgram, &grassUVs);
+		SceneObjectInstanced *blades = new SceneObjectInstanced(grassPositions, grassColors,
+																grassIndices, grassNormals, instanceMatrixBuffer, *bladesShaderProgram, &grassUVs);
 		blades->model = patchSceneObject->model;
 		scene.blades.push_back(blades);
 	}
@@ -378,15 +604,16 @@ void initSceneObjects(Patch& patch) {
 void generatePerlinNoise() {
 	using namespace std::chrono;
 	// Initialize seed data
-	for (int i = 0; i < PERLIN_NOISE_TEXTURE_WIDTH * PERLIN_NOISE_TEXTURE_WIDTH; i++) seedTextureData[i] = (float)rand() / (float)RAND_MAX;
+	for (int i = 0; i < PERLIN_NOISE_TEXTURE_WIDTH * PERLIN_NOISE_TEXTURE_WIDTH; i++) perlinNoiseSeedTextureData[i] = (float)rand() / (float)RAND_MAX;
 
-	PerlinNoise2DGPU(seedTexture, seedTextureData, computeShaderProgram, scene.perlinNoise->getTextureID(), scene.config.perlinConfig.octaves, scene.config.perlinConfig.bias, scene.config.perlinConfig.makeChecker);
+	PerlinNoise2DGPU(*perlinNoiseSeedTexture, perlinNoiseSeedTextureData, perlinNoiseComputeShaderProgram, scene.perlinNoise->getTextureID(), scene.config.perlinConfig.octaves, scene.config.perlinConfig.bias, scene.config.perlinConfig.makeChecker);
 
 	// Upload texture to IMGUI
-	perlinNoiseTexture.loadTextureData(perlinNoiseTextureData, PERLIN_NOISE_TEXTURE_WIDTH, PERLIN_NOISE_TEXTURE_WIDTH, GL_RED);
+	perlinNoiseTexture = new Texture("Perlin Texture", GL_TEXTURE_2D);
+	perlinNoiseTexture->loadTextureData(perlinNoiseTextureData, PERLIN_NOISE_TEXTURE_WIDTH, PERLIN_NOISE_TEXTURE_WIDTH, GL_RED);
 }
 
-void initIMGUI(GLFWwindow* window) {
+void initIMGUI(GLFWwindow *window) {
 	// IMGUI init
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
@@ -399,14 +626,14 @@ void initIMGUI(GLFWwindow* window) {
 	ImGui_ImplOpenGL3_Init("#version 330 core");
 }
 
-void createInstanceMatrixBuffer(glm::mat4* modelMatrices, const unsigned int numInstances) {
+void createInstanceMatrixBuffer(glm::mat4 *modelMatrices, const unsigned int numInstances) {
 	GLCall(glGenBuffers(1, &instanceMatrixBuffer));
 	transferInstanceMatrixBuffer(modelMatrices, numInstances);
 }
 
 /* Upload the matrices to the GPU.
  */
-void transferInstanceMatrixBuffer(glm::mat4* modelMatrices, const unsigned int numInstances) {
+void transferInstanceMatrixBuffer(glm::mat4 *modelMatrices, const unsigned int numInstances) {
 	GLCall(glBindBuffer(GL_ARRAY_BUFFER, instanceMatrixBuffer));
 	GLCall(glBufferData(GL_ARRAY_BUFFER, numInstances * sizeof(glm::mat4), modelMatrices, GL_STATIC_DRAW));
 	GLCall(glBindBuffer(GL_ARRAY_BUFFER, 0));
@@ -421,14 +648,14 @@ void drawGui() {
 	ImGui::SetNextWindowPos({ 0,0 });
 	ImGui::SetNextWindowSize({ 0, 0 });
 	{
-		
+
 		ImGui::Begin("Settings");
 
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
 		if (ImGui::CollapsingHeader("Camera Settings"))
 		{
-			ImGui::SliderFloat3("Camera Position", (float*)&camera.camPosition, -50, 50);
+			ImGui::SliderFloat3("Camera Position", (float *)&camera.camPosition, -50, 50);
 			ImGui::SliderFloat("Yaw", &camera.yaw, -180, 180);
 			ImGui::SliderFloat("Pitch", &camera.pitch, -180, 180);
 		}
@@ -460,7 +687,7 @@ void drawGui() {
 			}
 
 		}
-		
+
 		if (ImGui::CollapsingHeader("Perlin Noise Settings"))
 		{
 
@@ -489,8 +716,8 @@ void drawGui() {
 		if (ImGui::CollapsingHeader("Light Settings"))
 		{
 			ImGui::SliderFloat("Ambient Light Strength", &scene.config.ambientStrength, 0.1f, 1.0f);
-			ImGui::DragFloat3("Light Position", (float*)&scene.config.lightPosition, 0.1f, -100, 100);
-			ImGui::ColorEdit4("Light Color", (float*)&scene.config.lightColor);
+			ImGui::DragFloat3("Light Position", (float *)&scene.config.lightPosition, 0.1f, -100, 100);
+			ImGui::ColorEdit4("Light Color", (float *)&scene.config.lightColor);
 			ImGui::SliderFloat("Light Intensity", &scene.config.lightIntensity, 0.0f, 10);
 
 			ImGui::Separator();
@@ -505,7 +732,7 @@ void drawGui() {
 				scene.currentTexture = scene.cubemapTextureNight;
 			}
 		}
-		
+
 		if (ImGui::CollapsingHeader("Grass Settings"))
 		{
 
@@ -519,14 +746,14 @@ void drawGui() {
 		{
 			ImGui::SliderFloat("Sway Reach", &scene.config.swayReach, 0.0f, 1.0f);
 			ImGui::SliderFloat("Wind Strength", &scene.config.windStrength, 0, 0.5f);
-			ImGui::DragFloat2("Wind Direction", (float*)&scene.config.windDirection,
-				0.1f, -1.0f, 1.0f);
+			ImGui::DragFloat2("Wind Direction", (float *)&scene.config.windDirection,
+							  0.1f, -1.0f, 1.0f);
 			if (ImGui::Button("Normalize"))
 				scene.config.windDirection = glm::normalize(scene.config.windDirection);
 
 		}
 
-		
+
 		ImGui::End();
 	}
 	ImGui::Render();
@@ -535,8 +762,8 @@ void drawGui() {
 }
 
 void cursorInRange(
-	float screenX, float screenY, int screenW, int screenH, 
-	float min, float max, float& x, float& y) 
+	float screenX, float screenY, int screenW, int screenH,
+	float min, float max, float &x, float &y)
 {
 	float sum = max - min;
 	float xInRange = (float)screenX / (float)screenW * sum - sum / 2.0f;
@@ -548,14 +775,14 @@ void cursorInRange(
 /* GLFW: Whenever the window size changed (by OS or user resize) this
  * callback function executes.
  */
-void framebufferSizeCallback(GLFWwindow* window, int width, int height)
+void framebufferSizeCallback(GLFWwindow *window, int width, int height)
 {
 	// Makes sure the viewport matches the new window dimensions; note that width and
 	// height will be significantly larger than specified on retina displays.
 	glViewport(0, 0, width, height);
 }
 
-void processInput(GLFWwindow* window) 
+void processInput(GLFWwindow *window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
@@ -596,7 +823,7 @@ void processInput(GLFWwindow* window)
 			skyboxShaderProgram->reloadShaders();
 			lightShaderProgram->reloadShaders();
 			rWasPressed = true;
-			
+
 		}
 
 	}
@@ -608,7 +835,7 @@ void processInput(GLFWwindow* window)
 /* Processes the cursor input and passes it to the camera.
  *  Based on the tutorial on: https://learnopengl.com/Getting-started/Camera
  */
-void cursorInputCallback(GLFWwindow* window, double xpos, double ypos)
+void cursorInputCallback(GLFWwindow *window, double xpos, double ypos)
 {
 	if (firstMouse)
 	{
@@ -628,17 +855,17 @@ void cursorInputCallback(GLFWwindow* window, double xpos, double ypos)
 	camera.processMouseMovement(xoffset, yoffset);
 }
 
-void keyInputCallback(GLFWwindow* window, int button, 
-	int other, int action, int mods) 
+void keyInputCallback(GLFWwindow *window, int button,
+					  int other, int action, int mods)
 {
 	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
 		isPaused = !isPaused;
-		glfwSetInputMode(window, GLFW_CURSOR, 
-			isPaused ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
+		glfwSetInputMode(window, GLFW_CURSOR,
+						 isPaused ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
 	}
 }
 
-void cleanUp() 
+void cleanUp()
 {
 	// Cleanup
 	ImGui_ImplOpenGL3_Shutdown();

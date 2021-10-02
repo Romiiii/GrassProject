@@ -2,10 +2,12 @@
 
 #include "imported_image.h"
 
-void Texture::create(GLuint textureType)
+Texture::Texture(const std::string &label, GLuint textureType)
+	:textureType(textureType)
 {
 	GLCall(glGenTextures(1, &textureID));
-	this->textureType = textureType;
+	bind();
+	setLabel(label);
 }
 
 void Texture::generateMipmap()
@@ -38,10 +40,8 @@ void Texture::bind()
 
 
 unsigned int Texture::loadTexture(const std::string &fileName, bool alpha) {
-	// Start by importing the image
 	ImportedImage image(fileName);
 	
-	create(GL_TEXTURE_2D);
 	bind();
 
 	GLuint format = alpha ? GL_RGBA : GL_RGB;
@@ -62,10 +62,8 @@ void Texture::setLabel(const std::string &label)
 	GLCall(glObjectLabel(GL_TEXTURE, textureID, -1, label.c_str()));
 }
 
-unsigned int Texture::loadTextureSingleChannel(const std::string &name, int perlinNoiseSize) {
-	create(GL_TEXTURE_2D);
+unsigned int Texture::loadTextureSingleChannel(int perlinNoiseSize) {
 	bind();
-	setLabel(name);
 
 	setFilter(GL_NEAREST);
 	setWrap(GL_REPEAT);
@@ -77,7 +75,6 @@ unsigned int Texture::loadTextureSingleChannel(const std::string &name, int perl
 
 
 void Texture::generateTexture(void *data, int width, int height, GLenum format) {
-	create(GL_TEXTURE_2D);
 	loadTextureData(data, width, height, format);
 }
 
@@ -88,7 +85,6 @@ void Texture::generateTexture(void *data, int width, int height, GLenum format) 
  * \return textureID
  */
 unsigned int Texture::loadTextureData(void *data, int width, int height, GLenum format) {
-	create(GL_TEXTURE_2D);
 	bind();
 
 	GLCall(glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_FLOAT, data));
@@ -114,7 +110,6 @@ unsigned int Texture::loadTextureData(void *data, int width, int height, GLenum 
  * \return textureID
  */
 unsigned int Texture::loadTextureCubeMap(std::vector<std::string> faces, bool alpha) {
-	create(GL_TEXTURE_CUBE_MAP);
 	bind();
 	activate();
 

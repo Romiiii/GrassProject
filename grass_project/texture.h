@@ -16,8 +16,11 @@ class Texture {
 public:
 	/**
 	 * \brief Creates a new texture
+	 * \param label The label
+	 * \param textureType The type of texture 2D, or Cubemap
 	 */
-	void create(GLuint textureType);
+	explicit Texture(const std::string &label, GLuint textureType);
+
 
 	/**
 	 * \brief Activates the slot of this texture
@@ -60,7 +63,7 @@ public:
 	 * \param alpha set to true if alpha channel should be read from texture
 	 * \return textureID
 	 */
-	unsigned int loadTextureSingleChannel(const std::string &name, int perlinNoiseSize);
+	unsigned int loadTextureSingleChannel(int perlinNoiseSize);
 
 	void generateTexture(void *data, int width, int height, GLenum format);
 
