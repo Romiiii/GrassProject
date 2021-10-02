@@ -531,12 +531,6 @@ void initShadersAndTextures() {
 	glEnable(GL_MULTISAMPLE);
 }
 
-/**
- * Finds coordinates (position) of the number
- *
- * @param {Number} n - number to find position/coordinates for
- * @return {Number[]} - x and y coordinates of the number
- */
 glm::vec2 calculateSpiralPosition(int n) {
 	n++;
 	int k = (int)std::ceil((std::sqrt(n) - 1.0) / 2.0);
