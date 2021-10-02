@@ -50,7 +50,6 @@ unsigned int Texture::loadTexture(const std::string &fileName, bool alpha) {
 
 	generateMipmap();
 
-
 	setFilter(GL_NEAREST);
 	setWrap(GL_CLAMP_TO_EDGE);
 

@@ -6,9 +6,13 @@
 /**
  * \brief An assert.
  */
+#if _DEBUG
 #define ASSERT(x) if (!(x)) {__debugbreak();} else{}
+#else
+#define ASSERT(X)
+#endif
 
-/**
+ /**
  * \brief Wraps an OpenGL call in error handling, for debugging.
  */
 #define GLCall(x) GLClearError();\
