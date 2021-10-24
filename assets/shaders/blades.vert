@@ -22,8 +22,6 @@ uniform float currentTime;
 uniform float windStrength;
 uniform float swayReach;
 
-uniform bool debugBlades;
-
 uniform vec2 windDirection;
 
 float map2(float x, float in_min, float in_max, float out_min, float out_max)
@@ -36,12 +34,6 @@ void main()
 	vtxColor = color;
 	vec4 actual_pos;
 	vec2 texture_pixel;
-
-	if (debugBlades) {
-		if(gl_VertexID == 1) {
-			vtxColor = vec4(0.0f, 0.0f, 1.0f, 1.0f);
-		}
-	}
 
 	vec3 patch_pos = pos + vec3(5.0f, 0.0f, 5.0f);
 	vec4 world_pos = model * instanceMatrix * vec4(patch_pos, 1.0);
@@ -56,8 +48,7 @@ void main()
 	texture_pixel = actual_pos.xz + (currentTime * windStrength * wind_direction);
 
 	float noise = texture(perlinNoise, texture_pixel).r;
-	if (debugBlades)
-		vtxColor = vec4(noise, 0.0f, 0.0f, 1.0f); 
+
 	noise = (noise - 0.5f) * 2.0f;
 	// Multiply by the y value of the UV which represents how the wind affects the specific vertex
 	float swag = swayReach * noise* uvs.y * uvs.y;

@@ -291,6 +291,11 @@ void transferInstanceMatrixBuffer(glm::mat4 *modelMatrices, const unsigned int n
 void drawGui();
 
 /**
+ * \brief Draws the tooltip
+*/
+void drawTooltip(const char* desc);
+
+/**
  * @brief Restrict the cursor to a range.
  * @param screenX Cursor X position.
  * @param screenY Cursor Y Position.
@@ -499,8 +504,8 @@ void initShadersAndTextures() {
 	scene.perlinNoise = new Texture("Perlin Noise", GL_TEXTURE_2D);
 	scene.perlinNoise->loadTextureSingleChannel(PERLIN_NOISE_TEXTURE_WIDTH);
 
-	perlinNoiseComputeShader = new Shader("assets/shaders/compute.comp", GL_COMPUTE_SHADER);
-	perlinNoiseComputeShaderProgram = new ShaderProgram({ perlinNoiseComputeShader }, "COMPUTE SHADER");
+	perlinNoiseComputeShader = new Shader("assets/shaders/perlin_noise.comp", GL_COMPUTE_SHADER);
+	perlinNoiseComputeShaderProgram = new ShaderProgram({ perlinNoiseComputeShader }, "PERLIN NOISE COMPUTE SHADER");
 
 	scene.cubemapTextureDay = cubemapTextureDay;
 	scene.cubemapTextureNight = cubemapTextureNight;
@@ -644,29 +649,31 @@ void drawGui() {
 
 		if (ImGui::CollapsingHeader("Debug Settings"))
 		{
-			ImGui::Checkbox("Visualize Texture", &scene.config.visualizeTexture);
-			ImGui::SameLine();
-			ImGui::Checkbox("Debug Blades", &scene.config.debugBlades);
+			ImGui::Checkbox("Render Perlin Noise To Patch", &scene.config.visualizeTexture);
 			ImGui::SameLine();
 
 			if (ImGui::Checkbox("Turn On Checker Mode", &scene.config.perlinConfig.makeChecker))
 				generatePerlinNoise();
+			drawTooltip("Draw checker pattern instead of perlin noise.");
 			ImGui::Text("Harry Styles Settings");
 			if (ImGui::RadioButton("Harry Styles With Randos", scene.config.bladeDistribution == BladeDistribution::HARRY_STYLES_WITH_RANDOS)) {
 				scene.config.bladeDistribution = BladeDistribution::HARRY_STYLES_WITH_RANDOS;
 				patch.initHarryEdwardStylesBladeMatrices();
 				transferInstanceMatrixBuffer(patch.getBladeMatrices(), MAX_PATCH_DENSITY_BLADES);
 			} ImGui::SameLine();
+			drawTooltip("Blades are placed uniformly on the patch with random rotations.");
 			if (ImGui::RadioButton("Harry Styles", scene.config.bladeDistribution == BladeDistribution::HARRY_STYLES)) {
 				scene.config.bladeDistribution = BladeDistribution::HARRY_STYLES;
 				patch.initHarryEdwardStylesBladeMatrices(false);
 				transferInstanceMatrixBuffer(patch.getBladeMatrices(), MAX_PATCH_DENSITY_BLADES);
 			} ImGui::SameLine();
+			drawTooltip("Blades are placed uniformly on the patch without random rotations.");
 			if (ImGui::RadioButton("One Direction", scene.config.bladeDistribution == BladeDistribution::ONE_DIRECTION)) {
 				scene.config.bladeDistribution = BladeDistribution::ONE_DIRECTION;
 				patch.initOneDirectionBladeMatrices();
 				transferInstanceMatrixBuffer(patch.getBladeMatrices(), MAX_PATCH_DENSITY_BLADES);
 			}
+			drawTooltip("Blades are placed in a line in the middle of the patch without random rotations.");
 
 		}
 
@@ -674,24 +681,22 @@ void drawGui() {
 		{
 
 			ImGui::SliderInt("Octaves", &scene.config.perlinConfig.octaves, 2, 10);
+			drawTooltip("Octaves for fun.");
 
 			ImGui::SliderFloat("Bias", &scene.config.perlinConfig.bias, 0.2f, 2.0f);
+			drawTooltip("Bias for fun.");
 
 
 
-			if (ImGui::Button("Generate")) {
+			if (ImGui::Button("Generate Perlin Noise")) {
 				generatePerlinNoise();
 			}
 			float width = PERLIN_NOISE_TEXTURE_WIDTH;
-			// perlinSampleScale zooms the image in
-		/*	ImGui::Image((ImTextureID)(long long)scene.perlinNoiseID, { width, width }, { 0,0 }, { scene.config.perlinSampleScale, scene.config.perlinSampleScale } );*/
 
 			ImGui::Image((ImTextureID)(long long)scene.perlinNoise->getTextureID(), { width, width }, { 0.0f,0.0f }, { scene.config.perlinConfig.perlinSampleScale, scene.config.perlinConfig.perlinSampleScale });
 
-			//ImGui::Image()
-
-
 			ImGui::SliderFloat("Perlin Sample Scale", &scene.config.perlinConfig.perlinSampleScale, 0.05f, 1.0f);
+			drawTooltip("Will zoom in or out of the perlin noise texture when sampling it.");
 		}
 
 
@@ -720,27 +725,46 @@ void drawGui() {
 
 			ImGui::SliderInt("Number of patches", &scene.config.numPatches, 1, MAX_PATCHES);
 			ImGui::SliderInt("Patch density", &scene.config.patchDensity, 0, MAX_PATCH_DENSITY_BLADES);
-			//ImGui::InputInt("Patch density value:", &scene.config.patchDensity, 100, 1000);
 			scene.config.patchDensity = glm::clamp(scene.config.patchDensity, 0, (int)MAX_PATCH_DENSITY_BLADES);
 		}
 
 		if (ImGui::CollapsingHeader("Wind Settings"))
 		{
 			ImGui::SliderFloat("Sway Reach", &scene.config.swayReach, 0.0f, 1.0f);
+			drawTooltip("How far the blades will move in the wind.");
 			ImGui::SliderFloat("Wind Strength", &scene.config.windStrength, 0, 0.5f);
 			ImGui::DragFloat2("Wind Direction", (float *)&scene.config.windDirection,
 							  0.1f, -1.0f, 1.0f);
-			if (ImGui::Button("Normalize"))
+			if (ImGui::Button("Normalize Wind Direction"))
 				scene.config.windDirection = glm::normalize(scene.config.windDirection);
 
 		}
 
+		if (ImGui::CollapsingHeader("Controls"))
+		{
+			ImGui::Text("WASD for camera movement");
+			ImGui::Text("T for sprint toggle");
+			ImGui::Text("R to reload shaders");
+			ImGui::Text("ESC to close");
+		}
 
 		ImGui::End();
 	}
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 	camera.updateCameraVectors();
+}
+
+void drawTooltip(const char* desc)
+{
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::BeginTooltip();
+		ImGui::PushTextWrapPos(450.0f);
+		ImGui::TextUnformatted(desc);
+		ImGui::PopTextWrapPos();
+		ImGui::EndTooltip();
+	}
 }
 
 void cursorInRange(

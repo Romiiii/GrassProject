@@ -87,9 +87,6 @@ void SceneObject::setUniforms(Scene& scene) {
 		else if (name == "windDirection") {
 			shaderProgram.setVec2("windDirection", scene.config.windDirection);
 		}
-		else if (name == "debugBlades") {
-			shaderProgram.setBool("debugBlades", scene.config.debugBlades);
-		}
 	}
 }
 
