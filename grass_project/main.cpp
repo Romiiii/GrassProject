@@ -30,6 +30,7 @@
 #include "scene_object_indexed.h"
 #include "scene_object_arrays.h"
 #include "perlin_noise.h"
+#include "fluid_grid.h"
 
 // Constants
 /**
@@ -140,6 +141,9 @@ Shader *perlinNoiseComputeShader;
 */
 ShaderProgram *perlinNoiseComputeShaderProgram;
 
+
+FluidGrid* fluidGrid;
+
 /**
  * \brief Id of the instance matrix buffer for rendering blade-instances
 */
@@ -224,6 +228,11 @@ float deltaTime = 0.0f;
  * \brief Time of last frame
 */
 float lastFrame = 0.0f;
+
+/**
+ * \brief Number of frames
+*/
+long numFrames = 0;
 
 /**
  * \brief The window being rendered to
@@ -369,6 +378,9 @@ int main()
 		return -1;
 	}
 
+
+	fluidGrid = new FluidGrid(510, 0.1f, 0.0010001f, 0.0166f, &scene.config.fluidGridConfig);
+
 	initShadersAndTextures();
 	initSceneObjects(patch);
 	generatePerlinNoise();
@@ -403,6 +415,8 @@ int main()
 		deltaTime = currentFrame - lastFrame;
 
 		processInput(window);
+		
+		//fluidGrid->simulate();
 
 
 		// Clear the color depth buffer (aka z-buffer) every new frame
@@ -423,10 +437,8 @@ int main()
 
 		scene.updateDynamic();
 		scene.render();
-
-		if (isPaused) {
-			drawGui();
-		}
+		
+		drawGui();
 
 		glfwSwapBuffers(window);
 
@@ -436,6 +448,7 @@ int main()
 			elapsed = (float)glfwGetTime() - lastFrame;
 		}
 		lastFrame = currentFrame;
+		numFrames++;
 	}
 
 	cleanUp();
@@ -501,8 +514,8 @@ void initShadersAndTextures() {
 	lightFragmentShader = new Shader("assets/shaders/light.frag", GL_FRAGMENT_SHADER);
 	lightShaderProgram = new ShaderProgram({ lightVertexShader, lightFragmentShader }, "LIGHT SHADER");
 
-	scene.perlinNoise = new Texture("Perlin Noise", GL_TEXTURE_2D);
-	scene.perlinNoise->loadTextureSingleChannel(PERLIN_NOISE_TEXTURE_WIDTH);
+	scene.config.perlinConfig.texture = new Texture("Perlin Noise", GL_TEXTURE_2D);
+	scene.config.perlinConfig.texture->loadTextureSingleChannel(PERLIN_NOISE_TEXTURE_WIDTH);
 
 	perlinNoiseComputeShader = new Shader("assets/shaders/perlin_noise.comp", GL_COMPUTE_SHADER);
 	perlinNoiseComputeShaderProgram = new ShaderProgram({ perlinNoiseComputeShader }, "PERLIN NOISE COMPUTE SHADER");
@@ -597,7 +610,7 @@ void generatePerlinNoise() {
 	// Initialize seed data
 	for (int i = 0; i < PERLIN_NOISE_TEXTURE_WIDTH * PERLIN_NOISE_TEXTURE_WIDTH; i++) perlinNoiseSeedTextureData[i] = (float)rand() / (float)RAND_MAX;
 
-	PerlinNoise2DGPU(*perlinNoiseSeedTexture, perlinNoiseSeedTextureData, perlinNoiseComputeShaderProgram, scene.perlinNoise->getTextureID(), scene.config.perlinConfig.octaves, scene.config.perlinConfig.bias, scene.config.perlinConfig.makeChecker);
+	PerlinNoise2DGPU(*perlinNoiseSeedTexture, perlinNoiseSeedTextureData, perlinNoiseComputeShaderProgram, scene.config.perlinConfig.texture->getTextureID(), scene.config.perlinConfig.octaves, scene.config.perlinConfig.bias, scene.config.perlinConfig.makeChecker);
 
 	// Upload texture to IMGUI
 	perlinNoiseTexture = new Texture("Perlin Texture", GL_TEXTURE_2D);
@@ -611,6 +624,12 @@ void initIMGUI(GLFWwindow *window) {
 
 	// Setup Dear ImGui style
 	ImGui::StyleColorsDark();
+
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
+	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
+	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
 
 	// Setup Platform/Renderer bindings
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
@@ -632,13 +651,13 @@ void drawGui() {
 	// Slider will be 65% of the window width (this is the default)
 
 	ImGui::NewFrame();
-	ImGui::SetNextWindowPos({ 0,0 });
+	//ImGui::SetNextWindowPos({ 0,0 });
 	ImGui::SetNextWindowSize({ 0, 0 });
 	{
 
 		ImGui::Begin("Settings");
 
-		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+		ImGui::Text("Application average %.3f ms/frame (%.1f FPS) Framecount %lld Time %.0f", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate, numFrames, glfwGetTime());
 
 		if (ImGui::CollapsingHeader("Camera Settings"))
 		{
@@ -675,6 +694,8 @@ void drawGui() {
 			}
 			drawTooltip("Blades are placed in a line in the middle of the patch without random rotations.");
 
+			ImGui::Checkbox("Debug Blades", &scene.config.debugBlades);
+
 		}
 
 		if (ImGui::CollapsingHeader("Perlin Noise Settings"))
@@ -693,9 +714,9 @@ void drawGui() {
 			}
 			float width = PERLIN_NOISE_TEXTURE_WIDTH;
 
-			ImGui::Image((ImTextureID)(long long)scene.perlinNoise->getTextureID(), { width, width }, { 0.0f,0.0f }, { scene.config.perlinConfig.perlinSampleScale, scene.config.perlinConfig.perlinSampleScale });
+			ImGui::Image((ImTextureID)(long long)scene.config.perlinConfig.texture->getTextureID(), { width, width }, { 0.0f,scene.config.perlinConfig.textureScale }, { scene.config.perlinConfig.textureScale, 0.0f });
 
-			ImGui::SliderFloat("Perlin Sample Scale", &scene.config.perlinConfig.perlinSampleScale, 0.05f, 1.0f);
+			ImGui::SliderFloat("Perlin Sample Scale", &scene.config.perlinConfig.textureScale, 0.05f, 1.0f);
 			drawTooltip("Will zoom in or out of the perlin noise texture when sampling it.");
 		}
 
@@ -748,11 +769,51 @@ void drawGui() {
 			ImGui::Text("ESC to close");
 		}
 
+		if (ImGui::CollapsingHeader("Fluid Grid Settings"))
+		{
+
+			float width = 512.0f;
+
+			ImGui::Image((ImTextureID)(long long)fluidGrid->getTextureDen()->getTextureID(), 
+				{ width, width }, { 0.0f,0.0f }, { 1.0f, 1.0f });
+
+			if (ImGui::Button("Step through fluid simulation")) {
+				fluidGrid->simulate();
+			}
+
+			if (ImGui::Button("Step through fluid simulation fasssst")) {
+				for (int i = 0; i < 10; i++)
+					fluidGrid->simulate();
+			}
+
+			if (ImGui::Button("Reset")) {
+				fluidGrid->initialize();
+			}
+
+			//ImGui::InputFloat("Diffusion", fluidGrid->getDiffPointer(), 0.1f, 0.5f, 2);
+			//ImGui::InputFloat("Viscosity", &scene.config.swayReach, 0.1f, 0.5f, 2);
+			ImGui::SliderFloat("Diffusion", fluidGrid->getDiffPointer(), 0.0f, 1.0f);
+			ImGui::SliderFloat("Viscosity", fluidGrid->getViscPointer(), 0.0f, 1.0001f);
+		}
+
 		ImGui::End();
 	}
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 	camera.updateCameraVectors();
+
+	// Update and Render additional Platform Windows
+	// (Platform functions may change the current OpenGL context, so we save/restore it to make it easier to paste this code elsewhere.
+	//  For this specific demo app we could also call glfwMakeContextCurrent(window) directly)
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+	{
+		GLFWwindow* backup_current_context = glfwGetCurrentContext();
+		ImGui::UpdatePlatformWindows();
+		ImGui::RenderPlatformWindowsDefault();
+		glfwMakeContextCurrent(backup_current_context);
+	}
+
 }
 
 void drawTooltip(const char* desc)
@@ -833,6 +894,12 @@ void processInput(GLFWwindow *window)
 	if (glfwGetKey(window, GLFW_KEY_R) == GLFW_RELEASE) {
 		rWasPressed = false;
 	}
+
+	//// For debugging (so we can see if something happens!)
+	//if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS) {
+	//	
+	//}
+	
 }
 
 /* Processes the cursor input and passes it to the camera.
@@ -864,7 +931,7 @@ void keyInputCallback(GLFWwindow *window, int button,
 	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
 		isPaused = !isPaused;
 		glfwSetInputMode(window, GLFW_CURSOR,
-						 isPaused ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
+						 glfwGetInputMode(window, GLFW_CURSOR) == GLFW_CURSOR_DISABLED ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
 	}
 }
 

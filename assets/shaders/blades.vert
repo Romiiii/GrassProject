@@ -17,12 +17,14 @@ uniform mat4 model;
 
 uniform sampler2D perlinNoise;
 
-uniform float perlinSampleScale;
+uniform float textureScale;
 uniform float currentTime;
 uniform float windStrength;
 uniform float swayReach;
 
 uniform vec2 windDirection;
+
+uniform bool debugBlades;
 
 float map2(float x, float in_min, float in_max, float out_min, float out_max)
 {
@@ -38,8 +40,10 @@ void main()
 	vec3 patch_pos = pos + vec3(5.0f, 0.0f, 5.0f);
 	vec4 world_pos = model * instanceMatrix * vec4(patch_pos, 1.0);
 
+
+
 	// Get the world coordinates of the vertices instead of the model coordinates
-	actual_pos = (world_pos * perlinSampleScale);  
+	actual_pos = (world_pos * textureScale);  
 	actual_pos.x = map2(actual_pos.x, -5.0f, 5.0f, 0.0f, 1.0f);
 	actual_pos.z = map2(actual_pos.z, -5.0f, 5.0f, 0.0f, 1.0f);
 
@@ -50,6 +54,8 @@ void main()
 	float noise = texture(perlinNoise, texture_pixel).r;
 
 	noise = (noise - 0.5f) * 2.0f;
+
+
 	// Multiply by the y value of the UV which represents how the wind affects the specific vertex
 	float swag = swayReach * noise* uvs.y * uvs.y;
 
@@ -59,6 +65,11 @@ void main()
 	vec4 wind_contribution = vec4(wind_direction.x, 0.0f, wind_direction.y, 0.0f) * swag;
 
 	gl_Position = projection * view * (world_space_position + wind_contribution);
+
+	
+	if (debugBlades)
+		vtxColor = vec4(0.0f, 0.0f, noise, 1.0f);
+	
 
 	Normal = mat3(model * instanceMatrix) * normal;  
 	FragPos = vec3(model * instanceMatrix * vec4(pos, 1.0));

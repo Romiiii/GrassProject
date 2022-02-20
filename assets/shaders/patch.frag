@@ -13,11 +13,15 @@ uniform float lightIntensity;
 uniform vec4 lightColor;
 uniform float windStrength;
 uniform float currentTime;
-uniform float perlinSampleScale;
+uniform float textureScale;
 uniform bool visualizeTexture;
 uniform vec2 windDirection;
 
 uniform sampler2D perlinNoise;
+uniform sampler2D fluidGridDensity;
+uniform sampler2D fluidGridVelX;
+uniform sampler2D fluidGridVelY;
+
 
 float map2(float x, float in_min, float in_max, float out_min, float out_max)
 {
@@ -42,21 +46,23 @@ void main()
 
 	vec4 objectColor = vtxColor;
 
-	if (visualizeTexture)
-	{
-		//vec2 uv = (UV * perlinSampleScale) + vtxPos.xz;
-		//uv += currentTime * windStrength * windDirection.yx;
-		
-		vec4 actual_pos = vec4(vtxPos, 1.0f) * perlinSampleScale;
-		actual_pos.x = map2(actual_pos.x, -5.0f, 5.0f, 0.0f, 1.0f);
-		actual_pos.z = map2(actual_pos.z, -5.0f, 5.0f, 0.0f, 1.0f);
-		
-		vec2 texture_pixel = actual_pos.xz + (currentTime * windStrength * windDirection);
 
-
-		vec4 textureColor = texture(perlinNoise, texture_pixel);
-		objectColor = textureColor; 
+		//vec2 uv = (UV * textureScale) + vtxPos.xz;
+	//uv += currentTime * windStrength * windDirection.yx;
+		
+	vec4 actual_pos = vec4(vtxPos, 1.0f) * textureScale;
+	actual_pos.x = map2(actual_pos.x, -5.0f, 5.0f, 0.0f, 1.0f);
+	actual_pos.z = map2(actual_pos.z, -5.0f, 5.0f, 0.0f, 1.0f);
+		
+	vec2 texture_pixel = actual_pos.xz + (currentTime * windStrength * windDirection);
+	vec4 textureColor;
+	if (visualizeTexture) {	// TODO:: make this a mode, int 0 none int 1 perlin int 2 fluidgrid
+		textureColor = texture(perlinNoise, texture_pixel);
+	} else {
+		textureColor = texture(fluidGridDensity, texture_pixel);
 	}
+	objectColor = textureColor; 
+	
 
 	diffuse *= attenuation * lightIntensity;
 

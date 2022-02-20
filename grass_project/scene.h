@@ -5,6 +5,7 @@
 #include "scene_object.h"
 #include "shader.h"
 #include "perlin_noise.h"
+#include "fluid_grid.h"
 
 
 /**
@@ -47,19 +48,21 @@ enum class BladeDistribution {
  */
 struct Config {
 	PerlinConfig perlinConfig;
+	FluidGridConfig fluidGridConfig;
 	int patchDensity = 10000;
 	WindType windType = WindType::TRIG_SIMPLE;
 	float windStrength = 0.0f;
-	float swayReach = 0.3f;
+	float swayReach = 0.5f;
 	glm::vec3 lightPosition = glm::vec3(0.0, 15.0, 0.0);
 	float ambientStrength = 0.5f;
 	SkyboxType skyboxType = SkyboxType::NIGHT;
-	int numPatches = 9;
+	int numPatches = 1;
 	glm::vec4 lightColor = { 1.0, 1.0, 1.0, 1.0 };
 	float lightIntensity = 10;
-	BladeDistribution bladeDistribution = BladeDistribution::HARRY_STYLES_WITH_RANDOS;
+	BladeDistribution bladeDistribution = BladeDistribution::HARRY_STYLES;
 	bool visualizeTexture = false;
 	glm::vec2 windDirection = { 0.0f, -1.0f };
+	bool debugBlades = false;
 };
 
 /**
@@ -79,10 +82,11 @@ public:
 	std::vector<SceneObject*> sceneObjects;
 	std::vector<SceneObject*> patches;
 	std::vector<SceneObject*> blades;
+
 	Texture* currentTexture = nullptr;
 	Texture* cubemapTextureDay = nullptr;
 	Texture* cubemapTextureNight = nullptr;
-	Texture* perlinNoise = nullptr;
+
 	glm::mat4 projection = glm::mat4(1);
 	glm::mat4 view = glm::mat4(1);
 	SceneObject* light = nullptr;

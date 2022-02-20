@@ -72,13 +72,28 @@ void SceneObject::setUniforms(Scene& scene) {
 				scene.currentTexture->getTextureID());
 		}
 		else if (name == "perlinNoise") {
-			scene.perlinNoise->activate();
-			scene.perlinNoise->bind();
-			shaderProgram.setInt("perlinNoise", scene.perlinNoise->getTextureID());
+			scene.config.perlinConfig.texture->activate();
+			scene.config.perlinConfig.texture->bind();
+			shaderProgram.setInt("perlinNoise", scene.config.perlinConfig.texture->getTextureID());
 		}
-		else if (name == "perlinSampleScale") {
-			shaderProgram.setFloat("perlinSampleScale",
-				scene.config.perlinConfig.perlinSampleScale);
+		else if (name == "fluidGridDensity") {
+			scene.config.fluidGridConfig.density->activate();
+			scene.config.fluidGridConfig.density->bind();
+			shaderProgram.setInt("fluidGridDensity", scene.config.fluidGridConfig.density->getTextureID());
+		}
+		else if (name == "fluidGridVelX") {
+			scene.config.fluidGridConfig.velX->activate();
+			scene.config.fluidGridConfig.velX->bind();
+			shaderProgram.setInt("fluidGridVelX", scene.config.fluidGridConfig.velX->getTextureID());
+		}
+		else if (name == "fluidGridVelY") {
+			scene.config.fluidGridConfig.velY->activate();
+			scene.config.fluidGridConfig.velY->bind();
+			shaderProgram.setInt("fluidGridVelY", scene.config.fluidGridConfig.density->getTextureID());
+		}
+		else if (name == "textureScale") {
+			shaderProgram.setFloat("textureScale",
+				scene.config.perlinConfig.textureScale); //TODO:: should not be in perlinconfig
 		}
 		else if (name == "visualizeTexture") {
 			shaderProgram.setBool("visualizeTexture", 
@@ -86,6 +101,9 @@ void SceneObject::setUniforms(Scene& scene) {
 		}
 		else if (name == "windDirection") {
 			shaderProgram.setVec2("windDirection", scene.config.windDirection);
+		}
+		else if (name == "debugBlades") {
+			shaderProgram.setBool("debugBlades", scene.config.debugBlades);
 		}
 	}
 }

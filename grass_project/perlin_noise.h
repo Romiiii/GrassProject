@@ -12,7 +12,7 @@
 *						checkerboard pattern will be drawn for debug purposes.
 * octaves		: 
 * bias			:
-* perlinSampleScale:	Dictates the sample scale used to sample the 
+* textureScale:	Dictates the sample scale used to sample the 
 *						perlin noise texture. Effectively zooming in and
 *						out on the texture.
 */
@@ -20,7 +20,8 @@ struct PerlinConfig {
 	bool makeChecker = false;
 	int octaves = 9;
 	float bias = 2.0f;
-	float perlinSampleScale = 1.0f;
+	float textureScale = 1.0f;
+	Texture* texture = nullptr;
 };
 
 /**

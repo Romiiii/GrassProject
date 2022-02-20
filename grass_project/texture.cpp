@@ -86,7 +86,7 @@ void Texture::generateTexture(void *data, int width, int height, GLenum format) 
 unsigned int Texture::loadTextureData(void *data, int width, int height, GLenum format) {
 	bind();
 
-	GLCall(glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_FLOAT, data));
+	GLCall(glTexImage2D(textureType, 0, format, width, height, 0, format, GL_FLOAT, data));
 
 	generateMipmap();
 
