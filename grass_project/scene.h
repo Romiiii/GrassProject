@@ -83,7 +83,7 @@ public:
 	std::vector<SceneObject*> patches;
 	std::vector<SceneObject*> blades;
 
-	Texture* currentTexture = nullptr;
+	Texture* currentSkyboxTexture = nullptr;
 	Texture* cubemapTextureDay = nullptr;
 	Texture* cubemapTextureNight = nullptr;
 

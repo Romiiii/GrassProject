@@ -110,12 +110,13 @@ unsigned int Texture::loadTextureData(void *data, int width, int height, GLenum 
  */
 unsigned int Texture::loadTextureCubeMap(std::vector<std::string> faces, bool alpha) {
 	bind();
-	activate();
+
+	GLuint format = alpha ? GL_RGBA : GL_RGB;
 
 	for (unsigned int i = 0; i < faces.size(); i++)
 	{
 		ImportedImage image(faces[i]);
-		GLuint format = alpha ? GL_RGBA : GL_RGB;
+
 		GLCall(glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, format,
 							image.width, image.height, 0, format, GL_UNSIGNED_BYTE, image.data));
 

@@ -66,10 +66,10 @@ void SceneObject::setUniforms(Scene& scene) {
 				scene.config.lightIntensity);
 		}
 		else if (name == "skybox") {
-			scene.currentTexture->bind();
-			scene.currentTexture->activate();
+			scene.currentSkyboxTexture->activate();
+			scene.currentSkyboxTexture->bind();
 			shaderProgram.setInt("skybox", 
-				scene.currentTexture->getTextureID());
+				scene.currentSkyboxTexture->getTextureID());
 		}
 		else if (name == "perlinNoise") {
 			scene.config.perlinConfig.texture->activate();

@@ -522,7 +522,7 @@ void initShadersAndTextures() {
 
 	scene.cubemapTextureDay = cubemapTextureDay;
 	scene.cubemapTextureNight = cubemapTextureNight;
-	scene.currentTexture = scene.cubemapTextureNight;
+	scene.currentSkyboxTexture = scene.cubemapTextureNight;
 
 	int width = PERLIN_NOISE_TEXTURE_WIDTH;
 	int height = PERLIN_NOISE_TEXTURE_WIDTH;
@@ -733,11 +733,11 @@ void drawGui() {
 			ImGui::Text("Skybox Settings");
 			if (ImGui::RadioButton("Day", scene.config.skyboxType == SkyboxType::DAY)) {
 				scene.config.skyboxType = SkyboxType::DAY;
-				scene.currentTexture = scene.cubemapTextureDay;
+				scene.currentSkyboxTexture = scene.cubemapTextureDay;
 			} ImGui::SameLine();
 			if (ImGui::RadioButton("Night", scene.config.skyboxType == SkyboxType::NIGHT)) {
 				scene.config.skyboxType = SkyboxType::NIGHT;
-				scene.currentTexture = scene.cubemapTextureNight;
+				scene.currentSkyboxTexture = scene.cubemapTextureNight;
 			}
 		}
 
