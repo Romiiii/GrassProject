@@ -177,9 +177,9 @@ void FluidGrid::setBounds(int b, float* x) {
 }
 
 void FluidGrid::drawStep() {
-	textureDen->generateTexture(density, N + 2, N + 2, GL_RED);
-	textureVelX->generateTexture(velX, N + 2, N + 2, GL_RED);
-	textureVelY->generateTexture(velY, N + 2, N + 2, GL_RED);
+	textureDen->loadTextureSingleChannel(N + 2, density);
+	textureVelX->loadTextureSingleChannel(N + 2, velX);
+	textureVelY->loadTextureSingleChannel(N + 2, velY);
 }
 
 void FluidGrid::simulate() {

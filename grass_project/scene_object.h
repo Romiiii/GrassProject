@@ -30,6 +30,7 @@ public:
 	*/
 	void setUniforms(Scene& scene);
 	glm::mat4 model;
+	bool isVisible = true;
 
 protected:
 	void createArrayBuffer(const std::vector<float>& array);

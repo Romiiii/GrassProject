@@ -62,7 +62,7 @@ public:
 	 * \param alpha set to true if alpha channel should be read from texture
 	 * \return textureID
 	 */
-	unsigned int loadTextureSingleChannel(int perlinNoiseSize);
+	unsigned int loadTextureSingleChannel(int perlinNoiseSize, void* data = nullptr);
 
 	void generateTexture(void *data, int width, int height, GLenum format);
 

@@ -43,6 +43,14 @@ enum class BladeDistribution {
 	ONE_DIRECTION
 };
 
+
+
+enum class SimulationMode {
+	PERLIN_NOISE,
+	CHECKER_PATTERN,
+	FLUID_GRID
+};
+
 /**
 * All variables that can be configured using the GUI
  */
@@ -61,8 +69,11 @@ struct Config {
 	float lightIntensity = 10;
 	BladeDistribution bladeDistribution = BladeDistribution::HARRY_STYLES;
 	bool visualizeTexture = false;
+	SimulationMode simulationMode = SimulationMode::FLUID_GRID;
 	glm::vec2 windDirection = { 0.0f, -1.0f };
 	bool debugBlades = false;
+	Texture* windX = nullptr;
+	Texture* windY = nullptr;
 };
 
 /**

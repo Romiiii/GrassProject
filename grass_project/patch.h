@@ -38,10 +38,6 @@ public:
 	*/
 	glm::mat4* getBladeMatrices();
 
-	std::vector<glm::vec3> grassCoordinates;
-	std::vector<glm::vec2> grassRotations;
-	std::vector<glm::mat4> grassMatrixes;
-
 private:
 	glm::mat4* bladeMatrices = nullptr;
 	int numBlades = 0;

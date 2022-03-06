@@ -23,7 +23,8 @@ void main()
    FragPos = vec3(model * vec4(pos, 1.0));
    vtxColor = color;
 
-   vec3 patch_pos = pos + vec3(5.0f, 0.0f, 5.0f); // To match blade zoom to patch zoom
+   vec3 patch_pos = pos; //+ vec3(5.0f, 0.0f, 5.0f); // To match blade zoom to patch zoom
    vtxPos = (model * vec4(patch_pos, 1.0)).xyz;
+   UV = pos.xz;
 }
 

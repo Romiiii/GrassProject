@@ -36,15 +36,12 @@ void Patch::initHarryEdwardStylesBladeMatrices(bool useRandomRotations) {
 		float randomPosX = generateRandomNumber(lowerBoundX, upperBoundX);
 		float randomPosZ = generateRandomNumber(lowerBoundZ, upperBoundZ);
 
-		glm::vec3 grassCoordinate = glm::vec3(randomPosX, 0, randomPosZ);
-
-		grassCoordinates.push_back(grassCoordinate);
+		glm::vec3 grassCoordinate = glm::vec3(randomPosX, 0, randomPosZ) * PATCH_SIZE;
 
 		bladeMatrices[x] = glm::translate(grassCoordinate);
 
 		// Apply a random rotation within the sway bounds to each blade
 		if (useRandomRotations) {
-
 			float randomRotX = generateRandomNumber(-swayX, swayX);
 			float randomRotY = generateRandomNumber(-swayY, swayY);
 			bladeMatrices[x] *= glm::rotateX(randomRotX) * glm::rotateY(randomRotY);
@@ -69,9 +66,7 @@ void Patch::initOneDirectionBladeMatrices() {
 	for (int x = 0; x < numBlades; x += 1) {
 		float z = lowerBoundZ + ((upperBoundZ - lowerBoundZ) / (numBlades)) * x;
 
-		glm::vec3 grassCoordinate = glm::vec3(middleX, 0, z);
-
-		grassCoordinates.push_back(grassCoordinate);
+		glm::vec3 grassCoordinate = glm::vec3(middleX, 0, z) * PATCH_SIZE;
 
 		bladeMatrices[x] = glm::translate(grassCoordinate);
 	}

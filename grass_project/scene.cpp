@@ -14,7 +14,8 @@ void Scene::render() {
 	GLCall(glDepthFunc(GL_LEQUAL)); // Why do we have this?
 
 	for (auto object : sceneObjects) {
-		object->draw(*this);
+		if (object->isVisible)
+			object->draw(*this);
 	}
 
 	for (int i = 0; i < config.numPatches; i++) {

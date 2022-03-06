@@ -71,25 +71,25 @@ void SceneObject::setUniforms(Scene& scene) {
 			shaderProgram.setInt("skybox", 
 				scene.currentSkyboxTexture->getTextureID());
 		}
-		else if (name == "perlinNoise") {
-			scene.config.perlinConfig.texture->activate();
-			scene.config.perlinConfig.texture->bind();
-			shaderProgram.setInt("perlinNoise", scene.config.perlinConfig.texture->getTextureID());
+		else if (name == "windX") {
+			if (scene.config.windX != nullptr) {
+				scene.config.windX->activate();
+				scene.config.windX->bind();
+				shaderProgram.setInt("windX", scene.config.windX->getTextureID());
+			}
+			//else {
+			//	scene.
+			//}
 		}
-		else if (name == "fluidGridDensity") {
-			scene.config.fluidGridConfig.density->activate();
-			scene.config.fluidGridConfig.density->bind();
-			shaderProgram.setInt("fluidGridDensity", scene.config.fluidGridConfig.density->getTextureID());
-		}
-		else if (name == "fluidGridVelX") {
-			scene.config.fluidGridConfig.velX->activate();
-			scene.config.fluidGridConfig.velX->bind();
-			shaderProgram.setInt("fluidGridVelX", scene.config.fluidGridConfig.velX->getTextureID());
-		}
-		else if (name == "fluidGridVelY") {
-			scene.config.fluidGridConfig.velY->activate();
-			scene.config.fluidGridConfig.velY->bind();
-			shaderProgram.setInt("fluidGridVelY", scene.config.fluidGridConfig.density->getTextureID());
+		else if (name == "windY") {
+			if (scene.config.windY != nullptr) {
+				scene.config.windY->activate();
+				scene.config.windY->bind();
+				shaderProgram.setInt("windY", scene.config.windY->getTextureID());
+			}
+			//else {
+
+			//}
 		}
 		else if (name == "textureScale") {
 			shaderProgram.setFloat("textureScale",
@@ -105,6 +105,9 @@ void SceneObject::setUniforms(Scene& scene) {
 		else if (name == "debugBlades") {
 			shaderProgram.setBool("debugBlades", scene.config.debugBlades);
 		}
+		//else if (name == "simulationMode") {
+		//	shaderProgram.setInt("simulationMode", scene.config.debugBlades);
+		//}
 	}
 }
 

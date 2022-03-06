@@ -61,13 +61,13 @@ void Texture::setLabel(const std::string &label)
 	GLCall(glObjectLabel(GL_TEXTURE, textureID, -1, label.c_str()));
 }
 
-unsigned int Texture::loadTextureSingleChannel(int perlinNoiseSize) {
+unsigned int Texture::loadTextureSingleChannel(int perlinNoiseSize, void *data) {
 	bind();
 
 	setFilter(GL_NEAREST);
 	setWrap(GL_REPEAT);
 
-	GLCall(glTexImage2D(textureType, 0, GL_RED, perlinNoiseSize, perlinNoiseSize, 0, GL_RED, GL_FLOAT, 0));
+	GLCall(glTexImage2D(textureType, 0, GL_RED, perlinNoiseSize, perlinNoiseSize, 0, GL_RED, GL_FLOAT, data));
 
 	return textureID;
 }
