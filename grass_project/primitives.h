@@ -15,20 +15,20 @@
 const float PATCH_SIZE = 10.0f;
 
 
-static std::vector<float> grassPositions{	0.0f, 0.0f, 0.0f,
+static std::vector<float> grassPositions{ 0.0f, 0.0f, 0.0f,
 											-0.02f, 0.1f, 0.0f,
 											0.0f, 0.2f, 0.0f,
 											0.02f, 0.1f, 0.0f,
 											0.0f, 0.5f, 0.0f,
-															};
+};
 
 
-static std::vector<float> grassUVs{ 0.0f, 0.0f, 
+static std::vector<float> grassUVs{ 0.0f, 0.0f,
 									0.0f, 0.2f,
 									0.5f, 0.4f,
 									1.0f, 0.2f,
 									0.5f, 1.0f
-											};
+};
 
 //static std::vector<unsigned int> grassIndices{	0, 3, 2,
 //												0, 2, 1,
@@ -41,12 +41,12 @@ static std::vector<unsigned int> grassIndices{ 0, 2, 3,
 												1, 4, 2,
 												2, 4, 3 };
 
-static std::vector<float> grassColors{	.56f, .60f, .17f, 1.f,
+static std::vector<float> grassColors{ .56f, .60f, .17f, 1.f,
 										.46f, .50f, .17f, 1.f,
 										.56f, .60f, .17f, 1.f,
 										.46f, .50f, .17f, 1.f,
 										.46f, .50f, .17f, 1.f,
-										};
+};
 
 static std::vector<float> grassNormals{ 0.0f, 0.0f, 1.0f,
 										0.0f, 0.0f, 1.0f,
@@ -54,10 +54,12 @@ static std::vector<float> grassNormals{ 0.0f, 0.0f, 1.0f,
 										0.0f, 0.0f, 1.0f,
 										0.0f, 0.0f, 1.0f };
 
-static std::vector<float> grassPatchPositions{ 0.0f, 0.0f, 0.0f,
-								   1.0f, 0.0f, 0.0f,
-								   1.0f, 0.0f, 1.0f,
-								   0.0f, 0.0f, 1.0f};
+static std::vector<float> grassPatchPositions{
+	0.0f, 0.0f, 1.0f, // Bot left
+	1.0f, 0.0f, 1.0f, // Bot right
+	1.0f, 0.0f, 0.0f, // Top right
+	0.0f, 0.0f, 0.0f, // Top left
+};
 
 //static std::vector<unsigned int> grassPatchIndices{ 0, 1, 3,
 //											 1, 2, 3};
@@ -76,11 +78,11 @@ static std::vector<float> grassPatchNormals{ 0.0f, 1.0f, 0.0f,
 								   0.0f, 1.0f, 0.0f,
 								   0.0f, 1.0f, 0.0f };
 
-static std::vector<float> grassPatchUVs{0.0f, 0.0f,		// bottom left
-										0.0f, 1.0f,		// bottom right 
+static std::vector<float> grassPatchUVs{ 0.0f, 0.0f,		// bottom left
+										1.0f, 0.0f,		// bottom right 
 										1.0f, 1.0f,		// top right
-										1.0f, 0.0f };	// top left
-										
+										0.0f, 1.0f };	// top left
+
 
 static std::vector<float> cubePositions{
 	-0.5f, 0.5f, -0.5f,
@@ -138,7 +140,7 @@ static glm::vec3 p[] = {
 		glm::vec3{-length, length, length},
 		glm::vec3{-length, -length, length},
 		glm::vec3{length, -length, length},
-		
+
 		glm::vec3{length, length, -length},
 		glm::vec3{-length, length, -length},
 		glm::vec3{-length, -length, -length},

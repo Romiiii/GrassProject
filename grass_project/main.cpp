@@ -385,7 +385,7 @@ int main()
 	// Initialize camera
 	camera.camPosition = { 0, 20, 0 };
 	camera.yaw = 0;
-	camera.pitch = -90;
+	camera.pitch = -89.0f;
 	camera.updateCameraVectors();
 
 	// Render loop : render every loopInterval seconds
@@ -538,8 +538,7 @@ void initShadersAndTextures() {
 	glEnable(GL_DEPTH_TEST);  // Turn on z-buffer depth perlinNoiseTexture
 	glDepthFunc(GL_LESS);  // Draws fragments that are closer to the screen in NDC
 	glEnable(GL_MULTISAMPLE);
-	glEnable(GL_CULL_FACE); // Enable backface culling
-	//glFrontFace(GL_CW);
+
 }
 
 glm::vec2 calculateSpiralPosition(int n) {
@@ -597,14 +596,15 @@ void initSceneObjects(Patch &patch) {
 
 		glm::vec2 position = calculateSpiralPosition(i) * PATCH_SIZE;
 		SceneObjectIndexed *patchSceneObject = new SceneObjectIndexed(grassPatchPositions, grassPatchColors,
-																	  grassPatchIndices, grassPatchNormals, *patchShaderProgram);
-		patchSceneObject->model = glm::translate(position.x - 0.5 * PATCH_SIZE, 0, position.y - 0.5 * PATCH_SIZE) * glm::scale(PATCH_SIZE, PATCH_SIZE, PATCH_SIZE);
+																	  grassPatchIndices, grassPatchNormals, *patchShaderProgram, &grassPatchUVs);
+		glm::mat4 translation = glm::translate(position.x - 0.5f * PATCH_SIZE, 0, position.y - 0.5f * PATCH_SIZE);
+		patchSceneObject->model = translation * glm::scale(PATCH_SIZE, PATCH_SIZE, PATCH_SIZE);
 		scene.patches.push_back(patchSceneObject);
 
 		SceneObjectInstanced *blades = new SceneObjectInstanced(grassPositions, grassColors,
 																grassIndices, grassNormals, instanceMatrixBuffer, *bladesShaderProgram, &grassUVs);
 		// Do not scale the blades
-		blades->model = glm::translate(position.x - 0.5 * PATCH_SIZE, 0, position.y - 0.5 * PATCH_SIZE);
+		blades->model = translation;
 		scene.blades.push_back(blades);
 	}
 }

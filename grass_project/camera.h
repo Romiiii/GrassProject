@@ -73,7 +73,7 @@ public:
 	bool sprinting = false;
 
 	float mouseSensitivity = 0.05f;
-	float groundY = 1.6f;
+	float groundY = 0.0f;
 
 	// Camera Attributes
 	glm::vec3 camForward = glm::vec3(0.0f, 0.0f, -1.0f);

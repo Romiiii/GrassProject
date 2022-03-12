@@ -1,5 +1,7 @@
 #include "camera.h"
 
+#include "debug.h"
+
 Camera::Camera() {
 	updateCameraVectors();
 }
@@ -96,10 +98,15 @@ glm::vec3 Camera::getCamPosition() {
 /* Calculates the forward vector from the Camera's (updated) Euler Angles.
 	*/
 void Camera::updateCameraVectors() {
+	ASSERT(pitch < 89.9f && pitch > -89.9f);
+
+	// -90 to point us forward.
+	float yawToUse = yaw - 90;
+
 	glm::vec3 front;
-	front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+	front.x = cos(glm::radians(yawToUse)) * cos(glm::radians(pitch));
 	front.y = sin(glm::radians(pitch));
-	front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+	front.z = sin(glm::radians(yawToUse)) * cos(glm::radians(pitch));
 	camForward = glm::normalize(front);
 }
 

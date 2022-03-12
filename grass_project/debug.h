@@ -2,6 +2,7 @@
 #define DEBUG_H 
 
 #include <glad/glad.h>
+#include <iostream>
 
 /**
  * \brief An assert.

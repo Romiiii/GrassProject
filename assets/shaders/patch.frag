@@ -2,11 +2,10 @@
 
 out vec4 FragColor;
 
-in vec4 vtxColor;
+in vec4 VtxColor;
 in vec3 Normal;
 in vec3 FragPos;
-in vec3 vtxPos;
-in vec2 UV;
+in vec2 Uv;
 
 uniform float ambientStrength; 
 uniform vec3 lightPos; 
@@ -53,7 +52,7 @@ void main()
 		//vec2 uv = (UV * textureScale) + vtxPos.xz;
 	//uv += currentTime * windStrength * windDirection.yx;
 		
-	vec2 actual_pos = UV * textureScale;
+	vec2 actual_pos = Uv * textureScale;
 	//actual_pos.x = map2(actual_pos.x, -5.0f, 5.0f, 0.0f, 1.0f);
 	//actual_pos.z = map2(actual_pos.z, -5.0f, 5.0f, 0.0f, 1.0f);
 		
@@ -64,15 +63,11 @@ void main()
 		patchColor.b = texture(windY, texture_pixel).r;
 		
 	} else {
-		patchColor = vtxColor;
+		patchColor = VtxColor;
 	}
 
 
 	
 	vec4 result = (vec4(ambient,1.0f) + vec4(diffuse,1.0f)) * patchColor;
-	FragColor = vec4(UV, 0.0f, 1.0f); 
-
-
-  
-	//if(FragColor.a < 0.1) discard;
+	FragColor = result;
 }

@@ -6,7 +6,8 @@ in vec4 vtxColor;
 in vec3 Normal;
 in vec3 FragPos;
 
-uniform float ambientStrength; 
+
+float ambientStrength; 
 uniform vec3 lightPos; 
 uniform float lightIntensity;
 uniform vec4 lightColor;

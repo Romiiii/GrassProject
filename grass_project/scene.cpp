@@ -18,8 +18,15 @@ void Scene::render() {
 			object->draw(*this);
 	}
 
+	
+	glEnable(GL_CULL_FACE);
 	for (int i = 0; i < config.numPatches; i++) {
 		patches[i]->draw(*this);
+	}
+
+	
+	glDisable(GL_CULL_FACE);
+	for (int i = 0; i < config.numPatches; i++) {
 		blades[i]->draw(*this);
 	}
 }
