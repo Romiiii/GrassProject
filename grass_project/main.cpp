@@ -667,7 +667,7 @@ void drawGui() {
 		{
 			ImGui::SliderFloat3("Camera Position", (float *)&camera.camPosition, -50, 50);
 			ImGui::SliderFloat("Yaw", &camera.yaw, -180, 180);
-			ImGui::SliderFloat("Pitch", &camera.pitch, -180, 180);
+			ImGui::SliderFloat("Pitch", &camera.pitch, -89.9f, 89.9f);
 		}
 
 		if (ImGui::CollapsingHeader("Grass Settings"))
@@ -692,16 +692,13 @@ void drawGui() {
 
 		if (ImGui::CollapsingHeader("Debug Settings"))
 		{
-			ImGui::Checkbox("Visualize Texture On Patch", &scene.config.visualizeTexture);
-			ImGui::SameLine();
-
 			ImGui::Text("Simulation Mode Settings");
 			if (ImGui::RadioButton("Perlin Noise", scene.config.simulationMode == SimulationMode::PERLIN_NOISE)) {
 				scene.config.simulationMode = SimulationMode::PERLIN_NOISE;
 				scene.config.windX = scene.config.perlinConfig.texture;
 				scene.config.perlinConfig.makeChecker = false;
 				generatePerlinNoise();
-				scene.config.windY = nullptr;
+				scene.config.windY = scene.config.perlinConfig.texture;
 			} ImGui::SameLine();
 			drawTooltip("Blades respond to the generated perlin noise.");
 			if (ImGui::RadioButton("Checker Pattern", scene.config.simulationMode == SimulationMode::CHECKER_PATTERN)) {
@@ -741,6 +738,7 @@ void drawGui() {
 			drawTooltip("Blades are placed in a line in the middle of the patch without random rotations.");
 
 			ImGui::Checkbox("Debug Blades", &scene.config.debugBlades);
+			ImGui::Checkbox("Visualize Texture On Patch", &scene.config.visualizeTexture);
 
 		}
 

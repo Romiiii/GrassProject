@@ -98,7 +98,7 @@ glm::vec3 Camera::getCamPosition() {
 /* Calculates the forward vector from the Camera's (updated) Euler Angles.
 	*/
 void Camera::updateCameraVectors() {
-	ASSERT(pitch < 89.9f && pitch > -89.9f);
+	ASSERT(pitch <= 89.9f && pitch >= -89.9f);
 
 	// -90 to point us forward.
 	float yawToUse = yaw - 90;

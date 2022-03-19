@@ -35,30 +35,20 @@ float map2(float x, float in_min, float in_max, float out_min, float out_max)
 void main()
 {
 	vtxColor = color;
-	vec4 actual_pos;
-	vec2 texture_pixel;
-
-	vec3 patch_pos = pos + vec3(5.0f, 0.0f, 5.0f);
-	vec4 world_pos = model * instanceMatrix * vec4(patch_pos, 1.0);
 
 	// Get the world coordinates of the vertices instead of the model coordinates
-	//actual_pos = (world_pos * textureScale); 
-	actual_pos = vec4(pos, 1.0f) * textureScale;
-	//actual_pos.x = map2(actual_pos.x, -5.0f, 5.0f, 0.0f, 1.0f);
-	//actual_pos.z = map2(actual_pos.z, -5.0f, 5.0f, 0.0f, 1.0f);
-
+	vec4 uv_noise_texture = vec4(pos, 1.0f) * textureScale;
 	vec2 wind_direction = windDirection;
-
-	texture_pixel = actual_pos.xz + (currentTime * windStrength * wind_direction);
-
+	vec2 texture_pixel = uv_noise_texture.xz + (currentTime * windStrength * wind_direction);
 	vec2 noise;
+
 	noise.r = texture(windX, texture_pixel).r;
 	noise.g = texture(windY, texture_pixel).r;
-
 	noise = (noise - 0.5f) * 2.0f;
 
-	// Multiply by the y value of the UV which represents how the wind affects the specific vertex
-	vec2 swag = swayReach * noise * uvs.y * uvs.y;
+	// Multiply by the y value of the uv which represents how the wind affects the specific vertex
+	// Multiply by the y value twice to increase the effect of the wind 
+	vec2 swag = swayReach * noise * pow(uvs.y, 2);
 	
 	vec4 world_space_position = model * instanceMatrix * vec4(pos, 1.0);
 	vec4 wind_contribution = vec4(wind_direction.x * swag.x, 0.0f, wind_direction.y * swag.y, 0.0f);
@@ -68,7 +58,7 @@ void main()
 	if (debugBlades)
 		vtxColor = vec4(0.0f, 0.0f, noise.r, 1.0f);
 	
-	Normal = mat3(model * instanceMatrix) * normal;  
-	FragPos = vec3(model * instanceMatrix * vec4(pos, 1.0));
+	Normal = mat3(transpose(inverse(model))) * normal;  
+	FragPos = world_space_position.xyz;
 }
 
