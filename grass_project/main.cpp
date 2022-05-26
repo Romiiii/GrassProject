@@ -424,6 +424,10 @@ int main()
 
 		int width, height;
 		glfwGetWindowSize(window, &width, &height);
+
+		width = glm::max(width, 1);
+		height = glm::max(height, 1);
+
 		glm::mat4 projection = glm::perspective(70.0f,
 												(float)width / (float)height, .01f, 1000.0f);
 		glm::mat4 view = glm::lookAt(
