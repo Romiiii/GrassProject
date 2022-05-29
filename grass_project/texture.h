@@ -45,6 +45,7 @@ public:
 	 * \brief Binds this texture
 	 */
 	void bind();
+	void unbind();
 
 	/**
 	 * \brief Loads a 2D texture from a specified file.
