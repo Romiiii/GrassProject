@@ -59,15 +59,15 @@ void main()
 	vec2 texture_pixel = actual_pos + (currentTime * windStrength * windDirection);
 	vec4 patchColor;
 	if (visualizeTexture) {	
-		patchColor.r = texture(windX, texture_pixel).r;
-		patchColor.b = texture(windY, texture_pixel).r;
-		
-	} else {
-		patchColor = VtxColor;
+		patchColor.r = abs(texture(windX, texture_pixel).r);
+		patchColor.b = abs(texture(windY, texture_pixel).r);
+		FragColor = patchColor;
+		return;	
 	}
 
-
+	patchColor = VtxColor;
 	
 	vec4 result = vec4(ambient,1.0f) + vec4(diffuse,1.0f) * patchColor;
 	FragColor = result;
+	
 }

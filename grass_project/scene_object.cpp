@@ -77,9 +77,9 @@ void SceneObject::setUniforms(Scene& scene) {
 				scene.config.windX->bind();
 				shaderProgram.setInt("windX", scene.config.windX->getTextureID());
 			}
-			else {
-				shaderProgram.setInt("windX", 0);
-			}
+            else {
+                shaderProgram.setInt("windX", 100);
+            }
 		}
 		else if (name == "windY") {
 			if (scene.config.windY != nullptr) {
@@ -87,9 +87,9 @@ void SceneObject::setUniforms(Scene& scene) {
 				scene.config.windY->bind();
 				shaderProgram.setInt("windY", scene.config.windY->getTextureID());
 			}
-			else {
-				shaderProgram.setInt("windY", 0);
-			}
+            else {
+                shaderProgram.setInt("windY", 100);
+            }
 		}
 		else if (name == "textureScale") {
 			shaderProgram.setFloat("textureScale",
@@ -105,9 +105,9 @@ void SceneObject::setUniforms(Scene& scene) {
 		else if (name == "debugBlades") {
 			shaderProgram.setBool("debugBlades", scene.config.debugBlades);
 		}
-		//else if (name == "simulationMode") {
-		//	shaderProgram.setInt("simulationMode", scene.config.debugBlades);
-		//}
+		else if (name == "simulationMode") {
+			shaderProgram.setInt("simulationMode", scene.config.debugBlades);
+		}
 	}
 }
 

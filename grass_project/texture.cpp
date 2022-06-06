@@ -38,6 +38,12 @@ void Texture::bind()
 	GLCall(glBindTexture(textureType, textureID));
 }
 
+void Texture::unbind()
+{
+	activate();
+	GLCall(glBindTexture(textureType, 0));
+}
+
 
 unsigned int Texture::loadTexture(const std::string &fileName, bool alpha) {
 	ImportedImage image(fileName);
