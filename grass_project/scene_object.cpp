@@ -105,9 +105,9 @@ void SceneObject::setUniforms(Scene& scene) {
 		else if (name == "debugBlades") {
 			shaderProgram.setBool("debugBlades", scene.config.debugBlades);
 		}
-		//else if (name == "simulationMode") {
-		//	shaderProgram.setInt("simulationMode", scene.config.debugBlades);
-		//}
+		else if (name == "simulationMode") {
+			shaderProgram.setInt("simulationMode", scene.config.debugBlades);
+		}
 	}
 }
 
