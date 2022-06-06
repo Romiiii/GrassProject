@@ -91,7 +91,7 @@ unsigned int Texture::loadTextureData(void *data, int width, int height, GLenum 
 	generateMipmap();
 
 	setFilter(GL_NEAREST);
-	setWrap(GL_CLAMP_TO_EDGE);
+	setWrap(GL_REPEAT);
 
 	return textureID;
 }

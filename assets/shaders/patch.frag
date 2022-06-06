@@ -46,7 +46,7 @@ void main()
 	
 	float diff = max(dot(norm, lightDir), 0.0);
 	vec3 diffuse = diff * lightColor.xyz;
-    vec3 ambient = ambientStrength * lightColor.xyz;
+    vec3 ambient = vec3(ambientStrength, ambientStrength, ambientStrength);
 	diffuse *= attenuation * lightIntensity;
 
 		//vec2 uv = (UV * textureScale) + vtxPos.xz;
@@ -68,6 +68,6 @@ void main()
 
 
 	
-	vec4 result = (vec4(ambient,1.0f) + vec4(diffuse,1.0f)) * patchColor;
+	vec4 result = vec4(ambient,1.0f) + vec4(diffuse,1.0f) * patchColor;
 	FragColor = result;
 }

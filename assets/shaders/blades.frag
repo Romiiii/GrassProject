@@ -7,10 +7,11 @@ in vec3 Normal;
 in vec3 FragPos;
 
 
-float ambientStrength; 
+uniform float ambientStrength; 
 uniform vec3 lightPos; 
 uniform float lightIntensity;
 uniform vec4 lightColor;
+uniform bool debugBlades;
 
 
 void main()
@@ -27,13 +28,17 @@ void main()
 	
 	float diff = max(dot(norm, lightDir), 0.0);
 	vec3 diffuse = diff * lightColor.xyz;
-    vec3 ambient = ambientStrength * lightColor.xyz;
+    vec3 ambient = vec3(ambientStrength, ambientStrength, ambientStrength);
 
 	vec4 objectColor = vtxColor;
 
 	diffuse *= attenuation * lightIntensity;
-
-	vec4 result = (vec4(ambient,1.0f) + vec4(diffuse,1.0f)) * objectColor;
-
+	
+	vec4 result = vec4(ambient,1.0f) + vec4(diffuse,1.0f) * objectColor;
+	
 	FragColor = result; 
+
+	if (debugBlades)
+		FragColor = objectColor;
+		
 }

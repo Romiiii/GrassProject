@@ -77,9 +77,9 @@ void SceneObject::setUniforms(Scene& scene) {
 				scene.config.windX->bind();
 				shaderProgram.setInt("windX", scene.config.windX->getTextureID());
 			}
-			//else {
-			//	scene.
-			//}
+			else {
+				shaderProgram.setInt("windX", 0);
+			}
 		}
 		else if (name == "windY") {
 			if (scene.config.windY != nullptr) {
@@ -87,9 +87,9 @@ void SceneObject::setUniforms(Scene& scene) {
 				scene.config.windY->bind();
 				shaderProgram.setInt("windY", scene.config.windY->getTextureID());
 			}
-			//else {
-
-			//}
+			else {
+				shaderProgram.setInt("windY", 0);
+			}
 		}
 		else if (name == "textureScale") {
 			shaderProgram.setFloat("textureScale",

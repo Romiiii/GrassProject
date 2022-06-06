@@ -26,6 +26,7 @@ uniform float swayReach;
 uniform vec2 windDirection;
 
 uniform bool debugBlades;
+// pass in PATCH_SIZE (in primitives)
 
 float map2(float x, float in_min, float in_max, float out_min, float out_max)
 {
@@ -37,8 +38,9 @@ void main()
 	vtxColor = color;
 
 	// Get the world coordinates of the vertices instead of the model coordinates
-	vec4 uv_noise_texture = vec4(pos, 1.0f) * textureScale;
-	vec2 wind_direction = windDirection;
+	// 10 is patch size
+	vec4 uv_noise_texture = ((instanceMatrix * vec4(pos, 1.0f)) / 10) * textureScale;
+	vec2 wind_direction = -windDirection;
 	vec2 texture_pixel = uv_noise_texture.xz + (currentTime * windStrength * wind_direction);
 	vec2 noise;
 

@@ -695,18 +695,18 @@ void drawGui() {
 			ImGui::Text("Simulation Mode Settings");
 			if (ImGui::RadioButton("Perlin Noise", scene.config.simulationMode == SimulationMode::PERLIN_NOISE)) {
 				scene.config.simulationMode = SimulationMode::PERLIN_NOISE;
-				scene.config.windX = scene.config.perlinConfig.texture;
 				scene.config.perlinConfig.makeChecker = false;
 				generatePerlinNoise();
+				scene.config.windX = scene.config.perlinConfig.texture;
 				scene.config.windY = scene.config.perlinConfig.texture;
 			} ImGui::SameLine();
 			drawTooltip("Blades respond to the generated perlin noise.");
 			if (ImGui::RadioButton("Checker Pattern", scene.config.simulationMode == SimulationMode::CHECKER_PATTERN)) {
 				scene.config.simulationMode = SimulationMode::CHECKER_PATTERN;
 				scene.config.perlinConfig.makeChecker = true;
-				generatePerlinNoise();
+				generatePerlinNoise(); 
 				scene.config.windX = scene.config.perlinConfig.texture;
-				scene.config.windY = nullptr;
+				scene.config.windY = scene.config.perlinConfig.texture;
 			} ImGui::SameLine();
 			drawTooltip("Blades respond to the generated checker pattern.");
 			if (ImGui::RadioButton("Fluid Grid", scene.config.simulationMode == SimulationMode::FLUID_GRID)) {
@@ -794,7 +794,7 @@ void drawGui() {
 		if (ImGui::CollapsingHeader("Light Settings"))
 		{
 			ImGui::Checkbox("Show Light", &scene.light->isVisible);
-			ImGui::SliderFloat("Ambient Light Strength", &scene.config.ambientStrength, 0.1f, 1.0f);
+			ImGui::SliderFloat("Ambient Light Strength", &scene.config.ambientStrength, 0.0f, 1.0f);
 			ImGui::DragFloat3("Light Position", (float *)&scene.config.lightPosition, 0.1f, -100, 100);
 			ImGui::ColorEdit4("Light Color", (float *)&scene.config.lightColor);
 			ImGui::SliderFloat("Light Intensity", &scene.config.lightIntensity, 0.0f, 10);

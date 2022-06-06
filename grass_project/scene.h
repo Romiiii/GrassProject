@@ -62,7 +62,7 @@ struct Config {
 	float windStrength = 0.0f;
 	float swayReach = 0.5f;
 	glm::vec3 lightPosition = glm::vec3(0.0, 15.0, 0.0);
-	float ambientStrength = 0.5f;
+	float ambientStrength = 0.05f;
 	SkyboxType skyboxType = SkyboxType::NIGHT;
 	int numPatches = 1;
 	glm::vec4 lightColor = { 1.0, 1.0, 1.0, 1.0 };
