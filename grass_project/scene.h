@@ -70,7 +70,7 @@ struct Config {
 	BladeDistribution bladeDistribution = BladeDistribution::HARRY_STYLES;
 	bool visualizeTexture = false;
 	SimulationMode simulationMode = SimulationMode::FLUID_GRID;
-	glm::vec2 windDirection = { 0.0f, -1.0f };
+	glm::vec2 windDirection = glm::normalize(glm::vec2(0.5f, 0.0f ));
 	bool debugBlades = false;
 	Texture* windX = nullptr;
 	Texture* windY = nullptr;

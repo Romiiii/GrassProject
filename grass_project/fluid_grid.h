@@ -38,6 +38,8 @@ public:
 	void simulate();
 	int getN();
 	Texture* getTextureDen();
+	Texture* getTextureVelX();
+	Texture* getTextureVelY();
 	float* getDiffPointer();
 	float* getViscPointer();
 

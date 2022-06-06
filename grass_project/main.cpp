@@ -727,11 +727,15 @@ void drawGui() {
 
 		if (ImGui::CollapsingHeader("Wind Settings"))
 		{
-			ImGui::SliderFloat("Sway Reach", &scene.config.swayReach, 0.0f, 1.0f);
+			ImGui::SliderFloat("Sway Reach", &scene.config.swayReach, 0.0f, 100.0f);
 			drawTooltip("How far the blades will move in the wind.");
 			ImGui::SliderFloat("Wind Strength", &scene.config.windStrength, 0, 0.5f);
 			ImGui::DragFloat2("Wind Direction", (float *)&scene.config.windDirection,
 				0.1f, -1.0f, 1.0f);
+			if(glm::epsilonEqual(glm::length(scene.config.windDirection), 0.0f, 0.0001f))
+			{
+				scene.config.windDirection = {1, 0};
+			}
 			if (ImGui::Button("Normalize Wind Direction"))
 				scene.config.windDirection = glm::normalize(scene.config.windDirection);
 
@@ -845,12 +849,36 @@ void drawGui() {
 		if (scene.config.simulationMode == SimulationMode::FLUID_GRID && ImGui::CollapsingHeader("Fluid Grid Settings"))
 		{
 			float width = 512;
+			if(ImGui::BeginTabBar("Heck yes"))
+			{
+				if(ImGui::BeginTabItem("Density"))
+				{
+					
+					ImGui::Image((ImTextureID)(long long)fluidGrid->getTextureDen()->getTextureID(),
+						{ width, width }, 
+						{ 0.0f, 1 }, 
+						{ 1.0f, 0 });
+					ImGui::EndTabItem();
+				}
+				if(ImGui::BeginTabItem("Velocity X"))
+				{
+					ImGui::Image((ImTextureID)(long long)fluidGrid->getTextureVelX()->getTextureID(),
+						{ width, width }, 
+						{ 0.0f, 1 }, 
+						{ 1.0f, 0 });
+					ImGui::EndTabItem();
+				}
+				if(ImGui::BeginTabItem("Velocity Y"))
+				{
+					ImGui::Image((ImTextureID)(long long)fluidGrid->getTextureVelY()->getTextureID(),
+						{ width, width }, 
+						{ 0.0f, 1 }, 
+						{ 1.0f, 0 });
+					ImGui::EndTabItem();
+				}
+				ImGui::EndTabBar();
+			}
 			
-			ImGui::Image((ImTextureID)(long long)fluidGrid->getTextureDen()->getTextureID(),
-				{ width, width }, 
-				{ 0.0f, 1 }, 
-				{ 1.0f, 0 });
-
 
 			if (ImGui::Button("Step through fluid simulation")) {
 				if (clearNextSimulate)

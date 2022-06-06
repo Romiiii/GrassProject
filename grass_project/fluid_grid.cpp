@@ -348,6 +348,12 @@ int FluidGrid::getN() {
 Texture *FluidGrid::getTextureDen() {
 	return textureDen;
 }
+Texture *FluidGrid::getTextureVelX() {
+	return textureVelX;
+}
+Texture *FluidGrid::getTextureVelY() {
+	return textureVelY;
+}
 
 float *FluidGrid::getDiffPointer() {
 	return &diff;

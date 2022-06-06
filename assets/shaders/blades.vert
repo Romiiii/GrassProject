@@ -47,7 +47,8 @@ void main()
 		// Get the world coordinates of the vertices instead of the model coordinates
 		// 10 is patch size
 		vec4 uv_noise_texture = ((instanceMatrix * vec4(pos, 1.0f)) / 10) * textureScale;
-		vec2 wind_direction = -windDirection;
+
+		vec2 wind_direction = normalize(windDirection);
 		vec2 texture_pixel = uv_noise_texture.xz + (currentTime * windStrength * wind_direction);
 		vec2 noise;
 		noise.r = texture(windX, texture_pixel).r;
@@ -68,7 +69,9 @@ void main()
 	if(simulationMode == 2)
 	{
 		// Get the world coordinates of the vertices instead of the model coordinates
-		vec2 texture_pixel = pos.xz;
+		vec4 uv_noise_texture = ((instanceMatrix * vec4(pos, 1.0f)) / 10);
+		vec2 texture_pixel = uv_noise_texture.xz;
+		
 		vec2 velocity;
 		velocity.r = texture(windX, texture_pixel).r;
 		velocity.g = texture(windY, texture_pixel).r;
