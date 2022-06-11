@@ -21,16 +21,16 @@ struct FluidGridConfig
 class FluidGrid
 {
 public:
-	FluidGrid(int N, float diffusion, float viscosity, float dt, FluidGridConfig *fluidGridConfig);
+	FluidGrid(int N, float diffusion, float viscosity, FluidGridConfig *fluidGridConfig);
 	~FluidGrid();
 
 	void initialize();
 
-	void addSource(float *dst, float *sources);
-	void diffuse(int b, float *cur, float *prev);
-	void advect(int b, float *density, float *densityPrev, float *velX, float *velY);
-	void densityStep();
-	void velocityStep();
+	void addSource(float *dst, float *sources, float deltaTime);
+	void diffuse(int b, float *cur, float *prev, float deltaTime);
+	void advect(int b, float *density, float *densityPrev, float *velX, float *velY, float deltaTime);
+	void densityStep(float deltaTime);
+	void velocityStep(float deltaTime);
 	void setBounds(int b, float *x);
 	void project(float *velX, float *velY, float *p, float *div);
 
@@ -40,7 +40,7 @@ public:
 	void clearCurrent();
 
 	void     drawStep();
-	void     simulate();
+	void     simulate(float deltaTime);
 	int      getN();
 	Texture *getTextureDen();
 	Texture *getTextureVelX();
@@ -51,7 +51,6 @@ public:
 private:
 	int   size;
 	int   N;
-	float dt;
 	float diff;
 	float visc;
 

@@ -1,4 +1,4 @@
-#define USE_ORIGINAL_IMPL
+//#define USE_ORIGINAL_IMPL
 
 #define INDEX(i,j) ((i)+(N+2)*(j))
 // Swap two array pointers
@@ -132,12 +132,11 @@ void vel_step(int N, float *u, float *v, float *u0, float *v0, float visc, float
 }
 
 
-FluidGrid::FluidGrid(int N, float diffusion, float viscosity, float dt, FluidGridConfig *fluidGridConfig)
+FluidGrid::FluidGrid(int N, float diffusion, float viscosity, FluidGridConfig *fluidGridConfig)
 {
 	this->N = N;
 	size    = (N + 2) * (N + 2);
 
-	this->dt = dt;
 	diff     = diffusion;
 	visc     = viscosity;
 
@@ -197,18 +196,18 @@ void FluidGrid::initialize()
 
 
 // Add for both density and velocity
-void FluidGrid::addSource(float *dst, float *sources)
+void FluidGrid::addSource(float *dst, float *sources, float deltaTime)
 {
-	for(int i = 0; i < size; i++) dst[i] += dt * sources[i];
+	for(int i = 0; i < size; i++) dst[i] += deltaTime * sources[i];
 }
 
 
-void FluidGrid::diffuse(int b, float *cur, float *prev)
+void FluidGrid::diffuse(int b, float *cur, float *prev, float deltaTime)
 {
 #ifdef USE_ORIGINAL_IMPL
-	JS::diffuse(N, b, cur, prev, diff, dt);
+	JS::diffuse(N, b, cur, prev, diff, deltaTime);
 #else
-	float a = dt * diff * N * N;
+	float a = deltaTime * diff * N * N;
 
 	for(int k = 0; k < 20; k++)
 	{
@@ -225,12 +224,12 @@ void FluidGrid::diffuse(int b, float *cur, float *prev)
 #endif
 }
 
-void FluidGrid::advect(int b, float *density, float *densityPrev, float *velX, float *velY)
+void FluidGrid::advect(int b, float *density, float *densityPrev, float *velX, float *velY, float deltaTime)
 {
 #ifdef USE_ORIGINAL_IMPL
-	JS::advect(N, b, density, densityPrev, velX, velY, dt);
+	JS::advect(N, b, density, densityPrev, velX, velY, deltaTime);
 #else
-	float dt0 = dt * N;
+	float dt0 = deltaTime * N;
 	for(int i = 1; i <= N; i++)
 	{
 		for(int j = 1; j <= N; j++)
@@ -259,36 +258,36 @@ void FluidGrid::advect(int b, float *density, float *densityPrev, float *velX, f
 #endif
 }
 
-void FluidGrid::densityStep()
+void FluidGrid::densityStep(float deltaTime)
 {
 #ifdef USE_ORIGINAL_IMPL
-	JS::dens_step(N, density, densityPrev, velX, velY, diff, dt);
+	JS::dens_step(N, density, densityPrev, velX, velY, diff, deltaTime);
 #else
-	addSource(density, densityPrev);
+	addSource(density, densityPrev, deltaTime);
 	SWAP(densityPrev, density);
-	diffuse(0, density, densityPrev);
+	diffuse(0, density, densityPrev, deltaTime);
 
 	SWAP(densityPrev, density);
-	advect(0, density, densityPrev, velX, velY);
+	advect(0, density, densityPrev, velX, velY, deltaTime);
 #endif
 }
 
-void FluidGrid::velocityStep()
+void FluidGrid::velocityStep(float deltaTime)
 {
 #ifdef USE_ORIGINAL_IMPL
-	JS::vel_step(N, velX, velY, velXPrev, velYPrev, visc, dt);
+	JS::vel_step(N, velX, velY, velXPrev, velYPrev, visc, deltaTime);
 #else
-	addSource(velX, velXPrev);
-	addSource(velY, velYPrev);
+	addSource(velX, velXPrev, deltaTime);
+	addSource(velY, velYPrev, deltaTime);
 	SWAP(velXPrev, velX);
-	diffuse(1, velX, velXPrev);
+	diffuse(1, velX, velXPrev, deltaTime);
 	SWAP(velYPrev, velY);
-	diffuse(2, velY, velYPrev);
+	diffuse(2, velY, velYPrev, deltaTime);
 	project(velX, velY, velXPrev, velYPrev);
 	SWAP(velXPrev, velX);
 	SWAP(velYPrev, velY);
-	advect(1, velX, velXPrev, velXPrev, velYPrev);
-	advect(2, velY, velYPrev, velXPrev, velYPrev);
+	advect(1, velX, velXPrev, velXPrev, velYPrev, deltaTime);
+	advect(2, velY, velYPrev, velXPrev, velYPrev, deltaTime);
 	project(velX, velY, velXPrev, velYPrev);
 #endif
 }
@@ -385,10 +384,10 @@ void FluidGrid::drawStep()
 	textureVelY->loadTextureSingleChannel(N + 2, velY);
 }
 
-void FluidGrid::simulate()
+void FluidGrid::simulate(float deltaTime)
 {
-	velocityStep();
-	densityStep();
+	velocityStep(deltaTime);
+	densityStep(deltaTime);
 	drawStep();
 }
 

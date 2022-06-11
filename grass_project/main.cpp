@@ -379,7 +379,7 @@ int main()
 	}
 
 
-	fluidGrid = new FluidGrid(128, 0, 0, 0.1f, &scene.config.fluidGridConfig);
+	fluidGrid = new FluidGrid(128, 0, 0,  &scene.config.fluidGridConfig);
 
 	initShadersAndTextures();
 	initSceneObjects(patch);
@@ -424,7 +424,7 @@ int main()
 		fluidGrid->addDensityAt(1, 1, 100);
 
 		clearNextSimulate = true;
-		fluidGrid->simulate();
+		fluidGrid->simulate(deltaTime);
 
 
 		// Clear the color depth buffer (aka z-buffer) every new frame
@@ -901,7 +901,8 @@ void drawSettingsWindow()
 			ImGui::EndTabBar();
 		}
 
-
+		/*
+		 *
 		if(ImGui::Button("Step through fluid simulation"))
 		{
 			if(clearNextSimulate)
@@ -926,6 +927,7 @@ void drawSettingsWindow()
 				fluidGrid->clearCurrent();
 			}
 		}
+		 */
 
 		if(ImGui::Button("Reset"))
 		{
