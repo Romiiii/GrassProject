@@ -26,6 +26,8 @@ uniform float textureScale;
 uniform float currentTime;
 uniform float windStrength;
 uniform float swayReach;
+uniform float velocityMultiplier;
+uniform vec2 velocityClampRange;
 
 uniform vec2 windDirection;
 
@@ -75,7 +77,8 @@ void main()
 		vec2 velocity;
 		velocity.r = texture(windX, texture_pixel).r;
 		velocity.g = texture(windY, texture_pixel).r;
-		
+		velocity *= velocityMultiplier;
+		velocity = clamp(velocity, vec2(0, 0), velocityClampRange); 
 		// Multiply by the y value of the uv which represents how the wind affects the specific vertex
 		// Multiply by the y value twice to increase the effect of the wind 
 		vec2 swag = swayReach * velocity * pow(uvs.y, 2);

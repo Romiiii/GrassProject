@@ -27,7 +27,7 @@ void SceneObject::setUniforms(Scene& scene) {
 		std::string name = nameBuf;
 
 		if (name == "model") {
-			shaderProgram.setMat4("model", this->model);
+			shaderProgram.setMat4(name, this->model);
 		}
 		else if (name == "projection") {
 			shaderProgram.setMat4("projection", scene.projection);
@@ -53,7 +53,16 @@ void SceneObject::setUniforms(Scene& scene) {
 			shaderProgram.setFloat("currentTime", (float)glfwGetTime());
 		}
 		else if (name == "windStrength") {
-			shaderProgram.setFloat("windStrength", scene.config.windStrength);
+			shaderProgram.setFloat("windStrength", scene.config.perlinConfig.windStrength);
+		}
+		else if (name == "velocityMultiplier") {
+			shaderProgram.setFloat("velocityMultiplier", scene.config.fluidGridConfig.velocityMultiplier);
+		}
+		else if (name == "velocityClampRange") {
+			shaderProgram.setVec2(name, scene.config.fluidGridConfig.velocityClampRange);
+		}
+		else if (name == "lightColor") {
+			shaderProgram.setVec4("lightColor", scene.config.lightColor);
 		}
 		else if (name == "swayReach") {
 			shaderProgram.setFloat("swayReach", scene.config.swayReach);
@@ -100,7 +109,7 @@ void SceneObject::setUniforms(Scene& scene) {
 				scene.config.visualizeTexture);
 		}
 		else if (name == "windDirection") {
-			shaderProgram.setVec2("windDirection", scene.config.windDirection);
+			shaderProgram.setVec2("windDirection", scene.config.perlinConfig.windDirection);
 		}
 		else if (name == "debugBlades") {
 			shaderProgram.setBool("debugBlades", scene.config.debugBlades);

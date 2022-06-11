@@ -61,7 +61,9 @@ void main()
 	if (visualizeTexture) {	
 		patchColor.r = abs(texture(windX, texture_pixel).r);
 		patchColor.b = abs(texture(windY, texture_pixel).r);
+
 		FragColor = patchColor;
+		
 		return;	
 	}
 
