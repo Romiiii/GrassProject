@@ -8,13 +8,6 @@
 #include <vector>
 #include <glm\glm.hpp>
 #include <string>
-
- /**
-  * \brief The size of the patch
-  */
-const float PATCH_SIZE = 10.0f;
-
-
 static std::vector<float> grassPositions{ 0.0f, 0.0f, 0.0f,
 											-0.02f, 0.1f, 0.0f,
 											0.0f, 0.2f, 0.0f,

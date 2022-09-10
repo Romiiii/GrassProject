@@ -224,6 +224,11 @@ float lastY = (float)INIT_SCR_HEIGHT / 2.0;
 float deltaTime = 0.0f;
 
 /**
+ * \brief Time between current frame and last frame
+ */
+float gameDeltaTime = 0.0f;
+
+/**
  * \brief Time of last frame
 */
 float lastFrame = 0.0f;
@@ -401,8 +406,16 @@ int main()
 
 	glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
 
+	scene.config.isPaused = false;
+	scene.config.currentTime = (float)glfwGetTime();
+
 	while(!glfwWindowShouldClose(window))
 	{
+		if(!scene.config.isPaused)
+		{
+			scene.config.currentTime = (float)glfwGetTime();
+		}
+
 		// Poll events at start so you have the newest inputs
 		glfwPollEvents();
 
@@ -413,6 +426,13 @@ int main()
 		// For correcting the camera input in processInput
 		float currentFrame = (float)glfwGetTime();
 		deltaTime          = currentFrame - lastFrame;
+		gameDeltaTime = deltaTime;
+
+		if(scene.config.isPaused)
+		{
+			gameDeltaTime = 0;
+		}
+
 
 		processInput(window);
 
@@ -424,8 +444,11 @@ int main()
 		fluidGrid->addDensityAt(1, 1, 100);
 
 		clearNextSimulate = true;
-		fluidGrid->simulate(deltaTime);
-
+		
+		if(!scene.config.isPaused)
+		{
+			fluidGrid->simulate(gameDeltaTime);
+		}
 
 		// Clear the color depth buffer (aka z-buffer) every new frame
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -594,15 +617,15 @@ void initSceneObjects(Patch &patch)
 
 	if(scene.config.bladeDistribution == BladeDistribution::HARRY_STYLES_WITH_RANDOS)
 	{
-		patch.initHarryEdwardStylesBladeMatrices();
+		patch.initHarryEdwardStylesBladeMatrices(scene.config.patchSize);
 	}
 	else if(scene.config.bladeDistribution == BladeDistribution::HARRY_STYLES)
 	{
-		patch.initHarryEdwardStylesBladeMatrices(false);
+		patch.initHarryEdwardStylesBladeMatrices(scene.config.patchSize, false);
 	}
 	else if(scene.config.bladeDistribution == BladeDistribution::ONE_DIRECTION)
 	{
-		patch.initOneDirectionBladeMatrices();
+		patch.initOneDirectionBladeMatrices(scene.config.patchSize);
 	}
 
 	createInstanceMatrixBuffer(patch.getBladeMatrices(), MAX_PATCH_DENSITY_BLADES);
@@ -617,12 +640,12 @@ void initSceneObjects(Patch &patch)
 
 	for(int i = 0; i < MAX_PATCHES; i++)
 	{
-		glm::vec2           position         = calculateSpiralPosition(i) * PATCH_SIZE;
+		glm::vec2           position         = calculateSpiralPosition(i) * scene.config.patchSize;
 		SceneObjectIndexed *patchSceneObject = new SceneObjectIndexed(grassPatchPositions, grassPatchColors,
 		                                                              grassPatchIndices, grassPatchNormals,
 		                                                              *patchShaderProgram, &grassPatchUVs);
-		glm::mat4 translation   = glm::translate(position.x - 0.5f * PATCH_SIZE, 0, position.y - 0.5f * PATCH_SIZE);
-		patchSceneObject->model = translation * glm::scale(PATCH_SIZE, PATCH_SIZE, PATCH_SIZE);
+		glm::mat4 translation   = glm::translate(position.x , 0, position.y);
+		patchSceneObject->model = translation * glm::scale(scene.config.patchSize, scene.config.patchSize, scene.config.patchSize);
 		scene.patches.push_back(patchSceneObject);
 
 		SceneObjectInstanced *blades = new SceneObjectInstanced(grassPositions, grassColors,
@@ -783,7 +806,7 @@ void drawSettingsWindow()
 	                      scene.config.bladeDistribution == BladeDistribution::HARRY_STYLES_WITH_RANDOS))
 	{
 		scene.config.bladeDistribution = BladeDistribution::HARRY_STYLES_WITH_RANDOS;
-		patch.initHarryEdwardStylesBladeMatrices();
+		patch.initHarryEdwardStylesBladeMatrices(scene.config.patchSize);
 		transferInstanceMatrixBuffer(patch.getBladeMatrices(), MAX_PATCH_DENSITY_BLADES);
 	}
 	ImGui::SameLine();
@@ -791,7 +814,7 @@ void drawSettingsWindow()
 	if(ImGui::RadioButton("Harry Styles", scene.config.bladeDistribution == BladeDistribution::HARRY_STYLES))
 	{
 		scene.config.bladeDistribution = BladeDistribution::HARRY_STYLES;
-		patch.initHarryEdwardStylesBladeMatrices(false);
+		patch.initHarryEdwardStylesBladeMatrices(scene.config.patchSize, false);
 		transferInstanceMatrixBuffer(patch.getBladeMatrices(), MAX_PATCH_DENSITY_BLADES);
 	}
 	ImGui::SameLine();
@@ -799,7 +822,7 @@ void drawSettingsWindow()
 	if(ImGui::RadioButton("One Direction", scene.config.bladeDistribution == BladeDistribution::ONE_DIRECTION))
 	{
 		scene.config.bladeDistribution = BladeDistribution::ONE_DIRECTION;
-		patch.initOneDirectionBladeMatrices();
+		patch.initOneDirectionBladeMatrices(scene.config.patchSize);
 		transferInstanceMatrixBuffer(patch.getBladeMatrices(), MAX_PATCH_DENSITY_BLADES);
 	}
 	drawTooltip("Blades are placed in a line in the middle of the patch without random rotations.");
@@ -829,6 +852,34 @@ void drawSettingsWindow()
 			scene.config.windY = scene.config.fluidGridConfig.velY;
 		}
 	}
+
+	
+	if(ImGui::SliderFloat("PatchSize", &scene.config.patchSize, 1.0f, 100.0f))
+	{
+		switch(scene.config.bladeDistribution)
+		{
+		case BladeDistribution::ONE_DIRECTION:
+			patch.initOneDirectionBladeMatrices(scene.config.patchSize);
+			break;
+		case BladeDistribution::HARRY_STYLES_WITH_RANDOS:
+			patch.initHarryEdwardStylesBladeMatrices(scene.config.patchSize, true);
+			break;
+		case BladeDistribution::HARRY_STYLES:
+			patch.initHarryEdwardStylesBladeMatrices(scene.config.patchSize, false);
+			break;
+		}
+			
+		transferInstanceMatrixBuffer(patch.getBladeMatrices(), MAX_PATCH_DENSITY_BLADES);
+
+		for(int i = 0; i < MAX_PATCHES; i++)
+		{
+			glm::vec2 position      = calculateSpiralPosition(i) * scene.config.patchSize;
+			glm::mat4 translation   = glm::translate(position.x , 0, position.y);
+			scene.patches[i]->model = translation * glm::scale(scene.config.patchSize, scene.config.patchSize, scene.config.patchSize);
+			scene.blades[i]->model = translation;
+		}
+	}
+	drawTooltip("The sizes of each individual Patch. Same number of blades of grass.");
 
 	ImGui::SliderInt("Number of patches", &scene.config.numPatches, 1, MAX_PATCHES);
 	ImGui::SliderInt("Patch density", &scene.config.patchDensity, 0, MAX_PATCH_DENSITY_BLADES);
@@ -989,7 +1040,15 @@ void drawGui()
 	// Slider will be 65% of the window width (this is the default)
 	ImGui::NewFrame();
 
-	ImGui::SetNextWindowSize({0, 0});
+	//if(scene.config.isPaused)
+	//{
+	//	ImGui::Begin("IsPaused");
+
+	//	ImGui::Text("Is Paused");
+
+	//	ImGui::End();
+
+	//}
 
 	drawFluidGridWindow();
 	drawSettingsWindow();
@@ -1049,6 +1108,8 @@ void processInput(GLFWwindow *window)
 
 	static bool tWasPressed = false;
 	static bool rWasPressed = false;
+	static bool pWasPressed = false;
+	static bool vWasPressed = false;
 
 	// Stop camera movement if GUI is opened
 	if(isPaused)
@@ -1070,6 +1131,42 @@ void processInput(GLFWwindow *window)
 	{
 		camera.processKeyboard(cameraMovement::RIGHT, deltaTime);
 	}
+	if(glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS)
+	{
+		if(!pWasPressed)
+		{
+			scene.config.isPaused = !scene.config.isPaused;
+			pWasPressed = true;
+		}
+	}
+	if(glfwGetKey(window, GLFW_KEY_P) == GLFW_RELEASE)
+	{
+		pWasPressed = false;
+	}
+
+	if(glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS)
+	{
+		if(!vWasPressed)
+		{
+			int mode;
+			glGetIntegerv(GL_POLYGON_MODE, &mode);
+			if(mode == GL_LINE)
+			{
+				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+				
+			}
+			else
+			{
+				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+			}
+			vWasPressed = true;
+		}
+	}
+	if(glfwGetKey(window, GLFW_KEY_V) == GLFW_RELEASE)
+	{
+		vWasPressed = false;
+	}
+
 	if(glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS)
 	{
 		if(!tWasPressed)

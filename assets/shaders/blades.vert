@@ -32,12 +32,10 @@ uniform vec2 velocityClampRange;
 uniform vec2 windDirection;
 
 uniform bool debugBlades;
-// pass in PATCH_SIZE (in primitives)
 
-float map2(float x, float in_min, float in_max, float out_min, float out_max)
-{
-  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
-}
+uniform float patchSize;
+
+vec2 sample_velocity(vec2 texture_pixel);
 
 void main()
 {
@@ -47,8 +45,7 @@ void main()
 	if(simulationMode == 0 || simulationMode == 1) // PERLIN_NOISE, CHECKER_PATTERN,
 	{
 		// Get the world coordinates of the vertices instead of the model coordinates
-		// 10 is patch size
-		vec4 uv_noise_texture = ((instanceMatrix * vec4(pos, 1.0f)) / 10) * textureScale;
+		vec4 uv_noise_texture = ((instanceMatrix * vec4(pos, 1.0f)) / patchSize) * textureScale;
 
 		vec2 wind_direction = normalize(windDirection);
 		vec2 texture_pixel = uv_noise_texture.xz + (currentTime * windStrength * wind_direction);
@@ -71,31 +68,11 @@ void main()
 	if(simulationMode == 2) // FLUID_GRID
 	{
 		// Get the world coordinates of the vertices instead of the model coordinates
-		vec4 uv_noise_texture = ((instanceMatrix * vec4(pos, 1.0f)) / 10);
+		vec4 uv_noise_texture = ((instanceMatrix * vec4(pos, 1.0f)) / patchSize);
 		vec2 texture_pixel = uv_noise_texture.xz;
-		float stepsize = 0.01f;
-		float base_x = texture_pixel.x - stepsize;
-		float base_y = texture_pixel.y - stepsize;
-
-		float vel_x = 0;
-		float vel_y = 0;
-
-		for(int y = 0; y < 3; y++)
-		{
-			for(int x = 0; x < 3; x++)
-			{
-				vec2 sample_pos = vec2(base_x + x * stepsize, base_y + y * stepsize);
-				vel_x += texture(windX, sample_pos).r;
-				vel_y += texture(windY, sample_pos).r;
-			}
-		}
-		vel_x /= 3.0f;
-		vel_y /= 3.0f;
 		
-		//vel_x += texture(windX, texture_pixel).r;
-		//vel_y += texture(windY, texture_pixel).r;
-		
-		vec2 velocity = vec2(vel_x, vel_y);
+		vec2 velocity = sample_velocity(texture_pixel);
+
 		velocity *= velocityMultiplier;
 		velocity = clamp(velocity, vec2(0, 0), velocityClampRange); 
 		// Multiply by the y value of the uv which represents how the wind affects the specific vertex
@@ -113,3 +90,24 @@ void main()
 	FragPos = world_space_position.xyz;
 }
 
+vec2 sample_velocity(vec2 texture_pixel)
+{
+	float stepsize = 0.01f;
+	float base_x = texture_pixel.x - stepsize;
+	float base_y = texture_pixel.y - stepsize;
+
+	vec2 velocity = vec2(0, 0);
+		
+	for(int y = 0; y < 3; y++)
+	{
+		for(int x = 0; x < 3; x++)
+		{
+			vec2 sample_pos = vec2(base_x + x * stepsize, base_y + y * stepsize);
+			velocity.x += texture(windX, sample_pos).r;
+			velocity.y += texture(windY, sample_pos).r;
+		}
+	}
+	velocity /= 3.0f;
+		
+	return velocity;
+}

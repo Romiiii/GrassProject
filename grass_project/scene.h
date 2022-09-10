@@ -45,6 +45,9 @@ struct Config {
 	float swayReach = 0.5f;
 	Texture* windX = nullptr;
 	Texture* windY = nullptr;
+	float currentTime = 0;
+	bool isPaused = false;
+	float patchSize = 10;
 
 	PerlinConfig perlinConfig;
 	FluidGridConfig fluidGridConfig;

@@ -23,7 +23,7 @@ public:
 	 * \param useRandomRotation Applies a random rotation to each blade of 
 	 * grass when set to true.
 	 */
-	void initHarryEdwardStylesBladeMatrices(bool useRandomRotations = true);
+	void initHarryEdwardStylesBladeMatrices(float patchSize, bool useRandomRotations = true);
 
 	/** 
 	* Initializes the patch by calculating the coordinates of the blades.
@@ -31,7 +31,7 @@ public:
 	* patch and distributed evenly over the y-axis forming a straight line. 
 	* The blades will not be rotated.
 	*/
-	void initOneDirectionBladeMatrices();
+	void initOneDirectionBladeMatrices(float patchSize);
 
 	/** 
 	* Stores the transformation of all the blades in a patch.

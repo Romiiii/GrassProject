@@ -50,7 +50,10 @@ void SceneObject::setUniforms(Scene& scene) {
 				scene.config.lightIntensity);
 		}
 		else if (name == "currentTime") {
-			shaderProgram.setFloat("currentTime", (float)glfwGetTime());
+			shaderProgram.setFloat("currentTime", scene.config.currentTime);
+		}
+		else if (name == "patchSize") {
+			shaderProgram.setFloat("patchSize", scene.config.patchSize);
 		}
 		else if (name == "windStrength") {
 			shaderProgram.setFloat("windStrength", scene.config.perlinConfig.windStrength);

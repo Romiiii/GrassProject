@@ -19,7 +19,8 @@ void Patch::init(int numBlades, ShaderProgram* shaderProgram) {
 	this->bladeMatrices = new glm::mat4[numBlades];
 }
 
-void Patch::initHarryEdwardStylesBladeMatrices(bool useRandomRotations) {
+void Patch::initHarryEdwardStylesBladeMatrices(float patchSize, bool useRandomRotations) {
+
 	float upperBoundX = std::max({ grassPatchPositions[0], grassPatchPositions[3], grassPatchPositions[6], grassPatchPositions[9] });
 	float lowerBoundX = std::min({ grassPatchPositions[0], grassPatchPositions[3], grassPatchPositions[6], grassPatchPositions[9] });
 
@@ -29,14 +30,12 @@ void Patch::initHarryEdwardStylesBladeMatrices(bool useRandomRotations) {
 	constexpr float swayX = glm::radians(20.0f);
 	constexpr float swayY = glm::radians(180.0f);
 
-	float middleX = (upperBoundX + lowerBoundX) / 2;
-
 	// Distribute the blades uniformly within the patch
 	for (int x = 0; x < numBlades; x += 1) {
 		float randomPosX = generateRandomNumber(lowerBoundX, upperBoundX);
 		float randomPosZ = generateRandomNumber(lowerBoundZ, upperBoundZ);
 
-		glm::vec3 grassCoordinate = glm::vec3(randomPosX, 0, randomPosZ) * PATCH_SIZE;
+		glm::vec3 grassCoordinate = glm::vec3(randomPosX, 0, randomPosZ) * patchSize;
 
 		bladeMatrices[x] = glm::translate(grassCoordinate);
 
@@ -50,7 +49,8 @@ void Patch::initHarryEdwardStylesBladeMatrices(bool useRandomRotations) {
 	}
 }
 
-void Patch::initOneDirectionBladeMatrices() {
+void Patch::initOneDirectionBladeMatrices(float patchSize) {
+	
 	float upperBoundX = std::max({ grassPatchPositions[0], grassPatchPositions[3], grassPatchPositions[6], grassPatchPositions[9] });
 	float lowerBoundX = std::min({ grassPatchPositions[0], grassPatchPositions[3], grassPatchPositions[6], grassPatchPositions[9] });
 
@@ -66,7 +66,7 @@ void Patch::initOneDirectionBladeMatrices() {
 	for (int x = 0; x < numBlades; x += 1) {
 		float z = lowerBoundZ + ((upperBoundZ - lowerBoundZ) / (numBlades)) * x;
 
-		glm::vec3 grassCoordinate = glm::vec3(middleX, 0, z) * PATCH_SIZE;
+		glm::vec3 grassCoordinate = glm::vec3(middleX, 0, z) * patchSize;
 
 		bladeMatrices[x] = glm::translate(grassCoordinate);
 	}
