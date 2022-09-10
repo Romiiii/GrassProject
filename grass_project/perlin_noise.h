@@ -23,7 +23,7 @@ struct PerlinConfig {
 	float textureScale = 1.0f;
 	Texture* texture = nullptr;
 	glm::vec2 windDirection = glm::normalize(glm::vec2(0.5f, 0.0f ));
-	float windStrength = 10.0f;
+	float windStrength = 0.05f;
 };
 
 /**

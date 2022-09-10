@@ -56,7 +56,7 @@ unsigned int Texture::loadTexture(const std::string &fileName, bool alpha) {
 
 	generateMipmap();
 
-	setFilter(GL_NEAREST);
+	setFilter(GL_LINEAR);
 	setWrap(GL_CLAMP_TO_EDGE);
 
 	return textureID;
@@ -70,7 +70,7 @@ void Texture::setLabel(const std::string &label)
 unsigned int Texture::loadTextureSingleChannel(int perlinNoiseSize, void *data) {
 	bind();
 
-	setFilter(GL_NEAREST);
+	setFilter(GL_LINEAR);
 	setWrap(GL_REPEAT);
 
 	GLCall(glTexImage2D(textureType, 0, GL_RED, perlinNoiseSize, perlinNoiseSize, 0, GL_RED, GL_FLOAT, data));
@@ -96,7 +96,7 @@ unsigned int Texture::loadTextureData(void *data, int width, int height, GLenum 
 
 	generateMipmap();
 
-	setFilter(GL_NEAREST);
+	setFilter(GL_LINEAR);
 	setWrap(GL_REPEAT);
 
 	return textureID;

@@ -44,7 +44,7 @@ void main()
 	vtxColor = color;
 	vec4 world_space_position = model * instanceMatrix * vec4(pos, 1.0);
 
-	if(simulationMode == 0 || simulationMode == 1)
+	if(simulationMode == 0 || simulationMode == 1) // PERLIN_NOISE, CHECKER_PATTERN,
 	{
 		// Get the world coordinates of the vertices instead of the model coordinates
 		// 10 is patch size
@@ -68,15 +68,34 @@ void main()
 		if (debugBlades)
 			vtxColor = vec4(0, 0, noise.r, 1.0f);
 	}
-	if(simulationMode == 2)
+	if(simulationMode == 2) // FLUID_GRID
 	{
 		// Get the world coordinates of the vertices instead of the model coordinates
 		vec4 uv_noise_texture = ((instanceMatrix * vec4(pos, 1.0f)) / 10);
 		vec2 texture_pixel = uv_noise_texture.xz;
+		float stepsize = 0.01f;
+		float base_x = texture_pixel.x - stepsize;
+		float base_y = texture_pixel.y - stepsize;
+
+		float vel_x = 0;
+		float vel_y = 0;
+
+		for(int y = 0; y < 3; y++)
+		{
+			for(int x = 0; x < 3; x++)
+			{
+				vec2 sample_pos = vec2(base_x + x * stepsize, base_y + y * stepsize);
+				vel_x += texture(windX, sample_pos).r;
+				vel_y += texture(windY, sample_pos).r;
+			}
+		}
+		vel_x /= 3.0f;
+		vel_y /= 3.0f;
 		
-		vec2 velocity;
-		velocity.r = texture(windX, texture_pixel).r;
-		velocity.g = texture(windY, texture_pixel).r;
+		//vel_x += texture(windX, texture_pixel).r;
+		//vel_y += texture(windY, texture_pixel).r;
+		
+		vec2 velocity = vec2(vel_x, vel_y);
 		velocity *= velocityMultiplier;
 		velocity = clamp(velocity, vec2(0, 0), velocityClampRange); 
 		// Multiply by the y value of the uv which represents how the wind affects the specific vertex
