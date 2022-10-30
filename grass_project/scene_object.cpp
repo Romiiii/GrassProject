@@ -105,7 +105,7 @@ void SceneObject::setUniforms(Scene& scene) {
 		}
 		else if (name == "textureScale") {
 			shaderProgram.setFloat("textureScale",
-				scene.config.perlinConfig.textureScale); //TODO:: should not be in perlinconfig
+				scene.config.textureScale);
 		}
 		else if (name == "visualizeTexture") {
 			shaderProgram.setBool("visualizeTexture", 
@@ -119,6 +119,9 @@ void SceneObject::setUniforms(Scene& scene) {
 		}
 		else if (name == "simulationMode") {
 			shaderProgram.setInt("simulationMode", (int)scene.config.simulationMode);
+		}
+		else if (name == "halfWorldWidth") {
+			shaderProgram.setFloat("halfWorldWidth", scene.config.halfWorldWidth);
 		}
 	}
 }

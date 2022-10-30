@@ -28,6 +28,7 @@ uniform float windStrength;
 uniform float swayReach;
 uniform float velocityMultiplier;
 uniform vec2 velocityClampRange;
+uniform float halfWorldWidth;
 
 uniform vec2 windDirection;
 
@@ -37,18 +38,29 @@ uniform float patchSize;
 
 vec2 sample_velocity(vec2 texture_pixel);
 
+float map2(float x, float in_min, float in_max, float out_min, float out_max)
+{
+  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
+
 void main()
 {
 	vtxColor = color;
 	vec4 world_space_position = model * instanceMatrix * vec4(pos, 1.0);
+	
+	// Map the world space position to the texture coordinate
+	// So that texture maps to all patches instead of one
+	vec2 actual_pos = world_space_position.xz * textureScale;
+	actual_pos.x = map2(actual_pos.x, -halfWorldWidth, halfWorldWidth, 0.0f, 1.0f);
+	actual_pos.y = map2(actual_pos.y, halfWorldWidth, -halfWorldWidth, 0.0f, 1.0f); // y axis is flipped
 
 	if(simulationMode == 0 || simulationMode == 1) // PERLIN_NOISE, CHECKER_PATTERN,
 	{
 		// Get the world coordinates of the vertices instead of the model coordinates
-		vec4 uv_noise_texture = ((instanceMatrix * vec4(pos, 1.0f)) / patchSize) * textureScale;
+		//vec4 uv_noise_texture = ((instanceMatrix * vec4(pos, 1.0f)) / patchSize) * textureScale;
 
 		vec2 wind_direction = normalize(windDirection);
-		vec2 texture_pixel = uv_noise_texture.xz + (currentTime * windStrength * wind_direction);
+		vec2 texture_pixel = actual_pos + (currentTime * windStrength * wind_direction);
 		vec2 noise;
 		noise.r = texture(windX, texture_pixel).r;
 		noise.g = texture(windY, texture_pixel).r;
@@ -68,8 +80,8 @@ void main()
 	if(simulationMode == 2) // FLUID_GRID
 	{
 		// Get the world coordinates of the vertices instead of the model coordinates
-		vec4 uv_noise_texture = ((instanceMatrix * vec4(pos, 1.0f)) / patchSize);
-		vec2 texture_pixel = uv_noise_texture.xz;
+		//vec4 uv_noise_texture = ((instanceMatrix * vec4(pos, 1.0f)) / patchSize);
+		vec2 texture_pixel = actual_pos;
 		
 		vec2 velocity = sample_velocity(texture_pixel);
 

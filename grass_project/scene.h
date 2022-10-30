@@ -65,6 +65,8 @@ struct Config {
 
 	bool visualizeTexture = false;
 	bool debugBlades = false;
+	float halfWorldWidth = 0.0f;
+	float textureScale = 1.0f;
 };
 
 /**

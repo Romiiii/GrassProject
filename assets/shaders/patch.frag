@@ -16,6 +16,7 @@ uniform float currentTime;
 uniform float textureScale;
 uniform bool visualizeTexture;
 uniform vec2 windDirection;
+uniform float halfWorldWidth;
 //uniform int simulationMode;
 
 //uniform sampler2D perlinNoise;
@@ -48,13 +49,17 @@ void main()
 	vec3 diffuse = diff * lightColor.xyz;
     vec3 ambient = vec3(ambientStrength, ambientStrength, ambientStrength);
 	diffuse *= attenuation * lightIntensity;
-
-		//vec2 uv = (UV * textureScale) + vtxPos.xz;
-	//uv += currentTime * windStrength * windDirection.yx;
 		
-	vec2 actual_pos = Uv * textureScale;
-	//actual_pos.x = map2(actual_pos.x, -5.0f, 5.0f, 0.0f, 1.0f);
-	//actual_pos.z = map2(actual_pos.z, -5.0f, 5.0f, 0.0f, 1.0f);
+	//vec2 actual_pos = Uv * textureScale + FragPos.xz / 10.0;
+
+	// Map the world space position to the texture coordinate
+	// So that texture maps to all patches instead of one
+	vec2 actual_pos = FragPos.xz * textureScale;
+	actual_pos.x = map2(actual_pos.x, -halfWorldWidth, halfWorldWidth, 0.0f, 1.0f);
+	actual_pos.y = map2(actual_pos.y, halfWorldWidth, -halfWorldWidth, 0.0f, 1.0f); // y axis is flipped
+
+	//actual_pos.x = map2(actual_pos.x, 0.0f, 1.0f, -4.5f, 4.5f);
+	//actual_pos.y = map2(actual_pos.y, 0.0f, 1.0f, -4.5f, 4.5f);
 		
 	vec2 texture_pixel = actual_pos + (currentTime * windStrength * windDirection);
 	vec4 patchColor;

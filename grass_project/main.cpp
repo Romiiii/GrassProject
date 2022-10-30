@@ -406,6 +406,7 @@ int main()
 
 	glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
 
+	scene.config.halfWorldWidth = (sqrt(MAX_PATCHES) * scene.config.patchSize) * 0.5f;
 	scene.config.isPaused = false;
 	scene.config.currentTime = (float)glfwGetTime();
 
@@ -878,6 +879,8 @@ void drawSettingsWindow()
 			scene.patches[i]->model = translation * glm::scale(scene.config.patchSize, scene.config.patchSize, scene.config.patchSize);
 			scene.blades[i]->model = translation;
 		}
+
+		scene.config.halfWorldWidth = (sqrt(MAX_PATCHES) * scene.config.patchSize) * 0.5;
 	}
 	drawTooltip("The sizes of each individual Patch. Same number of blades of grass.");
 
@@ -886,6 +889,9 @@ void drawSettingsWindow()
 	scene.config.patchDensity = glm::clamp(scene.config.patchDensity, 0, (int)MAX_PATCH_DENSITY_BLADES);
 	ImGui::SliderFloat("Sway Reach", &scene.config.swayReach, 0.0f, 2.0f);
 	drawTooltip("How far the blades will move in the wind.");
+	ImGui::SliderFloat("Sample Scale", &scene.config.textureScale, 0.05f, 1.0f);
+	drawTooltip("Will zoom in or out of the texture when sampling it.");
+
 	if(scene.config.simulationMode == SimulationMode::PERLIN_NOISE && ImGui::CollapsingHeader(
 		"Perlin Noise Settings"))
 	{
@@ -903,11 +909,8 @@ void drawSettingsWindow()
 
 		ImGui::Image((ImTextureID)(long long)scene.config.perlinConfig.texture->getTextureID(),
 		             {width, width},
-		             {0.0f, scene.config.perlinConfig.textureScale},
-		             {scene.config.perlinConfig.textureScale, 0.0f});
-
-		ImGui::SliderFloat("Perlin Sample Scale", &scene.config.perlinConfig.textureScale, 0.05f, 1.0f);
-		drawTooltip("Will zoom in or out of the perlin noise texture when sampling it.");
+		             {0.0f, scene.config.textureScale},
+		             {scene.config.textureScale, 0.0f});
 
 		ImGui::SliderFloat("Wind Strength", &scene.config.perlinConfig.windStrength, 0, 0.5f);
 		ImGui::DragFloat2("Wind Direction", (float *)&scene.config.perlinConfig.windDirection,
