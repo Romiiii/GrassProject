@@ -1,5 +1,11 @@
 #version 430 core
 
+/**
+ * Generates perlin noise, unless the makeChecker flag is set, in which case it outputs a checker pattern with size checkerSize (see below).
+ * Only writes to red channel
+ */
+
+
 uniform int width;
 uniform int octaves;
 uniform float bias;
@@ -17,13 +23,20 @@ ivec2 convert(int n) {
 	return result;
 }
 
+int checkerSize = 32;
+
+/**
+ * Mods to [0:checkerSize * 2], if the position is less than checker size, do red, else do black.
+ */
 void drawCheckerPattern(ivec2 position) {
-	if ((position.x % 64 < 32) && (position.y % 64 < 32)) {
-		imageStore(writer,position, vec4(1,1,1,0)); 
-	} else if ((position.x % 64 > 32) && (position.y % 64 > 32)) {
-		imageStore(writer,position, vec4(1,1,1,0));
+	int doubleCheckerSize = checkerSize * 2;
+
+	if ((position.x % doubleCheckerSize < checkerSize) && (position.y % doubleCheckerSize < checkerSize)) {
+		imageStore(writer, position, vec4(1, 0, 0, 0)); 
+	} else if ((position.x % doubleCheckerSize > checkerSize) && (position.y % doubleCheckerSize > checkerSize)) {
+		imageStore(writer, position, vec4(1, 0, 0, 0));
 	} else {
-		imageStore(writer,position, vec4(0,0,0,0));
+		imageStore(writer, position, vec4(0, 0, 0, 0));
 	}
 }
 
@@ -62,7 +75,7 @@ void main()
 			noise += (blendY * (sampleB - sampleT) + sampleT) * scale;
 			scale = scale / bias;
 		}
-		imageStore(writer,ivec2(gl_GlobalInvocationID.xy), vec4(noise / scaleAcc,0,0,0));
+		imageStore(writer,ivec2(gl_GlobalInvocationID.xy), vec4(noise / scaleAcc, 0, 0, 0));
 	} else {
 		drawCheckerPattern(ivec2(gl_GlobalInvocationID.xy));
 	}
