@@ -644,7 +644,7 @@ void initSceneObjects(Patch &patch)
 		glm::vec2           position         = calculateSpiralPosition(i) * scene.config.patchSize;
 		SceneObjectIndexed *patchSceneObject = new SceneObjectIndexed(grassPatchPositions, grassPatchColors,
 		                                                              grassPatchIndices, grassPatchNormals,
-		                                                              *patchShaderProgram, &grassPatchUVs);
+		                                                              *patchShaderProgram);
 		glm::mat4 translation   = glm::translate(position.x , 0, position.y);
 		patchSceneObject->model = translation * glm::scale(scene.config.patchSize, scene.config.patchSize, scene.config.patchSize);
 		scene.patches.push_back(patchSceneObject);
