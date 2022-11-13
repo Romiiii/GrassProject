@@ -891,6 +891,22 @@ void drawSettingsWindow()
 	drawTooltip("How far the blades will move in the wind.");
 	ImGui::SliderFloat("Sample Scale", &scene.config.textureScale, 0.05f, 1.0f);
 	drawTooltip("Will zoom in or out of the texture when sampling it.");
+	
+	ImGui::SliderFloat("Wind Strength", &scene.config.perlinConfig.windStrength, 0, 0.5f);
+	drawTooltip("Strength of the wind");
+
+	ImGui::DragFloat2("Wind Direction", (float *)&scene.config.perlinConfig.windDirection,
+		0.1f, -1.0f, 1.0f);
+	drawTooltip("Direction of the wind");
+
+	if (glm::epsilonEqual(glm::length(scene.config.perlinConfig.windDirection), 0.0f, 0.0001f))
+	{
+		scene.config.perlinConfig.windDirection = { 1, 0 };
+	}
+	if (ImGui::Button("Normalize Wind Direction"))
+		scene.config.perlinConfig.windDirection = glm::normalize(scene.config.perlinConfig.windDirection);
+	
+	drawTooltip("Normalize the wind direction");
 
 	if(scene.config.simulationMode == SimulationMode::PERLIN_NOISE && ImGui::CollapsingHeader(
 		"Perlin Noise Settings"))
@@ -912,15 +928,6 @@ void drawSettingsWindow()
 		             {0.0f, scene.config.textureScale},
 		             {scene.config.textureScale, 0.0f});
 
-		ImGui::SliderFloat("Wind Strength", &scene.config.perlinConfig.windStrength, 0, 0.5f);
-		ImGui::DragFloat2("Wind Direction", (float *)&scene.config.perlinConfig.windDirection,
-		                  0.1f, -1.0f, 1.0f);
-		if(glm::epsilonEqual(glm::length(scene.config.perlinConfig.windDirection), 0.0f, 0.0001f))
-		{
-			scene.config.perlinConfig.windDirection = {1, 0};
-		}
-		if(ImGui::Button("Normalize Wind Direction"))
-			scene.config.perlinConfig.windDirection = glm::normalize(scene.config.perlinConfig.windDirection);
 	}
 
 	if(scene.config.simulationMode == SimulationMode::FLUID_GRID && ImGui::CollapsingHeader("Fluid Grid Settings"))
