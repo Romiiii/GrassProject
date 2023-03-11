@@ -15,13 +15,8 @@ uniform float currentTime;
 uniform float textureScale;
 uniform bool visualizeTexture;
 uniform vec2 windDirection;
-uniform float halfWorldWidth;
-//uniform int simulationMode;
-
-//uniform sampler2D perlinNoise;
-//uniform sampler2D fluidGridDensity;
-//uniform sampler2D fluidGridVelX;
-//uniform sampler2D fluidGridVelY;
+uniform float worldMin;
+uniform float worldMax;
 
 uniform sampler2D windX;
 uniform sampler2D windY;
@@ -49,17 +44,13 @@ void main()
     vec3 ambient = vec3(ambientStrength, ambientStrength, ambientStrength);
 	diffuse *= attenuation * lightIntensity;
 		
-	//vec2 actual_pos = Uv * textureScale + FragPos.xz / 10.0;
-
 	// Map the world space position to the texture coordinate
 	// So that texture maps to all patches instead of one
 	vec2 actual_pos = FragPos.xz * textureScale;
-	actual_pos.x = map2(actual_pos.x, -halfWorldWidth, halfWorldWidth, 0.0f, 1.0f);
-	actual_pos.y = map2(actual_pos.y, halfWorldWidth, -halfWorldWidth, 0.0f, 1.0f); // y axis is flipped
 
-	//actual_pos.x = map2(actual_pos.x, 0.0f, 1.0f, -4.5f, 4.5f);
-	//actual_pos.y = map2(actual_pos.y, 0.0f, 1.0f, -4.5f, 4.5f);
-		
+    actual_pos.x = map2(actual_pos.x, worldMin, worldMax, 0.0f, 1.0f);
+    actual_pos.y = map2(actual_pos.y, worldMax, worldMin, 0.0f, 1.0f); // y axis is flipped
+				
 	vec2 texture_pixel = actual_pos + (currentTime * windStrength * windDirection);
 	vec4 patchColor;
 	if (visualizeTexture) {	
@@ -67,7 +58,6 @@ void main()
 		patchColor.b = abs(texture(windY, texture_pixel).r);
 
 		FragColor = patchColor;
-		
 		return;	
 	}
 

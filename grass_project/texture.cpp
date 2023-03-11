@@ -67,22 +67,23 @@ void Texture::setLabel(const std::string &label)
 	GLCall(glObjectLabel(GL_TEXTURE, textureID, -1, label.c_str()));
 }
 
-unsigned int Texture::loadTextureSingleChannel(int perlinNoiseSize, void *data) {
+unsigned int Texture::loadTextureSingleChannel(int textureSize, void *data) {
 	bind();
 
-	setFilter(GL_LINEAR);
+	setFilter(GL_NEAREST);
 	setWrap(GL_REPEAT);
-
-	GLCall(glTexImage2D(textureType, 0, GL_RED, perlinNoiseSize, perlinNoiseSize, 0, GL_RED, GL_FLOAT, data));
+	
+	// For single channel textures, ONLY the red channel is used!!! Don't bother changing the rest, you will get confused!
+	float borderColor[] = { 0.5f, 0, 0, 0 };
+	GLCall(glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor));  
+	GLCall(glTexImage2D(textureType, 0, GL_RED, textureSize, textureSize, 0, GL_RED, GL_FLOAT, data));
 
 	return textureID;
 }
 
-
 void Texture::generateTexture(void *data, int width, int height, GLenum format) {
 	loadTextureData(data, width, height, format);
 }
-
 
 /* Loads a 2D texture from a specified file.
  * \param fileName - texture's filename
@@ -97,7 +98,7 @@ unsigned int Texture::loadTextureData(void *data, int width, int height, GLenum 
 	generateMipmap();
 
 	setFilter(GL_LINEAR);
-	setWrap(GL_REPEAT);
+	setWrap(GL_CLAMP_TO_EDGE);
 
 	return textureID;
 }

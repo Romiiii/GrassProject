@@ -56,7 +56,7 @@ void SceneObject::setUniforms(Scene& scene) {
 			shaderProgram.setFloat("patchSize", scene.config.patchSize);
 		}
 		else if (name == "windStrength") {
-			shaderProgram.setFloat("windStrength", scene.config.perlinConfig.windStrength);
+			shaderProgram.setFloat("windStrength", scene.config.windStrength);
 		}
 		else if (name == "velocityMultiplier") {
 			shaderProgram.setFloat("velocityMultiplier", scene.config.fluidGridConfig.velocityMultiplier);
@@ -112,7 +112,7 @@ void SceneObject::setUniforms(Scene& scene) {
 				scene.config.visualizeTexture);
 		}
 		else if (name == "windDirection") {
-			shaderProgram.setVec2("windDirection", scene.config.perlinConfig.windDirection);
+			shaderProgram.setVec2("windDirection", scene.config.windDirection);
 		}
 		else if (name == "debugBlades") {
 			shaderProgram.setBool("debugBlades", scene.config.debugBlades);
@@ -120,8 +120,11 @@ void SceneObject::setUniforms(Scene& scene) {
 		else if (name == "simulationMode") {
 			shaderProgram.setInt("simulationMode", (int)scene.config.simulationMode);
 		}
-		else if (name == "halfWorldWidth") {
-			shaderProgram.setFloat("halfWorldWidth", scene.config.halfWorldWidth);
+		else if (name == "worldMin") {
+			shaderProgram.setFloat("worldMin", scene.config.worldMin);
+		}
+		else if (name == "worldMax") {
+			shaderProgram.setFloat("worldMax", scene.config.worldMax);
 		}
 	}
 }

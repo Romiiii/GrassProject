@@ -47,12 +47,13 @@ const unsigned int INIT_SCR_HEIGHT = 1000;
 /**
  * \brief Blades density
  */
-const unsigned int MAX_PATCH_DENSITY_BLADES = 4000;
+const int MAX_BLADES_PER_PATCH = 4000;
 
 /**
  * \brief Max number patches
  */
-const unsigned int MAX_PATCHES = 81;
+const int MAX_PATCHES = 81;
+
 
 /**
  * \brief The scene currently loaded (We don't support multiple scenes, but we
@@ -359,6 +360,21 @@ void cursorInputCallback(GLFWwindow *window, double posX, double posY);
 */
 void cleanUp();
 
+void setWorldMinMax()
+{
+	/* Since we're making a spiral pattern, we can find the leftmost edge by taking the sqrt, giving us the width. 
+	     Dividing that in two, so we have what would be to either side, taking the floor of that, since we know we 
+		 start at (0, 0), so the left will have fewer patches for odd widths. We then negate it, because it's in the 
+		 negative halfspace.
+	 */
+	scene.config.worldMin = -floor(sqrt(MAX_PATCHES) / 2) * scene.config.patchSize;
+
+	/* The process for the max is similar, though we take the ceiling rather than the floor. Because since we start at (0, 0) there are more 
+	     patches to the right.
+	 */
+	scene.config.worldMax = ceil(sqrt(MAX_PATCHES) / 2) * scene.config.patchSize;
+}
+
 int main()
 {
 	window = initGLFWWindow();
@@ -366,7 +382,7 @@ int main()
 	assert(window != NULL);
 
 	// GLAD: load all OpenGL function pointers
-	if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
 		std::cout << "ERROR:: Failed to initialize GLAD" << std::endl;
 		return -1;
@@ -377,23 +393,32 @@ int main()
 	glGetIntegerv(GL_MAJOR_VERSION, &major);
 	glGetIntegerv(GL_MINOR_VERSION, &minor);
 
-	if(!(major >= 4 && minor >= 3))
+	if (!(major >= 4 && minor >= 3))
 	{
 		std::cout << "ERROR:: Wrong OpenGL version" << std::endl;
 		return -1;
 	}
 
 
-	fluidGrid = new FluidGrid(128, 0, 0,  &scene.config.fluidGridConfig);
+	fluidGrid = new FluidGrid(128, 0, 0, &scene.config.fluidGridConfig);
 
 	initShadersAndTextures();
 	initSceneObjects(patch);
+
+	// This is pretty jank. Figure out why we need to set the config.windX stuff when we don't need that for perlin noise?
+	if (scene.config.simulationMode == SimulationMode::CHECKER_PATTERN)
+	{
+		scene.config.perlinConfig.makeChecker = true;
+
+		scene.config.windX = scene.config.perlinConfig.texture;
+		scene.config.windY = nullptr;
+	}
 	generatePerlinNoise();
 
 	// Initialize camera
-	camera.camPosition = {0, 20, 0};
-	camera.yaw         = 0;
-	camera.pitch       = -89.0f;
+	camera.camPosition = { 0, 20, 0 };
+	camera.yaw = 0;
+	camera.pitch = -89.0f;
 	camera.updateCameraVectors();
 
 	// Render loop : render every loopInterval seconds
@@ -406,13 +431,34 @@ int main()
 
 	glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
 
-	scene.config.halfWorldWidth = (sqrt(MAX_PATCHES) * scene.config.patchSize) * 0.5f;
 	scene.config.isPaused = false;
 	scene.config.currentTime = (float)glfwGetTime();
-
-	while(!glfwWindowShouldClose(window))
+	setWorldMinMax();
+	// Set num blades per patch
+	if(scene.config.numBladesPerPatch < 0)
 	{
-		if(!scene.config.isPaused)
+		scene.config.numBladesPerPatch = MAX_BLADES_PER_PATCH;
+	}
+
+	if(scene.config.numBladesPerPatch > MAX_BLADES_PER_PATCH)
+	{
+		std::cout << "[WARNING]: Num blades per patch should be between 0 and " << MAX_BLADES_PER_PATCH << " but was " << scene.config.numBladesPerPatch << ". Clamping." << std::endl;
+		scene.config.numBladesPerPatch = glm::clamp(scene.config.numBladesPerPatch, 0, MAX_BLADES_PER_PATCH);
+	}
+
+	if(scene.config.numPatches < 0)
+	{
+		scene.config.numPatches = MAX_PATCHES;
+	}
+	if(scene.config.numPatches > MAX_PATCHES)
+	{
+		std::cout << "[WARNING]: Num patches should be between 0 and " << MAX_PATCHES << " but was " << scene.config.numPatches << ". Clamping." << std::endl;
+		scene.config.numPatches = glm::clamp(scene.config.numPatches, 0, MAX_PATCHES);
+	}
+
+	while (!glfwWindowShouldClose(window))
+	{
+		if (!scene.config.isPaused)
 		{
 			scene.config.currentTime = (float)glfwGetTime();
 		}
@@ -426,18 +472,17 @@ int main()
 
 		// For correcting the camera input in processInput
 		float currentFrame = (float)glfwGetTime();
-		deltaTime          = currentFrame - lastFrame;
+		deltaTime = currentFrame - lastFrame;
 		gameDeltaTime = deltaTime;
 
-		if(scene.config.isPaused)
+		if (scene.config.isPaused)
 		{
 			gameDeltaTime = 0;
 		}
 
-
 		processInput(window);
 
-		if(clearNextSimulate)
+		if (clearNextSimulate)
 		{
 			fluidGrid->clearCurrent();
 		}
@@ -445,8 +490,8 @@ int main()
 		fluidGrid->addDensityAt(1, 1, 100);
 
 		clearNextSimulate = true;
-		
-		if(!scene.config.isPaused)
+
+		if (!scene.config.isPaused)
 		{
 			fluidGrid->simulate(gameDeltaTime);
 		}
@@ -460,16 +505,15 @@ int main()
 		int width, height;
 		glfwGetWindowSize(window, &width, &height);
 
-		width  = glm::max(width, 1);
+		width = glm::max(width, 1);
 		height = glm::max(height, 1);
 
-		glm::mat4 projection = glm::perspective(70.0f,
-		                                        (float)width / (float)height, .01f, 1000.0f);
+		glm::mat4 projection = glm::perspective(70.0f, (float)width / (float)height, .01f, 1000.0f);
 		glm::mat4 view = glm::lookAt(
 			camera.getCamPosition(),
 			camera.getCamPosition() + camera.getCamForward(), glm::vec3(0, 1, 0));
 		scene.projection = projection;
-		scene.view       = view;
+		scene.view = view;
 		scene.updateDynamic();
 		scene.render();
 
@@ -479,7 +523,7 @@ int main()
 
 		// Control render loop frequency
 		float elapsed = deltaTime;
-		while(loopInterval > elapsed)
+		while (loopInterval > elapsed)
 		{
 			elapsed = (float)glfwGetTime() - lastFrame;
 		}
@@ -506,7 +550,7 @@ GLFWwindow *initGLFWWindow()
 
 	// GLFW window creation
 	GLFWwindow *window = glfwCreateWindow(INIT_SCR_WIDTH, INIT_SCR_HEIGHT, "GrassProject", NULL, NULL);
-	if(window == NULL)
+	if (window == NULL)
 	{
 		std::cout << "Failed to create GLFW window" << std::endl;
 		glfwTerminate();
@@ -526,21 +570,21 @@ GLFWwindow *initGLFWWindow()
 
 void initShadersAndTextures()
 {
-	bladesVertexShader   = new Shader("assets/shaders/blades.vert", GL_VERTEX_SHADER);
+	bladesVertexShader = new Shader("assets/shaders/blades.vert", GL_VERTEX_SHADER);
 	bladesFragmentShader = new Shader("assets/shaders/blades.frag", GL_FRAGMENT_SHADER);
 
-	bladesShaderProgram = new ShaderProgram({bladesVertexShader, bladesFragmentShader}, "BLADES SHADER");
+	bladesShaderProgram = new ShaderProgram({ bladesVertexShader, bladesFragmentShader }, "BLADES SHADER");
 
-	patchVertexShader   = new Shader("assets/shaders/patch.vert", GL_VERTEX_SHADER);
+	patchVertexShader = new Shader("assets/shaders/patch.vert", GL_VERTEX_SHADER);
 	patchFragmentShader = new Shader("assets/shaders/patch.frag", GL_FRAGMENT_SHADER);
 
-	patchShaderProgram = new ShaderProgram({patchVertexShader, patchFragmentShader}, "PATCH SHADER");
+	patchShaderProgram = new ShaderProgram({ patchVertexShader, patchFragmentShader }, "PATCH SHADER");
 
 
 	// Setup the Skybox Shaders
-	skyboxVertexShader   = new Shader("assets/shaders/skybox.vert", GL_VERTEX_SHADER);
+	skyboxVertexShader = new Shader("assets/shaders/skybox.vert", GL_VERTEX_SHADER);
 	skyboxFragmentShader = new Shader("assets/shaders/skybox.frag", GL_FRAGMENT_SHADER);
-	skyboxShaderProgram  = new ShaderProgram({skyboxVertexShader, skyboxFragmentShader}, "SKYBOX SHADER");
+	skyboxShaderProgram = new ShaderProgram({ skyboxVertexShader, skyboxFragmentShader }, "SKYBOX SHADER");
 
 	cubemapTextureDay = new Texture("Day skybox", GL_TEXTURE_CUBE_MAP);
 	cubemapTextureDay->loadTextureCubeMap(facesDay, false);
@@ -548,29 +592,29 @@ void initShadersAndTextures()
 	cubemapTextureNight = new Texture("Night skybox", GL_TEXTURE_CUBE_MAP);
 	cubemapTextureNight->loadTextureCubeMap(facesNight);
 
-	lightVertexShader   = new Shader("assets/shaders/light.vert", GL_VERTEX_SHADER);
+	lightVertexShader = new Shader("assets/shaders/light.vert", GL_VERTEX_SHADER);
 	lightFragmentShader = new Shader("assets/shaders/light.frag", GL_FRAGMENT_SHADER);
-	lightShaderProgram  = new ShaderProgram({lightVertexShader, lightFragmentShader}, "LIGHT SHADER");
+	lightShaderProgram = new ShaderProgram({ lightVertexShader, lightFragmentShader }, "LIGHT SHADER");
 
 	scene.config.perlinConfig.texture = new Texture("Perlin Noise", GL_TEXTURE_2D);
 	scene.config.perlinConfig.texture->loadTextureSingleChannel(PERLIN_NOISE_TEXTURE_WIDTH);
 
-	perlinNoiseComputeShader        = new Shader("assets/shaders/perlin_noise.comp", GL_COMPUTE_SHADER);
-	perlinNoiseComputeShaderProgram = new ShaderProgram({perlinNoiseComputeShader}, "PERLIN NOISE COMPUTE SHADER");
+	perlinNoiseComputeShader = new Shader("assets/shaders/perlin_noise.comp", GL_COMPUTE_SHADER);
+	perlinNoiseComputeShaderProgram = new ShaderProgram({ perlinNoiseComputeShader }, "PERLIN NOISE COMPUTE SHADER");
 
-	scene.cubemapTextureDay    = cubemapTextureDay;
-	scene.cubemapTextureNight  = cubemapTextureNight;
+	scene.cubemapTextureDay = cubemapTextureDay;
+	scene.cubemapTextureNight = cubemapTextureNight;
 	scene.currentSkyboxTexture = scene.cubemapTextureNight;
 
 	scene.config.windX = scene.config.fluidGridConfig.velX;
 	scene.config.windY = scene.config.fluidGridConfig.velY;
 
-	int width  = PERLIN_NOISE_TEXTURE_WIDTH;
+	int width = PERLIN_NOISE_TEXTURE_WIDTH;
 	int height = PERLIN_NOISE_TEXTURE_WIDTH;
 
 	// Should this not be set to random?
 	perlinNoiseSeedTextureData = new float[width * height];
-	perlinNoiseSeedTexture     = new Texture("Perlin Seed Texture", GL_TEXTURE_2D);
+	perlinNoiseSeedTexture = new Texture("Perlin Seed Texture", GL_TEXTURE_2D);
 	perlinNoiseSeedTexture->generateTexture(perlinNoiseSeedTextureData, width, height, GL_RED);
 
 	// Set up the z-buffer
@@ -590,68 +634,69 @@ glm::vec2 calculateSpiralPosition(int n)
 
 	t -= 1;
 
-	if(n >= m - t)
+	if (n >= m - t)
 	{
-		return {k - (m - n), -k};
+		return { k - (m - n), -k };
 	}
 
 	m -= t;
 
-	if(n >= m - t)
+	if (n >= m - t)
 	{
-		return {-k, -k + (m - n)};
+		return { -k, -k + (m - n) };
 	}
 
 	m -= t;
 
-	if(n >= m - t)
+	if (n >= m - t)
 	{
-		return {-k + (m - n), k};
+		return { -k + (m - n), k };
 	}
 
-	return {k, k - (m - n - t)};
+	return { k, k - (m - n - t) };
 }
 
 void initSceneObjects(Patch &patch)
 {
-	patch.init(MAX_PATCH_DENSITY_BLADES, patchShaderProgram);
+	patch.init(MAX_BLADES_PER_PATCH, patchShaderProgram);
 
-	if(scene.config.bladeDistribution == BladeDistribution::HARRY_STYLES_WITH_RANDOS)
+	if (scene.config.bladeDistribution == BladeDistribution::HARRY_STYLES_WITH_RANDOS)
 	{
 		patch.initHarryEdwardStylesBladeMatrices(scene.config.patchSize);
 	}
-	else if(scene.config.bladeDistribution == BladeDistribution::HARRY_STYLES)
+	else if (scene.config.bladeDistribution == BladeDistribution::HARRY_STYLES)
 	{
 		patch.initHarryEdwardStylesBladeMatrices(scene.config.patchSize, false);
 	}
-	else if(scene.config.bladeDistribution == BladeDistribution::ONE_DIRECTION)
+	else if (scene.config.bladeDistribution == BladeDistribution::ONE_DIRECTION)
 	{
 		patch.initOneDirectionBladeMatrices(scene.config.patchSize);
 	}
 
-	createInstanceMatrixBuffer(patch.getBladeMatrices(), MAX_PATCH_DENSITY_BLADES);
+	createInstanceMatrixBuffer(patch.getBladeMatrices(), MAX_BLADES_PER_PATCH);
 
 	SceneObjectArrays *skybox = new SceneObjectArrays(cubePositions, *skyboxShaderProgram);
 	scene.sceneObjects.push_back(skybox);
 
 	SceneObjectArrays *light = new SceneObjectArrays(cubePositions, *lightShaderProgram);
 	scene.sceneObjects.push_back(light);
-	scene.light            = light;
+	scene.light = light;
 	scene.light->isVisible = false;
 
-	for(int i = 0; i < MAX_PATCHES; i++)
+	for (int i = 0; i < MAX_PATCHES; i++)
 	{
-		glm::vec2           position         = calculateSpiralPosition(i) * scene.config.patchSize;
-		SceneObjectIndexed *patchSceneObject = new SceneObjectIndexed(grassPatchPositions, grassPatchColors,
-		                                                              grassPatchIndices, grassPatchNormals,
-		                                                              *patchShaderProgram);
-		glm::mat4 translation   = glm::translate(position.x , 0, position.y);
+		// Position of the entire thing
+		glm::vec2 position = calculateSpiralPosition(i) * scene.config.patchSize;
+		SceneObjectIndexed *patchSceneObject = new SceneObjectIndexed(
+			grassPatchPositions, grassPatchColors, grassPatchIndices, grassPatchNormals, *patchShaderProgram);
+		glm::mat4 translation = glm::translate(position.x, 0, position.y);
+		// Set the patch object
 		patchSceneObject->model = translation * glm::scale(scene.config.patchSize, scene.config.patchSize, scene.config.patchSize);
 		scene.patches.push_back(patchSceneObject);
 
-		SceneObjectInstanced *blades = new SceneObjectInstanced(grassPositions, grassColors,
-		                                                        grassIndices, grassNormals, instanceMatrixBuffer,
-		                                                        *bladesShaderProgram, &grassUVs);
+		// Set the blades on the patch
+		SceneObjectInstanced *blades = new SceneObjectInstanced(
+			grassPositions, grassColors, grassIndices, grassNormals, instanceMatrixBuffer, *bladesShaderProgram, &grassUVs);
 		// Do not scale the blades
 		blades->model = translation;
 		scene.blades.push_back(blades);
@@ -662,18 +707,17 @@ void generatePerlinNoise()
 {
 	using namespace std::chrono;
 	// Initialize seed data
-	for(int i                         = 0; i < PERLIN_NOISE_TEXTURE_WIDTH * PERLIN_NOISE_TEXTURE_WIDTH; i++)
-		perlinNoiseSeedTextureData[i] = (
-			float)rand() / (float)RAND_MAX;
+	for (int i = 0; i < PERLIN_NOISE_TEXTURE_WIDTH * PERLIN_NOISE_TEXTURE_WIDTH; i++)
+		perlinNoiseSeedTextureData[i] = (float)rand() / (float)RAND_MAX;
 
 	PerlinNoise2DGPU(*perlinNoiseSeedTexture, perlinNoiseSeedTextureData, perlinNoiseComputeShaderProgram,
-	                 scene.config.perlinConfig.texture->getTextureID(), scene.config.perlinConfig.octaves,
-	                 scene.config.perlinConfig.bias, scene.config.perlinConfig.makeChecker);
+		scene.config.perlinConfig.texture->getTextureID(), scene.config.perlinConfig.octaves,
+		scene.config.perlinConfig.bias, scene.config.perlinConfig.makeChecker);
 
 	// Upload texture to IMGUI
 	perlinNoiseTexture = new Texture("Perlin Texture", GL_TEXTURE_2D);
 	perlinNoiseTexture->loadTextureData(perlinNoiseTextureData, PERLIN_NOISE_TEXTURE_WIDTH, PERLIN_NOISE_TEXTURE_WIDTH,
-	                                    GL_RED);
+		GL_RED);
 }
 
 void initIMGUI(GLFWwindow *window)
@@ -712,47 +756,47 @@ void transferInstanceMatrixBuffer(glm::mat4 *modelMatrices, const unsigned int n
 
 void drawFluidGridWindow()
 {
-	if(scene.config.simulationMode == SimulationMode::FLUID_GRID)
+	if (scene.config.simulationMode == SimulationMode::FLUID_GRID)
 	{
 		ImGui::Begin("Fluid Grid");
-		static glm::vec2 pos = {0.5f, 0.5f};
+		static glm::vec2 pos = { 0.5f, 0.5f };
 		static glm::vec2 vel = {};
 		static float     den = {};
 		ImGui::DragFloat2("Position", (float *)&pos, 0.05f, 0, 1);
 		ImGui::InputFloat("Density", &den);
 		ImGui::InputFloat2("Velocity", (float *)&vel);
-		if(clearNextSimulate)
+		if (clearNextSimulate)
 		{
 			fluidGrid->clearCurrent();
 		}
 
-		if(ImGui::Button("Add Density"))
+		if (ImGui::Button("Add Density"))
 		{
 			fluidGrid->addDensityAt(pos.x * fluidGrid->getN(), pos.y * fluidGrid->getN(), den);
 			clearNextSimulate = false;
 		}
-		if(ImGui::Button("Add Velocity"))
+		if (ImGui::Button("Add Velocity"))
 		{
 			clearNextSimulate = false;
 			fluidGrid->addVelocityAt(pos.x * fluidGrid->getN(), pos.y * fluidGrid->getN(), vel.x, vel.y);
 		}
 
-		static glm::vec2 velRange = {100, 100};
-		static glm::vec2 denRange = {100, 1000};
+		static glm::vec2 velRange = { 100, 100 };
+		static glm::vec2 denRange = { 100, 1000 };
 		ImGui::InputFloat2("Random velocity", (float *)&velRange);
 		ImGui::InputFloat2("Random density", (float *)&denRange);
-		if(ImGui::Button("Add Random"))
+		if (ImGui::Button("Add Random"))
 		{
 			clearNextSimulate = false;
-			float x           = generateRandomNumber(0, (float)fluidGrid->getN());
-			float y           = generateRandomNumber(0, (float)fluidGrid->getN());
-			float d           = generateRandomNumber(denRange.x, denRange.y);
-			float vx          = generateRandomNumber(-velRange.x, velRange.x);
-			float vy          = generateRandomNumber(-velRange.y, velRange.y);
+			float x = generateRandomNumber(0, (float)fluidGrid->getN());
+			float y = generateRandomNumber(0, (float)fluidGrid->getN());
+			float d = generateRandomNumber(denRange.x, denRange.y);
+			float vx = generateRandomNumber(-velRange.x, velRange.x);
+			float vy = generateRandomNumber(-velRange.y, velRange.y);
 
-			for(int i = (int)x - 2; i < (int)x + 2; ++i)
+			for (int i = (int)x - 2; i < (int)x + 2; ++i)
 			{
-				for(int j = (int)x - 2; j < (int)x + 2; ++j)
+				for (int j = (int)x - 2; j < (int)x + 2; ++j)
 				{
 					fluidGrid->addVelocityAt(i, j, vx, vy);
 					fluidGrid->addDensityAt(i, j, d);
@@ -768,12 +812,12 @@ void drawSettingsWindow()
 	ImGui::Begin("Settings");
 
 	ImGui::Text("Application average %.3f ms/frame (%.1f FPS) Framecount %lld Time %.0f",
-	            1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate, numFrames, glfwGetTime());
+		1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate, numFrames, glfwGetTime());
 
 	ImGui::Text("Simulation Mode Settings");
-	if(ImGui::RadioButton("Perlin Noise", scene.config.simulationMode == SimulationMode::PERLIN_NOISE))
+	if (ImGui::RadioButton("Perlin Noise", scene.config.simulationMode == SimulationMode::PERLIN_NOISE))
 	{
-		scene.config.simulationMode           = SimulationMode::PERLIN_NOISE;
+		scene.config.simulationMode = SimulationMode::PERLIN_NOISE;
 		scene.config.perlinConfig.makeChecker = false;
 		generatePerlinNoise();
 
@@ -782,9 +826,9 @@ void drawSettingsWindow()
 	}
 	ImGui::SameLine();
 	drawTooltip("Blades respond to the generated perlin noise.");
-	if(ImGui::RadioButton("Checker Pattern", scene.config.simulationMode == SimulationMode::CHECKER_PATTERN))
+	if (ImGui::RadioButton("Checker Pattern", scene.config.simulationMode == SimulationMode::CHECKER_PATTERN))
 	{
-		scene.config.simulationMode           = SimulationMode::CHECKER_PATTERN;
+		scene.config.simulationMode = SimulationMode::CHECKER_PATTERN;
 		scene.config.perlinConfig.makeChecker = true;
 		generatePerlinNoise();
 
@@ -793,71 +837,72 @@ void drawSettingsWindow()
 	}
 	ImGui::SameLine();
 	drawTooltip("Blades respond to the generated checker pattern.");
-	if(ImGui::RadioButton("Fluid Grid", scene.config.simulationMode == SimulationMode::FLUID_GRID))
+	if (ImGui::RadioButton("Fluid Grid", scene.config.simulationMode == SimulationMode::FLUID_GRID))
 	{
 		scene.config.simulationMode = SimulationMode::FLUID_GRID;
-		scene.config.windX          = scene.config.fluidGridConfig.velX;
-		scene.config.windY          = scene.config.fluidGridConfig.velY;
+		scene.config.windX = scene.config.fluidGridConfig.velX;
+		scene.config.windY = scene.config.fluidGridConfig.velY;
 	}
 	drawTooltip("Blades respond to the fluid grid simulation.");
 
 
 	ImGui::Text("Harry Styles Settings");
-	if(ImGui::RadioButton("Harry Styles With Randos",
-	                      scene.config.bladeDistribution == BladeDistribution::HARRY_STYLES_WITH_RANDOS))
+	if (ImGui::RadioButton("Harry Styles With Randos",
+		scene.config.bladeDistribution == BladeDistribution::HARRY_STYLES_WITH_RANDOS))
 	{
 		scene.config.bladeDistribution = BladeDistribution::HARRY_STYLES_WITH_RANDOS;
 		patch.initHarryEdwardStylesBladeMatrices(scene.config.patchSize);
-		transferInstanceMatrixBuffer(patch.getBladeMatrices(), MAX_PATCH_DENSITY_BLADES);
+		transferInstanceMatrixBuffer(patch.getBladeMatrices(), MAX_BLADES_PER_PATCH);
 	}
 	ImGui::SameLine();
 	drawTooltip("Blades are placed uniformly on the patch with random rotations.");
-	if(ImGui::RadioButton("Harry Styles", scene.config.bladeDistribution == BladeDistribution::HARRY_STYLES))
+	if (ImGui::RadioButton("Harry Styles", scene.config.bladeDistribution == BladeDistribution::HARRY_STYLES))
 	{
 		scene.config.bladeDistribution = BladeDistribution::HARRY_STYLES;
 		patch.initHarryEdwardStylesBladeMatrices(scene.config.patchSize, false);
-		transferInstanceMatrixBuffer(patch.getBladeMatrices(), MAX_PATCH_DENSITY_BLADES);
+		transferInstanceMatrixBuffer(patch.getBladeMatrices(), MAX_BLADES_PER_PATCH);
 	}
 	ImGui::SameLine();
 	drawTooltip("Blades are placed uniformly on the patch without random rotations.");
-	if(ImGui::RadioButton("One Direction", scene.config.bladeDistribution == BladeDistribution::ONE_DIRECTION))
+	if (ImGui::RadioButton("One Direction", scene.config.bladeDistribution == BladeDistribution::ONE_DIRECTION))
 	{
 		scene.config.bladeDistribution = BladeDistribution::ONE_DIRECTION;
 		patch.initOneDirectionBladeMatrices(scene.config.patchSize);
-		transferInstanceMatrixBuffer(patch.getBladeMatrices(), MAX_PATCH_DENSITY_BLADES);
+		transferInstanceMatrixBuffer(patch.getBladeMatrices(), MAX_BLADES_PER_PATCH);
 	}
 	drawTooltip("Blades are placed in a line in the middle of the patch without random rotations.");
 
 	ImGui::Checkbox("Debug Blades", &scene.config.debugBlades);
 	ImGui::Checkbox("Visualize Texture On Patch", &scene.config.visualizeTexture);
 
-	if(scene.config.simulationMode == SimulationMode::FLUID_GRID && scene.config.visualizeTexture)
+	if (scene.config.simulationMode == SimulationMode::FLUID_GRID && scene.config.visualizeTexture)
 	{
 		ImGui::Text("Visualize");
-		if(ImGui::RadioButton("Density", scene.config.fluidGridConfig.visualizeDensity))
+		if (ImGui::RadioButton("Density", scene.config.fluidGridConfig.visualizeDensity))
 		{
 			scene.config.fluidGridConfig.visualizeDensity = true;
-			if(scene.config.windX) scene.config.windX->unbind();
-			if(scene.config.windY) scene.config.windY->unbind();
+			if (scene.config.windX) scene.config.windX->unbind();
+			if (scene.config.windY) scene.config.windY->unbind();
 
 			scene.config.windX = scene.config.fluidGridConfig.density;
 			scene.config.windY = nullptr;
 		}
-		if(ImGui::RadioButton("Velocity", !scene.config.fluidGridConfig.visualizeDensity))
+		if (ImGui::RadioButton("Velocity", !scene.config.fluidGridConfig.visualizeDensity))
 		{
 			scene.config.fluidGridConfig.visualizeDensity = false;
-			if(scene.config.windX) scene.config.windX->unbind();
-			if(scene.config.windY) scene.config.windY->unbind();
+			if (scene.config.windX) scene.config.windX->unbind();
+			if (scene.config.windY) scene.config.windY->unbind();
 
 			scene.config.windX = scene.config.fluidGridConfig.velX;
 			scene.config.windY = scene.config.fluidGridConfig.velY;
 		}
 	}
 
-	
-	if(ImGui::SliderFloat("PatchSize", &scene.config.patchSize, 1.0f, 100.0f))
+
+	if (ImGui::SliderFloat("PatchSize", &scene.config.patchSize, 1.0f, 100.0f))
 	{
-		switch(scene.config.bladeDistribution)
+
+		switch (scene.config.bladeDistribution)
 		{
 		case BladeDistribution::ONE_DIRECTION:
 			patch.initOneDirectionBladeMatrices(scene.config.patchSize);
@@ -869,46 +914,46 @@ void drawSettingsWindow()
 			patch.initHarryEdwardStylesBladeMatrices(scene.config.patchSize, false);
 			break;
 		}
-			
-		transferInstanceMatrixBuffer(patch.getBladeMatrices(), MAX_PATCH_DENSITY_BLADES);
 
-		for(int i = 0; i < MAX_PATCHES; i++)
+		transferInstanceMatrixBuffer(patch.getBladeMatrices(), MAX_BLADES_PER_PATCH);
+
+		for (int i = 0; i < MAX_PATCHES; i++)
 		{
-			glm::vec2 position      = calculateSpiralPosition(i) * scene.config.patchSize;
-			glm::mat4 translation   = glm::translate(position.x , 0, position.y);
+			glm::vec2 position = calculateSpiralPosition(i) * scene.config.patchSize;
+			glm::mat4 translation = glm::translate(position.x, 0, position.y);
 			scene.patches[i]->model = translation * glm::scale(scene.config.patchSize, scene.config.patchSize, scene.config.patchSize);
 			scene.blades[i]->model = translation;
 		}
 
-		scene.config.halfWorldWidth = (sqrt(MAX_PATCHES) * scene.config.patchSize) * 0.5;
+		setWorldMinMax();
 	}
 	drawTooltip("The sizes of each individual Patch. Same number of blades of grass.");
 
 	ImGui::SliderInt("Number of patches", &scene.config.numPatches, 1, MAX_PATCHES);
-	ImGui::SliderInt("Patch density", &scene.config.patchDensity, 0, MAX_PATCH_DENSITY_BLADES);
-	scene.config.patchDensity = glm::clamp(scene.config.patchDensity, 0, (int)MAX_PATCH_DENSITY_BLADES);
+	ImGui::SliderInt("Patch density", &scene.config.numBladesPerPatch, 0, MAX_BLADES_PER_PATCH);
+	scene.config.numBladesPerPatch = glm::clamp(scene.config.numBladesPerPatch, 0, (int)MAX_BLADES_PER_PATCH);
 	ImGui::SliderFloat("Sway Reach", &scene.config.swayReach, 0.0f, 2.0f);
 	drawTooltip("How far the blades will move in the wind.");
 	ImGui::SliderFloat("Sample Scale", &scene.config.textureScale, 0.05f, 1.0f);
 	drawTooltip("Will zoom in or out of the texture when sampling it.");
-	
-	ImGui::SliderFloat("Wind Strength", &scene.config.perlinConfig.windStrength, 0, 0.5f);
+
+	ImGui::SliderFloat("Wind Strength", &scene.config.windStrength, 0, 0.5f);
 	drawTooltip("Strength of the wind");
 
-	ImGui::DragFloat2("Wind Direction", (float *)&scene.config.perlinConfig.windDirection,
+	ImGui::DragFloat2("Wind Direction", (float *)&scene.config.windDirection,
 		0.1f, -1.0f, 1.0f);
 	drawTooltip("Direction of the wind");
 
-	if (glm::epsilonEqual(glm::length(scene.config.perlinConfig.windDirection), 0.0f, 0.0001f))
+	if (glm::epsilonEqual(glm::length(scene.config.windDirection), 0.0f, 0.0001f))
 	{
-		scene.config.perlinConfig.windDirection = { 1, 0 };
+		scene.config.windDirection = { 1, 0 };
 	}
 	if (ImGui::Button("Normalize Wind Direction"))
-		scene.config.perlinConfig.windDirection = glm::normalize(scene.config.perlinConfig.windDirection);
-	
+		scene.config.windDirection = glm::normalize(scene.config.windDirection);
+
 	drawTooltip("Normalize the wind direction");
 
-	if(scene.config.simulationMode == SimulationMode::PERLIN_NOISE && ImGui::CollapsingHeader(
+	if (scene.config.simulationMode == SimulationMode::PERLIN_NOISE && ImGui::CollapsingHeader(
 		"Perlin Noise Settings"))
 	{
 		ImGui::SliderInt("Octaves", &scene.config.perlinConfig.octaves, 2, 10);
@@ -917,46 +962,46 @@ void drawSettingsWindow()
 		ImGui::SliderFloat("Bias", &scene.config.perlinConfig.bias, 0.2f, 2.0f);
 		drawTooltip("Bias for fun.");
 
-		if(ImGui::Button("Generate Perlin Noise"))
+		if (ImGui::Button("Generate Perlin Noise"))
 		{
 			generatePerlinNoise();
 		}
 		float width = PERLIN_NOISE_TEXTURE_WIDTH;
 
 		ImGui::Image((ImTextureID)(long long)scene.config.perlinConfig.texture->getTextureID(),
-		             {width, width},
-		             {0.0f, scene.config.textureScale},
-		             {scene.config.textureScale, 0.0f});
+			{ width, width },
+			{ 0.0f, scene.config.textureScale },
+			{ scene.config.textureScale, 0.0f });
 
 	}
 
-	if(scene.config.simulationMode == SimulationMode::FLUID_GRID && ImGui::CollapsingHeader("Fluid Grid Settings"))
+	if (scene.config.simulationMode == SimulationMode::FLUID_GRID && ImGui::CollapsingHeader("Fluid Grid Settings"))
 	{
 		float width = 512;
-		if(ImGui::BeginTabBar("Heck yes"))
+		if (ImGui::BeginTabBar("Heck yes"))
 		{
-			if(ImGui::BeginTabItem("Density"))
+			if (ImGui::BeginTabItem("Density"))
 			{
 				ImGui::Image((ImTextureID)(long long)fluidGrid->getTextureDen()->getTextureID(),
-				             {width, width},
-				             {1.0f, 1},
-				             {0.0f, 0});
+					{ width, width },
+					{ 1.0f, 1 },
+					{ 0.0f, 0 });
 				ImGui::EndTabItem();
 			}
-			if(ImGui::BeginTabItem("Velocity X"))
+			if (ImGui::BeginTabItem("Velocity X"))
 			{
 				ImGui::Image((ImTextureID)(long long)fluidGrid->getTextureVelX()->getTextureID(),
-				             {width, width},
-				             {1.0f, 1},
-				             {0.0f, 0});
+					{ width, width },
+					{ 1.0f, 1 },
+					{ 0.0f, 0 });
 				ImGui::EndTabItem();
 			}
-			if(ImGui::BeginTabItem("Velocity Y"))
+			if (ImGui::BeginTabItem("Velocity Y"))
 			{
 				ImGui::Image((ImTextureID)(long long)fluidGrid->getTextureVelY()->getTextureID(),
-				             {width, width},
-				             {0.0f, 1},
-				             {1.0f, 0});
+					{ width, width },
+					{ 0.0f, 1 },
+					{ 1.0f, 0 });
 				ImGui::EndTabItem();
 			}
 			ImGui::EndTabBar();
@@ -990,7 +1035,7 @@ void drawSettingsWindow()
 		}
 		 */
 
-		if(ImGui::Button("Reset"))
+		if (ImGui::Button("Reset"))
 		{
 			fluidGrid->initialize();
 		}
@@ -1000,17 +1045,17 @@ void drawSettingsWindow()
 		ImGui::DragFloat("Velocity Multiplier", &scene.config.fluidGridConfig.velocityMultiplier, 0.1f, 0, 100.0f);
 		ImGui::DragFloat2("Velocity Clamp", (float *)&scene.config.fluidGridConfig.velocityClampRange, 0.1f, 0, 2.0f);
 	}
-	if(ImGui::CollapsingHeader("Camera Settings"))
+	if (ImGui::CollapsingHeader("Camera Settings"))
 	{
 		ImGui::SliderFloat3("Camera Position", (float *)&camera.camPosition, -50, 50);
 		ImGui::SliderFloat("Yaw", &camera.yaw, -180, 180);
 		ImGui::SliderFloat("Pitch", &camera.pitch, -89.9f, 89.9f);
 	}
-	
 
-	
 
-	if(ImGui::CollapsingHeader("Light Settings"))
+
+
+	if (ImGui::CollapsingHeader("Light Settings"))
 	{
 		ImGui::Checkbox("Show Light", &scene.light->isVisible);
 		ImGui::SliderFloat("Ambient Light Strength", &scene.config.ambientStrength, 0.0f, 1.0f);
@@ -1021,20 +1066,20 @@ void drawSettingsWindow()
 		ImGui::Separator();
 
 		ImGui::Text("Skybox Settings");
-		if(ImGui::RadioButton("Day", scene.config.skyboxType == SkyboxType::DAY))
+		if (ImGui::RadioButton("Day", scene.config.skyboxType == SkyboxType::DAY))
 		{
-			scene.config.skyboxType    = SkyboxType::DAY;
+			scene.config.skyboxType = SkyboxType::DAY;
 			scene.currentSkyboxTexture = scene.cubemapTextureDay;
 		}
 		ImGui::SameLine();
-		if(ImGui::RadioButton("Night", scene.config.skyboxType == SkyboxType::NIGHT))
+		if (ImGui::RadioButton("Night", scene.config.skyboxType == SkyboxType::NIGHT))
 		{
-			scene.config.skyboxType    = SkyboxType::NIGHT;
+			scene.config.skyboxType = SkyboxType::NIGHT;
 			scene.currentSkyboxTexture = scene.cubemapTextureNight;
 		}
 	}
 
-	if(ImGui::CollapsingHeader("Controls"))
+	if (ImGui::CollapsingHeader("Controls"))
 	{
 		ImGui::Text("WASD for camera movement");
 		ImGui::Text("T for sprint toggle");
@@ -1072,7 +1117,7 @@ void drawGui()
 	//  For this specific demo app we could also call glfwMakeContextCurrent(window) directly)
 	ImGuiIO &io = ImGui::GetIO();
 	(void)io;
-	if(io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 	{
 		GLFWwindow *backup_current_context = glfwGetCurrentContext();
 		ImGui::UpdatePlatformWindows();
@@ -1083,7 +1128,7 @@ void drawGui()
 
 void drawTooltip(const char *desc)
 {
-	if(ImGui::IsItemHovered())
+	if (ImGui::IsItemHovered())
 	{
 		ImGui::BeginTooltip();
 		ImGui::PushTextWrapPos(450.0f);
@@ -1095,13 +1140,13 @@ void drawTooltip(const char *desc)
 
 void cursorInRange(
 	float screenX, float screenY, int screenW, int screenH,
-	float min, float     max, float & x, float &   y)
+	float min, float     max, float &x, float &y)
 {
-	float sum      = max - min;
+	float sum = max - min;
 	float xInRange = (float)screenX / (float)screenW * sum - sum / 2.0f;
 	float yInRange = (float)screenY / (float)screenH * sum - sum / 2.0f;
-	x              = xInRange;
-	y              = -yInRange; // Flip screen space on the y-axis
+	x = xInRange;
+	y = -yInRange; // Flip screen space on the y-axis
 }
 
 void framebufferSizeCallback(GLFWwindow *window, int width, int height)
@@ -1113,7 +1158,7 @@ void framebufferSizeCallback(GLFWwindow *window, int width, int height)
 
 void processInput(GLFWwindow *window)
 {
-	if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
 
 	static bool tWasPressed = false;
@@ -1122,48 +1167,58 @@ void processInput(GLFWwindow *window)
 	static bool vWasPressed = false;
 
 	// Stop camera movement if GUI is opened
-	if(isPaused)
+	if (isPaused)
 		return;
 
-	if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+
+
+	if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+	{
+		camera.processKeyboard(cameraMovement::GLOBAL_UP, deltaTime);
+	}
+	if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+	{
+		camera.processKeyboard(cameraMovement::GLOBAL_DOWN, deltaTime);
+	}
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 	{
 		camera.processKeyboard(cameraMovement::FORWARD, deltaTime);
 	}
-	if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
 	{
 		camera.processKeyboard(cameraMovement::BACKWARD, deltaTime);
 	}
-	if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
 	{
 		camera.processKeyboard(cameraMovement::LEFT, deltaTime);
 	}
-	if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 	{
 		camera.processKeyboard(cameraMovement::RIGHT, deltaTime);
 	}
-	if(glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS)
 	{
-		if(!pWasPressed)
+		if (!pWasPressed)
 		{
 			scene.config.isPaused = !scene.config.isPaused;
 			pWasPressed = true;
 		}
 	}
-	if(glfwGetKey(window, GLFW_KEY_P) == GLFW_RELEASE)
+	if (glfwGetKey(window, GLFW_KEY_P) == GLFW_RELEASE)
 	{
 		pWasPressed = false;
 	}
 
-	if(glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS)
 	{
-		if(!vWasPressed)
+		if (!vWasPressed)
 		{
 			int mode;
 			glGetIntegerv(GL_POLYGON_MODE, &mode);
-			if(mode == GL_LINE)
+			if (mode == GL_LINE)
 			{
 				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-				
+
 			}
 			else
 			{
@@ -1172,26 +1227,26 @@ void processInput(GLFWwindow *window)
 			vWasPressed = true;
 		}
 	}
-	if(glfwGetKey(window, GLFW_KEY_V) == GLFW_RELEASE)
+	if (glfwGetKey(window, GLFW_KEY_V) == GLFW_RELEASE)
 	{
 		vWasPressed = false;
 	}
 
-	if(glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS)
 	{
-		if(!tWasPressed)
+		if (!tWasPressed)
 		{
 			camera.sprinting = !camera.sprinting;
-			tWasPressed      = true;
+			tWasPressed = true;
 		}
 	}
-	if(glfwGetKey(window, GLFW_KEY_T) == GLFW_RELEASE)
+	if (glfwGetKey(window, GLFW_KEY_T) == GLFW_RELEASE)
 	{
 		tWasPressed = false;
 	}
-	if(glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
 	{
-		if(!rWasPressed)
+		if (!rWasPressed)
 		{
 			bladesShaderProgram->reloadShaders();
 			patchShaderProgram->reloadShaders();
@@ -1200,7 +1255,7 @@ void processInput(GLFWwindow *window)
 			rWasPressed = true;
 		}
 	}
-	if(glfwGetKey(window, GLFW_KEY_R) == GLFW_RELEASE)
+	if (glfwGetKey(window, GLFW_KEY_R) == GLFW_RELEASE)
 	{
 		rWasPressed = false;
 	}
@@ -1216,34 +1271,34 @@ void processInput(GLFWwindow *window)
  */
 void cursorInputCallback(GLFWwindow *window, double xpos, double ypos)
 {
-	if(firstMouse)
+	if (firstMouse)
 	{
-		lastX      = (float)xpos;
-		lastY      = (float)ypos;
+		lastX = (float)xpos;
+		lastY = (float)ypos;
 		firstMouse = false;
 	}
 
 	float xoffset = (float)xpos - lastX;
 	float yoffset = lastY - (float)ypos;
-	lastX         = (float)xpos;
-	lastY         = (float)ypos;
+	lastX = (float)xpos;
+	lastY = (float)ypos;
 	// Stop camera movement if the GUI is opened
-	if(isPaused)
+	if (isPaused)
 		return;
 
 	camera.processMouseMovement(xoffset, yoffset);
 }
 
 void keyInputCallback(GLFWwindow *window, int button,
-                      int         other, int  action, int mods)
+	int         other, int  action, int mods)
 {
-	if(glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
 	{
 		isPaused = !isPaused;
 		glfwSetInputMode(window, GLFW_CURSOR,
-		                 glfwGetInputMode(window, GLFW_CURSOR) == GLFW_CURSOR_DISABLED
-			                 ? GLFW_CURSOR_NORMAL
-			                 : GLFW_CURSOR_DISABLED);
+			glfwGetInputMode(window, GLFW_CURSOR) == GLFW_CURSOR_DISABLED
+			? GLFW_CURSOR_NORMAL
+			: GLFW_CURSOR_DISABLED);
 	}
 }
 

@@ -28,7 +28,8 @@ uniform float windStrength;
 uniform float swayReach;
 uniform float velocityMultiplier;
 uniform vec2 velocityClampRange;
-uniform float halfWorldWidth;
+uniform float worldMin;
+uniform float worldMax;
 
 uniform vec2 windDirection;
 
@@ -51,8 +52,9 @@ void main()
 	// Map the world space position to the texture coordinate
 	// So that texture maps to all patches instead of one
 	vec2 actual_pos = world_space_position.xz * textureScale;
-	actual_pos.x = map2(actual_pos.x, -halfWorldWidth, halfWorldWidth, 0.0f, 1.0f);
-	actual_pos.y = map2(actual_pos.y, halfWorldWidth, -halfWorldWidth, 0.0f, 1.0f); // y axis is flipped
+	actual_pos.x = map2(actual_pos.x, worldMin, worldMax, 0.0f, 1.0f);
+	actual_pos.y = map2(actual_pos.y, worldMax, worldMin, 0.0f, 1.0f); // y axis is flipped
+
 
 	if(simulationMode == 0 || simulationMode == 1) // PERLIN_NOISE, CHECKER_PATTERN,
 	{

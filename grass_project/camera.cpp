@@ -6,6 +6,7 @@ Camera::Camera() {
 	updateCameraVectors();
 }
 
+
 /* Processes input received from any keyboard-like input system.
 	* Accepts input parameter in the form of camera defined by
 	* ENUM (to abstract it from window-system specific inputs).
@@ -22,41 +23,30 @@ void Camera::processKeyboard(cameraMovement direction, float deltaTime) {
 	else {
 		cameraSpeed = movementSpeed * deltaTime;
 	}
-
+	if (direction == cameraMovement::GLOBAL_UP) {
+		glm::vec3 newCamPosition = camPosition + glm::vec3(0, 1 ,0) * cameraSpeed;
+		camPosition = newCamPosition;
+	}
+	if (direction == cameraMovement::GLOBAL_DOWN) {
+		glm::vec3 newCamPosition = camPosition + glm::vec3(0, -1 ,0) * cameraSpeed;
+		camPosition = newCamPosition;
+	}
 	if (direction == cameraMovement::FORWARD) {
 		glm::vec3 newCamPosition = camPosition + forwardInXYZ * cameraSpeed;
-		// Check if the player is still above the ground
-		if (newCamPosition.y >= groundY) {
-			camPosition = newCamPosition;
-		}
-		else {
-			newCamPosition = camPosition + glm::normalize(glm::vec3(
-				camForward.x, 0, camForward.z)) * cameraSpeed;
-			camPosition.x = newCamPosition.x;
-			camPosition.z = newCamPosition.z;
-		}
+		camPosition = newCamPosition;
 	}
 	if (direction == cameraMovement::BACKWARD) {
 		glm::vec3 newCamPosition = camPosition - forwardInXYZ * cameraSpeed;
-		// Check if the player is still above the ground
-		if (newCamPosition.y >= groundY) {
-			camPosition = newCamPosition;
-		}
-		else {
-			newCamPosition = camPosition - glm::normalize(glm::vec3(
-				camForward.x, 0, camForward.z)) * cameraSpeed;
-			camPosition.x = newCamPosition.x;
-			camPosition.z = newCamPosition.z;
-		}
+		camPosition = newCamPosition;
 	}
 	if (direction == cameraMovement::LEFT) {
-		camPosition -= glm::cross(forwardInXYZ, 
-			glm::vec3(0, 1, 0)) * cameraSpeed;
+		camPosition -= glm::cross(forwardInXYZ,	glm::vec3(0, 1, 0)) * cameraSpeed;
 	}
 	if (direction == cameraMovement::RIGHT) {
-		camPosition += glm::cross(forwardInXYZ, 
-			glm::vec3(0, 1, 0)) * cameraSpeed;
+		camPosition += glm::cross(forwardInXYZ,	glm::vec3(0, 1, 0)) * cameraSpeed;
 	}
+
+	camPosition.y = glm::max(camPosition.y, groundY);
 }
 
 /* Processes input received from a mouse input system based on the

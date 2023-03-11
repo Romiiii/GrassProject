@@ -29,11 +29,12 @@ int checkerSize = 32;
  * Mods to [0:checkerSize * 2], if the position is less than checker size, do red, else do black.
  */
 void drawCheckerPattern(ivec2 position) {
-	int doubleCheckerSize = checkerSize * 2;
+	int modX = position.x % checkerSize * 2;
+	int modY = position.y % checkerSize * 2;
 
-	if ((position.x % doubleCheckerSize < checkerSize) && (position.y % doubleCheckerSize < checkerSize)) {
+	if ((modX < checkerSize) && (modY < checkerSize)) {
 		imageStore(writer, position, vec4(1, 0, 0, 0)); 
-	} else if ((position.x % doubleCheckerSize > checkerSize) && (position.y % doubleCheckerSize > checkerSize)) {
+	} else if ((modX > checkerSize) && (modY > checkerSize)) {
 		imageStore(writer, position, vec4(1, 0, 0, 0));
 	} else {
 		imageStore(writer, position, vec4(0, 0, 0, 0));

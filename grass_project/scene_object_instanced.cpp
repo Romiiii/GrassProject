@@ -64,7 +64,7 @@ void SceneObjectInstanced::draw(Scene& scene) {
 	setUniforms(scene);
 
 	GLCall(glBindVertexArray(VAO));
-	GLCall(glDrawElementsInstanced(GL_TRIANGLES, vertexCount, GL_UNSIGNED_INT, NULL, scene.config.patchDensity));
+	GLCall(glDrawElementsInstanced(GL_TRIANGLES, vertexCount, GL_UNSIGNED_INT, NULL, scene.config.numBladesPerPatch));
 	GLCall(glBindVertexArray(0));
 }
 
