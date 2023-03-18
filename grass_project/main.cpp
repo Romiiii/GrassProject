@@ -774,27 +774,11 @@ void generatePerlinNoiseTexture()
 	perlinNoise2DGPU(*perlinNoiseSeedTexture, perlinNoiseSeedTextureData, perlinNoiseComputeShaderProgram,
 		scene.config.perlinConfig.texture->getTextureID(), scene.config.perlinConfig.octaves,
 		scene.config.perlinConfig.bias);
-
-	// Upload texture to IMGUI
-	if (perlinNoiseTexture == nullptr)
-		perlinNoiseTexture = new Texture("Perlin Texture", GL_TEXTURE_2D);
-
-	// TODO: Check if this can be removed.
-	perlinNoiseTexture->loadTextureData(perlinNoiseTextureData, PERLIN_NOISE_TEXTURE_WIDTH, PERLIN_NOISE_TEXTURE_WIDTH,
-		GL_RED);
 }
 
 void generateCheckerPatternTexture()
 {
 	checkerPattern2DGPU(checkerPatternComputeShaderProgram, scene.config.checkerPatternTexture->getTextureID(), scene.config.checkerSize);
-
-	// Upload texture to IMGUI
-	if (checkerPatternTexture == nullptr)
-		checkerPatternTexture = new Texture("Checker Pattern", GL_TEXTURE_2D);
-
-	// TODO: Check if this can be removed.
-	checkerPatternTexture->loadTextureData(perlinNoiseTextureData, CHECKER_PATTERN_TEXTURE_WIDTH, CHECKER_PATTERN_TEXTURE_WIDTH,
-		GL_RED);
 }
 
 void checkerPattern2DGPU(ShaderProgram* computeShaderProgram, GLuint computeShaderTexture, int checkerSize) 
