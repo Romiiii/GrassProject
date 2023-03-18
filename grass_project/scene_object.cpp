@@ -103,10 +103,6 @@ void SceneObject::setUniforms(Scene& scene) {
                 shaderProgram.setInt("windY", 100);
             }
 		}
-		else if (name == "textureScale") {
-			shaderProgram.setFloat("textureScale",
-				scene.config.textureScale);
-		}
 		else if (name == "visualizeTexture") {
 			shaderProgram.setBool("visualizeTexture", 
 				scene.config.visualizeTexture);

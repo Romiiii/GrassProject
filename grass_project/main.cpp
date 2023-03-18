@@ -1021,8 +1021,6 @@ void drawSettingsWindow()
 	scene.config.numBladesPerPatch = glm::clamp(scene.config.numBladesPerPatch, 0, (int)MAX_BLADES_PER_PATCH);
 	ImGui::SliderFloat("Sway Reach", &scene.config.swayReach, 0.0f, 2.0f);
 	drawTooltip("How far the blades will move in the wind.");
-	ImGui::SliderFloat("Sample Scale", &scene.config.textureScale, 0.05f, 1.0f);
-	drawTooltip("Will zoom in or out of the texture when sampling it.");
 
 	ImGui::SliderFloat("Wind Strength", &scene.config.windStrength, 0, 0.5f);
 	drawTooltip("Strength of the wind");
@@ -1057,9 +1055,8 @@ void drawSettingsWindow()
 
 		ImGui::Image((ImTextureID)(long long)scene.config.perlinConfig.texture->getTextureID(),
 			{ width, width },
-			{ 0.0f, scene.config.textureScale },
-			{ scene.config.textureScale, 0.0f });
-
+			{ 0.0f, 1.0f },
+			{ 1.0f, 0.0f });
 	}
 
 	if (scene.config.simulationMode == SimulationMode::CHECKER_PATTERN && ImGui::CollapsingHeader("Checker Pattern Settings"))

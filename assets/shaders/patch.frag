@@ -12,7 +12,6 @@ uniform float lightIntensity;
 uniform vec4 lightColor;
 uniform float windStrength;
 uniform float currentTime;
-uniform float textureScale;
 uniform bool visualizeTexture;
 uniform vec2 windDirection;
 uniform float worldMin;
@@ -46,7 +45,7 @@ void main()
 		
 	// Map the world space position to the texture coordinate
 	// So that texture maps to all patches instead of one
-	vec2 actual_pos = FragPos.xz * textureScale;
+	vec2 actual_pos = FragPos.xz;
 
     actual_pos.x = map2(actual_pos.x, worldMin, worldMax, 0.0f, 1.0f);
     actual_pos.y = map2(actual_pos.y, worldMax, worldMin, 0.0f, 1.0f); // y axis is flipped

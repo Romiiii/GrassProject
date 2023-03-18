@@ -72,7 +72,6 @@ struct Config {
 	bool debugBlades = false;
 	float worldMin = 0.0f;
 	float worldMax = 0.0f;
-	float textureScale = 1.0f;
 };
 
 /**
