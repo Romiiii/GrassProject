@@ -4,7 +4,7 @@
 #include "debug.h"
 
 
-void PerlinNoise2DCPU(int nWidth, int nHeight, int nOctaves, float fBias, float* fOutput, float* fSeed)
+void perlinNoise2DCPU(int nWidth, int nHeight, int nOctaves, float fBias, float* fOutput, float* fSeed)
 
 {
 	for (int x = 0; x < nWidth; x++)
@@ -43,7 +43,7 @@ void PerlinNoise2DCPU(int nWidth, int nHeight, int nOctaves, float fBias, float*
 }
 
 
-void PerlinNoise2DGPU(Texture& seedTexture, float* seedTextureData, ShaderProgram* computeShaderProgram, GLuint computeShaderTexture, int octaves, float bias) {
+void perlinNoise2DGPU(Texture& seedTexture, float* seedTextureData, ShaderProgram* computeShaderProgram, GLuint computeShaderTexture, int octaves, float bias) {
 	seedTexture.loadTextureData(seedTextureData, PERLIN_NOISE_TEXTURE_WIDTH, PERLIN_NOISE_TEXTURE_WIDTH, GL_RED);
 
 	computeShaderProgram->use();

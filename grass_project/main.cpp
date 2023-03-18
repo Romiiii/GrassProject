@@ -771,7 +771,7 @@ void generatePerlinNoiseTexture()
 	for (int i = 0; i < PERLIN_NOISE_TEXTURE_WIDTH * PERLIN_NOISE_TEXTURE_WIDTH; i++)
 		perlinNoiseSeedTextureData[i] = (float)rand() / (float)RAND_MAX;
 
-	PerlinNoise2DGPU(*perlinNoiseSeedTexture, perlinNoiseSeedTextureData, perlinNoiseComputeShaderProgram,
+	perlinNoise2DGPU(*perlinNoiseSeedTexture, perlinNoiseSeedTextureData, perlinNoiseComputeShaderProgram,
 		scene.config.perlinConfig.texture->getTextureID(), scene.config.perlinConfig.octaves,
 		scene.config.perlinConfig.bias);
 
