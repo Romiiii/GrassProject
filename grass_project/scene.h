@@ -54,6 +54,9 @@ struct Config {
 	PerlinConfig perlinConfig;
 	FluidGridConfig fluidGridConfig;
 
+	int checkerSize = 32;
+	Texture* checkerPatternTexture;
+
 	int numBladesPerPatch = -1;
 	int numPatches = -1;
 

@@ -1,15 +1,13 @@
 #version 430 core
 
 /**
- * Generates perlin noise, unless the makeChecker flag is set, in which case it outputs a checker pattern with size checkerSize (see below).
+ * Generates perlin noise.
  * Only writes to red channel
  */
-
 
 uniform int width;
 uniform int octaves;
 uniform float bias;
-uniform bool makeChecker;
 
 readonly layout(r8, binding=1) uniform image2D seed;
 writeonly layout(binding=0) uniform image2D writer;
@@ -23,61 +21,38 @@ ivec2 convert(int n) {
 	return result;
 }
 
-int checkerSize = 32;
-
-/**
- * Mods to [0:checkerSize * 2], if the position is less than checker size, do red, else do black.
- */
-void drawCheckerPattern(ivec2 position) {
-	int modX = position.x % checkerSize * 2;
-	int modY = position.y % checkerSize * 2;
-
-	if ((modX < checkerSize) && (modY < checkerSize)) {
-		imageStore(writer, position, vec4(1, 0, 0, 0)); 
-	} else if ((modX > checkerSize) && (modY > checkerSize)) {
-		imageStore(writer, position, vec4(1, 0, 0, 0));
-	} else {
-		imageStore(writer, position, vec4(0, 0, 0, 0));
-	}
-}
-
 void main()
 {
 	int x = int(gl_GlobalInvocationID.x);
 	int y = int(gl_GlobalInvocationID.y);
 
+	float noise = 0.0;
+	float scaleAcc = 0.0;
+	float scale = 1.0;
 
-	if (!makeChecker) {
-		float noise = 0.0;
-		float scaleAcc = 0.0;
-		float scale = 1.0;
+	for (int o = 0; o < octaves; o++)
+	{
+		int pitch = width >> o;
+		int sampleX1 = (x / pitch) * pitch;
+		int sampleY1 = (y / pitch) * pitch;
 
-		for (int o = 0; o < octaves; o++)
-		{
-			int pitch = width >> o;
-			int sampleX1 = (x / pitch) * pitch;
-			int sampleY1 = (y / pitch) * pitch;
+		int sampleX2 = (sampleX1 + pitch) % width;
+		int sampleY2 = (sampleY1 + pitch) % width;
 
-			int sampleX2 = (sampleX1 + pitch) % width;
-			int sampleY2 = (sampleY1 + pitch) % width;
+		float blendX = float(x - sampleX1) / float(pitch);
+		float blendY = float(y - sampleY1) / float(pitch);
 
-			float blendX = float(x - sampleX1) / float(pitch);
-			float blendY = float(y - sampleY1) / float(pitch);
+		float seed1 = imageLoad(seed, convert(sampleY1 * width + sampleX1)).r;
+		float seed2 = imageLoad(seed, convert(sampleY1 * width + sampleX2)).r;
+		float seed3 = imageLoad(seed, convert(sampleY2 * width + sampleX1)).r;
+		float seed4 = imageLoad(seed, convert(sampleY2 * width + sampleX2)).r;
 
-			float seed1 = imageLoad(seed, convert(sampleY1 * width + sampleX1)).r;
-			float seed2 = imageLoad(seed, convert(sampleY1 * width + sampleX2)).r;
-			float seed3 = imageLoad(seed, convert(sampleY2 * width + sampleX1)).r;
-			float seed4 = imageLoad(seed, convert(sampleY2 * width + sampleX2)).r;
+		float sampleT = (1.0 - blendX) * seed1 + blendX * seed2;
+		float sampleB = (1.0 - blendX) * seed3 + blendX * seed4;
 
-			float sampleT = (1.0 - blendX) * seed1 + blendX * seed2;
-			float sampleB = (1.0 - blendX) * seed3 + blendX * seed4;
-
-			scaleAcc += scale;
-			noise += (blendY * (sampleB - sampleT) + sampleT) * scale;
-			scale = scale / bias;
-		}
-		imageStore(writer,ivec2(gl_GlobalInvocationID.xy), vec4(noise / scaleAcc, 0, 0, 0));
-	} else {
-		drawCheckerPattern(ivec2(gl_GlobalInvocationID.xy));
+		scaleAcc += scale;
+		noise += (blendY * (sampleB - sampleT) + sampleT) * scale;
+		scale = scale / bias;
 	}
+	imageStore(writer,ivec2(gl_GlobalInvocationID.xy), vec4(noise / scaleAcc, 0, 0, 0));
 }

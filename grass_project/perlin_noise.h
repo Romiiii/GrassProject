@@ -17,7 +17,6 @@
 *						out on the texture.
 */
 struct PerlinConfig {
-	bool makeChecker = false;
 	int octaves = 6;
 	float bias = 1.0f;
 	Texture* texture = nullptr;
@@ -31,6 +30,6 @@ void PerlinNoise2DCPU(int nWidth, int nHeight, int nOctaves, float fBias, float*
 /**
 * Generates perlin noise on the GPU.
 */
-void PerlinNoise2DGPU(Texture& seedTexture, float* seedTextureData, ShaderProgram* computeShaderProgram, GLuint computeShaderTexture, int octaves, float bias, bool makeChecker);
+void PerlinNoise2DGPU(Texture& seedTexture, float* seedTextureData, ShaderProgram* computeShaderProgram, GLuint computeShaderTexture, int octaves, float bias);
 
 #endif

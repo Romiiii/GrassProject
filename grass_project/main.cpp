@@ -33,6 +33,8 @@
 #include "fluid_grid.h"
 #include "util.h"
 
+#define CHECKER_PATTERN_TEXTURE_WIDTH 512
+
 // Constants
 /**
  * \brief Initial screen width
@@ -140,7 +142,19 @@ Shader *perlinNoiseComputeShader;
 */
 ShaderProgram *perlinNoiseComputeShaderProgram;
 
+/**
+ * \brief Checker pattern compute shader
+*/
+Shader* checkerPatternComputeShader;
 
+/**
+ * \brief Checker pattern compute shader program
+*/
+ShaderProgram* checkerPatternComputeShaderProgram;
+
+/**
+ * \brief Fluid grid
+*/
 FluidGrid *fluidGrid;
 
 /**
@@ -165,9 +179,15 @@ Texture *cubemapTextureNight;
 
 
 /**
+ * \brief Checker pattern texture
+*/
+Texture* checkerPatternTexture;
+
+/**
  * \brief Perlin noise texture
 */
 Texture *perlinNoiseTexture;
+
 
 /**
  * \brief PerlinSeed texture
@@ -262,6 +282,21 @@ void initIMGUI(GLFWwindow *window);
 void initShadersAndTextures();
 
 /**
+ * \brief Generates a checker pattern texture.
+ */
+void generateCheckerPatternTexture();
+
+/**
+* Generates a checker pattern on the GPU.
+*/
+void checkerPattern2DGPU(ShaderProgram* computeShaderProgram, GLuint computeShaderTexture, int checkerSize);
+
+/**
+ * \brief Set the wind textures based on the simulation mode that is used.
+ */
+void setWindTexturesForSimulationMode();
+
+/**
  * \brief Calculate the spiral position given an index. See this documentation
  * for details.
  * \details The spiral position is defined as starting in the middle, and
@@ -283,7 +318,7 @@ void initSceneObjects(Patch &patch);
 /**
  * \brief Generate perlin noise.
 */
-void generatePerlinNoise();
+void generatePerlinNoiseTexture();
 
 /**
  * @brief Creates the blades instance buffer.
@@ -405,15 +440,15 @@ int main()
 	initShadersAndTextures();
 	initSceneObjects(patch);
 
-	// This is pretty jank. Figure out why we need to set the config.windX stuff when we don't need that for perlin noise?
 	if (scene.config.simulationMode == SimulationMode::CHECKER_PATTERN)
 	{
-		scene.config.perlinConfig.makeChecker = true;
-
-		scene.config.windX = scene.config.perlinConfig.texture;
-		scene.config.windY = nullptr;
+		generateCheckerPatternTexture();
 	}
-	generatePerlinNoise();
+	else if (scene.config.simulationMode == SimulationMode::PERLIN_NOISE)
+	{
+		generatePerlinNoiseTexture();
+	}
+
 
 	// Initialize camera
 	camera.camPosition = { 0, 20, 0 };
@@ -455,6 +490,7 @@ int main()
 		std::cout << "[WARNING]: Num patches should be between 0 and " << MAX_PATCHES << " but was " << scene.config.numPatches << ". Clamping." << std::endl;
 		scene.config.numPatches = glm::clamp(scene.config.numPatches, 0, MAX_PATCHES);
 	}
+
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -602,12 +638,17 @@ void initShadersAndTextures()
 	perlinNoiseComputeShader = new Shader("assets/shaders/perlin_noise.comp", GL_COMPUTE_SHADER);
 	perlinNoiseComputeShaderProgram = new ShaderProgram({ perlinNoiseComputeShader }, "PERLIN NOISE COMPUTE SHADER");
 
+	scene.config.checkerPatternTexture = new Texture("Checker Pattern", GL_TEXTURE_2D);
+	scene.config.checkerPatternTexture->loadTextureSingleChannel(CHECKER_PATTERN_TEXTURE_WIDTH);
+
+	checkerPatternComputeShader = new Shader("assets/shaders/checker_pattern.comp", GL_COMPUTE_SHADER);
+	checkerPatternComputeShaderProgram = new ShaderProgram({ checkerPatternComputeShader }, "CHECKER PATTERN COMPUTE SHADER");
+
 	scene.cubemapTextureDay = cubemapTextureDay;
 	scene.cubemapTextureNight = cubemapTextureNight;
 	scene.currentSkyboxTexture = scene.cubemapTextureNight;
 
-	scene.config.windX = scene.config.fluidGridConfig.velX;
-	scene.config.windY = scene.config.fluidGridConfig.velY;
+	setWindTexturesForSimulationMode();
 
 	int width = PERLIN_NOISE_TEXTURE_WIDTH;
 	int height = PERLIN_NOISE_TEXTURE_WIDTH;
@@ -623,6 +664,26 @@ void initShadersAndTextures()
 	glEnable(GL_DEPTH_TEST); // Turn on z-buffer depth perlinNoiseTexture
 	glDepthFunc(GL_LESS);    // Draws fragments that are closer to the screen in NDC
 	glEnable(GL_MULTISAMPLE);
+}
+
+void setWindTexturesForSimulationMode()
+{
+	if (scene.config.simulationMode == SimulationMode::FLUID_GRID)
+	{
+		scene.config.windX = scene.config.fluidGridConfig.velX;
+		scene.config.windY = scene.config.fluidGridConfig.velY;
+	}
+	else if (scene.config.simulationMode == SimulationMode::PERLIN_NOISE)
+	{
+		scene.config.windX = scene.config.perlinConfig.texture;
+		scene.config.windY = nullptr;
+	} 
+	else if (scene.config.simulationMode == SimulationMode::CHECKER_PATTERN)
+	{
+		scene.config.windX = scene.config.checkerPatternTexture;
+		scene.config.windY = nullptr;
+	}
+
 }
 
 glm::vec2 calculateSpiralPosition(int n)
@@ -703,7 +764,7 @@ void initSceneObjects(Patch &patch)
 	}
 }
 
-void generatePerlinNoise()
+void generatePerlinNoiseTexture()
 {
 	using namespace std::chrono;
 	// Initialize seed data
@@ -712,12 +773,40 @@ void generatePerlinNoise()
 
 	PerlinNoise2DGPU(*perlinNoiseSeedTexture, perlinNoiseSeedTextureData, perlinNoiseComputeShaderProgram,
 		scene.config.perlinConfig.texture->getTextureID(), scene.config.perlinConfig.octaves,
-		scene.config.perlinConfig.bias, scene.config.perlinConfig.makeChecker);
+		scene.config.perlinConfig.bias);
 
 	// Upload texture to IMGUI
-	perlinNoiseTexture = new Texture("Perlin Texture", GL_TEXTURE_2D);
+	if (perlinNoiseTexture == nullptr)
+		perlinNoiseTexture = new Texture("Perlin Texture", GL_TEXTURE_2D);
+
+	// TODO: Check if this can be removed.
 	perlinNoiseTexture->loadTextureData(perlinNoiseTextureData, PERLIN_NOISE_TEXTURE_WIDTH, PERLIN_NOISE_TEXTURE_WIDTH,
 		GL_RED);
+}
+
+void generateCheckerPatternTexture()
+{
+	checkerPattern2DGPU(checkerPatternComputeShaderProgram, scene.config.checkerPatternTexture->getTextureID(), scene.config.checkerSize);
+
+	// Upload texture to IMGUI
+	if (checkerPatternTexture == nullptr)
+		checkerPatternTexture = new Texture("Checker Pattern", GL_TEXTURE_2D);
+
+	// TODO: Check if this can be removed.
+	checkerPatternTexture->loadTextureData(perlinNoiseTextureData, CHECKER_PATTERN_TEXTURE_WIDTH, CHECKER_PATTERN_TEXTURE_WIDTH,
+		GL_RED);
+}
+
+void checkerPattern2DGPU(ShaderProgram* computeShaderProgram, GLuint computeShaderTexture, int checkerSize) 
+{
+	computeShaderProgram->use();
+
+	GLCall(glBindImageTexture(0, computeShaderTexture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_R8));
+
+	computeShaderProgram->setInt("width", CHECKER_PATTERN_TEXTURE_WIDTH);
+	computeShaderProgram->setInt("checkerSize", checkerSize);
+
+	GLCall(glDispatchCompute(CHECKER_PATTERN_TEXTURE_WIDTH / 16, CHECKER_PATTERN_TEXTURE_WIDTH / 16, 1));
 }
 
 void initIMGUI(GLFWwindow *window)
@@ -818,8 +907,7 @@ void drawSettingsWindow()
 	if (ImGui::RadioButton("Perlin Noise", scene.config.simulationMode == SimulationMode::PERLIN_NOISE))
 	{
 		scene.config.simulationMode = SimulationMode::PERLIN_NOISE;
-		scene.config.perlinConfig.makeChecker = false;
-		generatePerlinNoise();
+		generatePerlinNoiseTexture();
 
 		scene.config.windX = scene.config.perlinConfig.texture;
 		scene.config.windY = nullptr;
@@ -829,10 +917,9 @@ void drawSettingsWindow()
 	if (ImGui::RadioButton("Checker Pattern", scene.config.simulationMode == SimulationMode::CHECKER_PATTERN))
 	{
 		scene.config.simulationMode = SimulationMode::CHECKER_PATTERN;
-		scene.config.perlinConfig.makeChecker = true;
-		generatePerlinNoise();
+		generateCheckerPatternTexture();
 
-		scene.config.windX = scene.config.perlinConfig.texture;
+		scene.config.windX = scene.config.checkerPatternTexture;
 		scene.config.windY = nullptr;
 	}
 	ImGui::SameLine();
@@ -964,7 +1051,7 @@ void drawSettingsWindow()
 
 		if (ImGui::Button("Generate Perlin Noise"))
 		{
-			generatePerlinNoise();
+			generatePerlinNoiseTexture();
 		}
 		float width = PERLIN_NOISE_TEXTURE_WIDTH;
 
@@ -973,6 +1060,15 @@ void drawSettingsWindow()
 			{ 0.0f, scene.config.textureScale },
 			{ scene.config.textureScale, 0.0f });
 
+	}
+
+	if (scene.config.simulationMode == SimulationMode::CHECKER_PATTERN && ImGui::CollapsingHeader("Checker Pattern Settings"))
+	{
+		if (ImGui::SliderInt("CheckerSize", &scene.config.checkerSize, 1, 512))
+		{
+			generateCheckerPatternTexture();
+		}
+		drawTooltip("Checker size for fun. Only powers of two look nice.");
 	}
 
 	if (scene.config.simulationMode == SimulationMode::FLUID_GRID && ImGui::CollapsingHeader("Fluid Grid Settings"))
