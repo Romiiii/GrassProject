@@ -41,7 +41,7 @@ enum class SimulationMode {
 * All variables that can be configured using the GUI
  */
 struct Config {
-	SimulationMode simulationMode = SimulationMode::CHECKER_PATTERN;
+	SimulationMode simulationMode = SimulationMode::FLUID_GRID;
 	float swayReach = 0.5f;
 	Texture *windX = nullptr;
 	Texture *windY = nullptr;
@@ -66,9 +66,9 @@ struct Config {
 	glm::vec4 lightColor = { 1.0, 1.0, 1.0, 1.0 };
 	float lightIntensity = 10;
 
-	BladeDistribution bladeDistribution = BladeDistribution::HARRY_STYLES;
+	BladeDistribution bladeDistribution = BladeDistribution::HARRY_STYLES_WITH_RANDOS;
 
-	bool visualizeTexture = true;
+	bool visualizeTexture = false;
 	bool debugBlades = false;
 	float worldMin = 0.0f;
 	float worldMax = 0.0f;
