@@ -5,7 +5,6 @@
  * Only writes to red channel.
  */
 
-uniform int width;
 uniform int checkerSize;
 
 writeonly layout(binding=0) uniform image2D writer;
