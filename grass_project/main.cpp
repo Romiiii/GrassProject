@@ -787,7 +787,6 @@ void checkerPattern2DGPU(ShaderProgram* computeShaderProgram, GLuint computeShad
 
 	GLCall(glBindImageTexture(0, computeShaderTexture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_R8));
 
-	computeShaderProgram->setInt("width", CHECKER_PATTERN_TEXTURE_WIDTH);
 	computeShaderProgram->setInt("checkerSize", checkerSize);
 
 	GLCall(glDispatchCompute(CHECKER_PATTERN_TEXTURE_WIDTH / 16, CHECKER_PATTERN_TEXTURE_WIDTH / 16, 1));

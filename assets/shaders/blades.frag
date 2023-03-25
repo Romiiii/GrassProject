@@ -16,7 +16,8 @@ uniform bool debugBlades;
 void main()
 {
     vec3 ambient = vec3(ambientStrength, ambientStrength, ambientStrength);
-    /*
+    
+
 	float constant = 1.0f;
     float linear = 0.09f;
     float quadratic = 0.032f;
@@ -31,11 +32,10 @@ void main()
 	vec3 diffuse = diff * lightColor.xyz;
 
 	diffuse *= attenuation * lightIntensity;
-	*/
+	
 	vec4 objectColor = vtxColor;
 	
-	objectColor = vec4(0.5f, .6f, .1f, 1f);
-	vec4 result = vec4(ambient, 1.0f) * objectColor;// + vec4(diffuse, 1.0f) * objectColor;
+	vec4 result = vec4(ambient, 1.0f) * objectColor + vec4(diffuse, 1.0f) * objectColor;
 	
 	FragColor = result; 
 
