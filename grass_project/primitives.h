@@ -9,10 +9,10 @@
 #include <glm\glm.hpp>
 #include <string>
 static std::vector<float> grassPositions{ 0.0f, 0.0f, 0.0f,
-											-0.02f, 0.1f, 0.0f,
-											0.0f, 0.2f, 0.0f,
-											0.02f, 0.1f, 0.0f,
-											0.0f, 0.5f, 0.0f,
+									    -0.02f, 0.1f, 0.0f,
+									      0.0f, 0.2f, 0.0f,
+										 0.02f, 0.1f, 0.0f,
+										  0.0f, 0.5f, 0.0f,
 };
 
 
@@ -30,17 +30,23 @@ static std::vector<float> grassUVs{ 0.0f, 0.0f,
 
 
 static std::vector<unsigned int> grassIndices{ 0, 2, 3,
-												0, 1, 2,
-												1, 4, 2,
-												2, 4, 3 };
-
-static std::vector<float> grassColors{ .56f, .60f, .17f, 1.f,
+											   0, 1, 2,
+											   1, 4, 2,
+											   2, 4, 3 };
+#if 0
+static std::vector<float> grassColors{  .56f, .60f, .17f, 1.f,
 										.46f, .50f, .17f, 1.f,
 										.56f, .60f, .17f, 1.f,
 										.46f, .50f, .17f, 1.f,
 										.46f, .50f, .17f, 1.f,
 };
-
+#endif
+static std::vector<float> grassColors{   .5f, .6f, .1f, 1.f,
+										 .4f, .5f, .1f, 1.f,
+										 .5f, .6f, .1f, 1.f,
+										 .4f, .5f, .1f, 1.f,
+										 .4f, .5f, .1f, 1.f,
+};
 static std::vector<float> grassNormals{ 0.0f, 0.0f, 1.0f,
 										0.0f, 0.0f, 1.0f,
 										0.0f, 0.0f, 1.0f,

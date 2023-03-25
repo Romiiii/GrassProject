@@ -61,7 +61,7 @@ struct Config {
 	int numPatches = -1;
 
 	SkyboxType skyboxType = SkyboxType::NIGHT;
-	float ambientStrength = 0.05f;
+	float ambientStrength = 0.25f;
 	glm::vec3 lightPosition = glm::vec3(0.0, 15.0, 0.0);
 	glm::vec4 lightColor = { 1.0, 1.0, 1.0, 1.0 };
 	float lightIntensity = 10;

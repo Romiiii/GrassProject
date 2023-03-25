@@ -1001,7 +1001,8 @@ void drawSettingsWindow()
 	drawTooltip("The sizes of each individual Patch. Same number of blades of grass.");
 
 	ImGui::SliderInt("Number of patches", &scene.config.numPatches, 1, MAX_PATCHES);
-	ImGui::SliderInt("Patch density", &scene.config.numBladesPerPatch, 0, MAX_BLADES_PER_PATCH);
+	//ImGui::DragInt("Number blades per patch", &scene.config.numBladesPerPatch, 0, MAX_BLADES_PER_PATCH);
+	ImGui::DragInt("Number blades per patch", &scene.config.numBladesPerPatch, 1, 0, MAX_BLADES_PER_PATCH);
 	scene.config.numBladesPerPatch = glm::clamp(scene.config.numBladesPerPatch, 0, (int)MAX_BLADES_PER_PATCH);
 	ImGui::SliderFloat("Sway Reach", &scene.config.swayReach, 0.0f, 2.0f);
 	drawTooltip("How far the blades will move in the wind.");
