@@ -22,6 +22,9 @@ uniform int simulationMode;
 uniform sampler2D windX;
 uniform sampler2D windY;
 
+uniform sampler2D oldWindX;
+uniform sampler2D oldWindY;
+
 uniform float currentTime;
 uniform float windStrength;
 uniform float swayReach;
@@ -54,6 +57,7 @@ void main()
 	actual_pos.x = map2(actual_pos.x, worldMin, worldMax, 0.0f, 1.0f);
 	actual_pos.y = map2(actual_pos.y, worldMax, worldMin, 0.0f, 1.0f); // y axis is flipped
 
+	
 
 	if(simulationMode == 0 || simulationMode == 1) // PERLIN_NOISE, CHECKER_PATTERN,
 	{
@@ -108,19 +112,22 @@ vec2 sample_velocity(vec2 texture_pixel)
 	float stepsize = 0.01f;
 	float base_x = texture_pixel.x - stepsize;
 	float base_y = texture_pixel.y - stepsize;
+	
+	int root_samples = 3;
+	float total_samples = root_samples * root_samples;
 
 	vec2 velocity = vec2(0, 0);
-		
-	for(int y = 0; y < 3; y++)
+	
+	for(int y = 0; y < root_samples; y++)
 	{
-		for(int x = 0; x < 3; x++)
+		for(int x = 0; x < root_samples; x++)
 		{
 			vec2 sample_pos = vec2(base_x + x * stepsize, base_y + y * stepsize);
 			velocity.x += texture(windX, sample_pos).r;
 			velocity.y += texture(windY, sample_pos).r;
 		}
 	}
-	velocity /= 3.0f;
-		
+	velocity /= total_samples;
+
 	return velocity;
 }

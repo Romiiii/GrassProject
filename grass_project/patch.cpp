@@ -48,7 +48,6 @@ void Patch::initHarryEdwardStylesBladeMatrices(float patchSize, bool useRandomRo
 		
 	}
 }
-
 void Patch::initOneDirectionBladeMatrices(float patchSize) {
 	
 	float upperBoundX = std::max({ grassPatchPositions[0], grassPatchPositions[3], grassPatchPositions[6], grassPatchPositions[9] });

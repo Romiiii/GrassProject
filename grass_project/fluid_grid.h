@@ -14,7 +14,7 @@ struct FluidGridConfig
 	Texture *  velY               = nullptr;
 	FluidGrid *fluidGrid          = nullptr;
 	bool       visualizeDensity   = false;
-	float      velocityMultiplier = 10;
+	float      velocityMultiplier = 2;
 	glm::vec2  velocityClampRange = {0.5, 0.5};
 };
 
@@ -33,6 +33,7 @@ public:
 	void velocityStep(float deltaTime);
 	void setBounds(int b, float *x);
 	void project(float *velX, float *velY, float *p, float *div);
+	float totalDensity();
 
 	void addDensityAt(int x, int y, float d);
 	void addVelocityAt(int x, int y, float vX, float vY);

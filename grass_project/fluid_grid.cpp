@@ -172,18 +172,11 @@ FluidGrid::~FluidGrid()
 	free(velYPrev);
 }
 
+
 void FluidGrid::initialize()
 {
 	memset(density, 0, sizeof(float) * size);
 
-	// Put something in the middle (for now)
-	for(size_t i = N / 2; i < (N / 2); i++)
-	{
-		for(size_t j = N / 2; j < (N / 2); j++)
-		{
-			//density[INDEX(j, i)] = 1.0f;
-		}
-	}
 
 	memset(densityPrev, 0, sizeof(float) * size);
 	memset(velX, 0, sizeof(float) * size);
@@ -194,6 +187,25 @@ void FluidGrid::initialize()
 	drawStep();
 }
 
+float FluidGrid::totalDensity()
+{
+	float sum = 0;
+	// Put something in the middle (for now)
+	for(size_t i = 0; i < N; i++)
+	{
+		for(size_t j = 0; j < N; j++)
+		{
+			sum += density[INDEX(j, i)];
+			if(density > 0)
+			{
+				int a = 5;
+			}
+		}
+	}
+
+	return sum;
+
+}
 
 // Add for both density and velocity
 void FluidGrid::addSource(float *dst, float *sources, float deltaTime)

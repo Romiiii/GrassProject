@@ -145,12 +145,12 @@ ShaderProgram *perlinNoiseComputeShaderProgram;
 /**
  * \brief Checker pattern compute shader
 */
-Shader* checkerPatternComputeShader;
+Shader *checkerPatternComputeShader;
 
 /**
  * \brief Checker pattern compute shader program
 */
-ShaderProgram* checkerPatternComputeShaderProgram;
+ShaderProgram *checkerPatternComputeShaderProgram;
 
 /**
  * \brief Fluid grid
@@ -181,7 +181,7 @@ Texture *cubemapTextureNight;
 /**
  * \brief Checker pattern texture
 */
-Texture* checkerPatternTexture;
+Texture *checkerPatternTexture;
 
 /**
  * \brief Perlin noise texture
@@ -289,7 +289,7 @@ void generateCheckerPatternTexture();
 /**
 * Generates a checker pattern on the GPU.
 */
-void checkerPattern2DGPU(ShaderProgram* computeShaderProgram, GLuint computeShaderTexture, int checkerSize);
+void checkerPattern2DGPU(ShaderProgram *computeShaderProgram, GLuint computeShaderTexture, int checkerSize);
 
 /**
  * \brief Set the wind textures based on the simulation mode that is used.
@@ -397,15 +397,15 @@ void cleanUp();
 
 void setWorldMinMax()
 {
-	/* Since we're making a spiral pattern, we can find the leftmost edge by taking the sqrt, giving us the width. 
-	     Dividing that in two, so we have what would be to either side, taking the floor of that, since we know we 
-		 start at (0, 0), so the left will have fewer patches for odd widths. We then negate it, because it's in the 
+	/* Since we're making a spiral pattern, we can find the leftmost edge by taking the sqrt, giving us the width.
+		 Dividing that in two, so we have what would be to either side, taking the floor of that, since we know we
+		 start at (0, 0), so the left will have fewer patches for odd widths. We then negate it, because it's in the
 		 negative halfspace.
 	 */
 	scene.config.worldMin = -floor(sqrt(MAX_PATCHES) / 2) * scene.config.patchSize;
 
-	/* The process for the max is similar, though we take the ceiling rather than the floor. Because since we start at (0, 0) there are more 
-	     patches to the right.
+	/* The process for the max is similar, though we take the ceiling rather than the floor. Because since we start at (0, 0) there are more
+		 patches to the right.
 	 */
 	scene.config.worldMax = ceil(sqrt(MAX_PATCHES) / 2) * scene.config.patchSize;
 }
@@ -470,22 +470,22 @@ int main()
 	scene.config.currentTime = (float)glfwGetTime();
 	setWorldMinMax();
 	// Set num blades per patch
-	if(scene.config.numBladesPerPatch < 0)
+	if (scene.config.numBladesPerPatch < 0)
 	{
 		scene.config.numBladesPerPatch = MAX_BLADES_PER_PATCH;
 	}
 
-	if(scene.config.numBladesPerPatch > MAX_BLADES_PER_PATCH)
+	if (scene.config.numBladesPerPatch > MAX_BLADES_PER_PATCH)
 	{
 		std::cout << "[WARNING]: Num blades per patch should be between 0 and " << MAX_BLADES_PER_PATCH << " but was " << scene.config.numBladesPerPatch << ". Clamping." << std::endl;
 		scene.config.numBladesPerPatch = glm::clamp(scene.config.numBladesPerPatch, 0, MAX_BLADES_PER_PATCH);
 	}
 
-	if(scene.config.numPatches < 0)
+	if (scene.config.numPatches < 0)
 	{
 		scene.config.numPatches = MAX_PATCHES;
 	}
-	if(scene.config.numPatches > MAX_PATCHES)
+	if (scene.config.numPatches > MAX_PATCHES)
 	{
 		std::cout << "[WARNING]: Num patches should be between 0 and " << MAX_PATCHES << " but was " << scene.config.numPatches << ". Clamping." << std::endl;
 		scene.config.numPatches = glm::clamp(scene.config.numPatches, 0, MAX_PATCHES);
@@ -522,8 +522,8 @@ int main()
 		{
 			fluidGrid->clearCurrent();
 		}
-		fluidGrid->addVelocityAt(1, 1, 0, -50);
-		fluidGrid->addDensityAt(1, 1, 100);
+		//fluidGrid->addVelocityAt(1, 1, 0, -50);
+		//fluidGrid->addDensityAt(1, 1, 100);
 
 		clearNextSimulate = true;
 
@@ -677,7 +677,7 @@ void setWindTexturesForSimulationMode()
 	{
 		scene.config.windX = scene.config.perlinConfig.texture;
 		scene.config.windY = nullptr;
-	} 
+	}
 	else if (scene.config.simulationMode == SimulationMode::CHECKER_PATTERN)
 	{
 		scene.config.windX = scene.config.checkerPatternTexture;
@@ -781,7 +781,7 @@ void generateCheckerPatternTexture()
 	checkerPattern2DGPU(checkerPatternComputeShaderProgram, scene.config.checkerPatternTexture->getTextureID(), scene.config.checkerSize);
 }
 
-void checkerPattern2DGPU(ShaderProgram* computeShaderProgram, GLuint computeShaderTexture, int checkerSize) 
+void checkerPattern2DGPU(ShaderProgram *computeShaderProgram, GLuint computeShaderTexture, int checkerSize)
 {
 	computeShaderProgram->use();
 
@@ -868,13 +868,83 @@ void drawFluidGridWindow()
 
 			for (int i = (int)x - 2; i < (int)x + 2; ++i)
 			{
-				for (int j = (int)x - 2; j < (int)x + 2; ++j)
+				for (int j = (int)y - 2; j < (int)y + 2; ++j)
 				{
 					fluidGrid->addVelocityAt(i, j, vx, vy);
 					fluidGrid->addDensityAt(i, j, d);
 				}
 			}
 		}
+		float width = 512;
+		if (ImGui::BeginTabBar("Heck yes"))
+		{
+			if (ImGui::BeginTabItem("Density"))
+			{
+				ImGui::Image((ImTextureID)(long long)fluidGrid->getTextureDen()->getTextureID(),
+					{ width, width },
+					{ 1.0f, 1 },
+					{ 0.0f, 0 });
+				ImGui::EndTabItem();
+			}
+			if (ImGui::BeginTabItem("Velocity X"))
+			{
+				ImGui::Image((ImTextureID)(long long)fluidGrid->getTextureVelX()->getTextureID(),
+					{ width, width },
+					{ 1.0f, 1 },
+					{ 0.0f, 0 });
+				ImGui::EndTabItem();
+			}
+			if (ImGui::BeginTabItem("Velocity Y"))
+			{
+				ImGui::Image((ImTextureID)(long long)fluidGrid->getTextureVelY()->getTextureID(),
+					{ width, width },
+					{ 0.0f, 1 },
+					{ 1.0f, 0 });
+				ImGui::EndTabItem();
+			}
+			ImGui::EndTabBar();
+		}
+#ifdef _DEBUG
+		ImGui::Text("Total Density %.1f", fluidGrid->totalDensity());
+#endif
+		/*
+		 *
+		if(ImGui::Button("Step through fluid simulation"))
+		{
+			if(clearNextSimulate)
+			{
+				fluidGrid->clearCurrent();
+			}
+			clearNextSimulate = true;
+			fluidGrid->simulate();
+		}
+
+		if(ImGui::Button("Step through fluid simulation fasssst"))
+		{
+			if(clearNextSimulate)
+			{
+				fluidGrid->clearCurrent();
+			}
+			clearNextSimulate = true;
+
+			for(int i = 0; i < 9; i++)
+			{
+				fluidGrid->simulate();
+				fluidGrid->clearCurrent();
+			}
+		}
+		 */
+
+		if (ImGui::Button("Reset"))
+		{
+			fluidGrid->initialize();
+		}
+
+		ImGui::DragFloat("Diffusion", fluidGrid->getDiffPointer(), 0.005f, 0.0f, 0.001f);
+		ImGui::DragFloat("Viscosity", fluidGrid->getViscPointer(), 0.0001f, 0.0f, 0.005f);
+		ImGui::DragFloat("Velocity Multiplier", &scene.config.fluidGridConfig.velocityMultiplier, 0.1f, 0, 100.0f);
+		ImGui::DragFloat2("Velocity Clamp", (float *)&scene.config.fluidGridConfig.velocityClampRange, 0.1f, 0, 2.0f);
+
 		ImGui::End();
 	}
 }
@@ -1052,76 +1122,7 @@ void drawSettingsWindow()
 		drawTooltip("Checker size for fun. Only powers of two look nice.");
 	}
 
-	if (scene.config.simulationMode == SimulationMode::FLUID_GRID && ImGui::CollapsingHeader("Fluid Grid Settings"))
-	{
-		float width = 512;
-		if (ImGui::BeginTabBar("Heck yes"))
-		{
-			if (ImGui::BeginTabItem("Density"))
-			{
-				ImGui::Image((ImTextureID)(long long)fluidGrid->getTextureDen()->getTextureID(),
-					{ width, width },
-					{ 1.0f, 1 },
-					{ 0.0f, 0 });
-				ImGui::EndTabItem();
-			}
-			if (ImGui::BeginTabItem("Velocity X"))
-			{
-				ImGui::Image((ImTextureID)(long long)fluidGrid->getTextureVelX()->getTextureID(),
-					{ width, width },
-					{ 1.0f, 1 },
-					{ 0.0f, 0 });
-				ImGui::EndTabItem();
-			}
-			if (ImGui::BeginTabItem("Velocity Y"))
-			{
-				ImGui::Image((ImTextureID)(long long)fluidGrid->getTextureVelY()->getTextureID(),
-					{ width, width },
-					{ 0.0f, 1 },
-					{ 1.0f, 0 });
-				ImGui::EndTabItem();
-			}
-			ImGui::EndTabBar();
-		}
 
-		/*
-		 *
-		if(ImGui::Button("Step through fluid simulation"))
-		{
-			if(clearNextSimulate)
-			{
-				fluidGrid->clearCurrent();
-			}
-			clearNextSimulate = true;
-			fluidGrid->simulate();
-		}
-
-		if(ImGui::Button("Step through fluid simulation fasssst"))
-		{
-			if(clearNextSimulate)
-			{
-				fluidGrid->clearCurrent();
-			}
-			clearNextSimulate = true;
-
-			for(int i = 0; i < 9; i++)
-			{
-				fluidGrid->simulate();
-				fluidGrid->clearCurrent();
-			}
-		}
-		 */
-
-		if (ImGui::Button("Reset"))
-		{
-			fluidGrid->initialize();
-		}
-
-		ImGui::DragFloat("Diffusion", fluidGrid->getDiffPointer(), 0.005f, 0.0f, 0.001f);
-		ImGui::DragFloat("Viscosity", fluidGrid->getViscPointer(), 0.0001f, 0.0f, 0.005f);
-		ImGui::DragFloat("Velocity Multiplier", &scene.config.fluidGridConfig.velocityMultiplier, 0.1f, 0, 100.0f);
-		ImGui::DragFloat2("Velocity Clamp", (float *)&scene.config.fluidGridConfig.velocityClampRange, 0.1f, 0, 2.0f);
-	}
 	if (ImGui::CollapsingHeader("Camera Settings"))
 	{
 		ImGui::SliderFloat3("Camera Position", (float *)&camera.camPosition, -50, 50);
