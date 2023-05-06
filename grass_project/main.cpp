@@ -7,7 +7,7 @@
 
 /*
 NICE VALUES:
-Fan: 
+Fan:
 	Active: true
 	Position: 0.2, 0.2
 	Density: 250
@@ -897,7 +897,7 @@ void drawFluidGridWindow()
 		ImGui::DragFloat2("Fan Position", (float *)&fan.x, 0.05f, 0, 1);
 		ImGui::InputFloat("Fan Density", &fan.density);
 		ImGui::InputFloat2("Fan Velocity", (float *)&fan.velocityX);
-		
+
 		ImGui::Text("Randomness Controls");
 		static glm::vec2 denRange = { 100, 1000 };
 		static glm::vec2 velRange = { 100, 100 };
@@ -1130,12 +1130,15 @@ void drawSettingsWindow()
 	ImGui::SliderFloat("Sway Reach", &scene.config.swayReach, 0.0f, 2.0f);
 	drawTooltip("How far the blades will move in the wind.");
 
-	ImGui::SliderFloat("Wind Strength", &scene.config.windStrength, 0, 0.5f);
-	drawTooltip("Strength of the wind");
+	if (scene.config.simulationMode != SimulationMode::FLUID_GRID)
+	{
+		ImGui::SliderFloat("Wind Strength", &scene.config.windStrength, 0, 0.5f);
+		drawTooltip("Strength of the wind");
 
-	ImGui::DragFloat2("Wind Direction", (float *)&scene.config.windDirection,
-		0.1f, -1.0f, 1.0f);
-	drawTooltip("Direction of the wind");
+		ImGui::DragFloat2("Wind Direction", (float *)&scene.config.windDirection,
+			0.1f, -1.0f, 1.0f);
+		drawTooltip("Direction of the wind");
+	}
 
 	if (glm::epsilonEqual(glm::length(scene.config.windDirection), 0.0f, 0.0001f))
 	{
