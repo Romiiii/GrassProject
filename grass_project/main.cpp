@@ -4,6 +4,20 @@
  * This project was created as part of the Graphics Programming course
  * at the IT University of Copenhagen.
 */
+
+/*
+NICE VALUES:
+Fan: 
+	Active: true
+	Position: 0.2, 0.2
+	Density: 250
+	Velocity: 300, 0
+
+Diffusion Ratio: 0.56
+Viscosity: 0
+Velocity: 2.7
+*/
+
 #include <iostream>
 #include <cassert>
 #include <algorithm>
@@ -32,6 +46,7 @@
 #include "perlin_noise.h"
 #include "fluid_grid.h"
 #include "util.h"
+
 
 #define CHECKER_PATTERN_TEXTURE_WIDTH 512
 
@@ -395,6 +410,18 @@ void cursorInputCallback(GLFWwindow *window, double posX, double posY);
 */
 void cleanUp();
 
+struct Fan
+{
+	bool active = true;
+	float x = 0.2f;
+	float y = 0.2f;
+	float density = 250.0f;
+	float velocityX = 300.0f;
+	float velocityY = 0.0f;
+};
+
+Fan fan;
+
 void setWorldMinMax()
 {
 	/* Since we're making a spiral pattern, we can find the leftmost edge by taking the sqrt, giving us the width.
@@ -522,8 +549,19 @@ int main()
 		{
 			fluidGrid->clearCurrent();
 		}
-		//fluidGrid->addVelocityAt(1, 1, 0, -50);
-		//fluidGrid->addDensityAt(1, 1, 100);
+
+
+		// FAN!
+		if (fan.active)
+		{
+			int x = fluidGrid->getN() * fan.x;
+			int y = fluidGrid->getN() * fan.y;
+
+			fluidGrid->addVelocityAt(x, y, fan.velocityX, fan.velocityY);
+			fluidGrid->addDensityAt(x, y, fan.density);
+
+		}
+
 
 		clearNextSimulate = true;
 
@@ -826,6 +864,7 @@ void transferInstanceMatrixBuffer(glm::mat4 *modelMatrices, const unsigned int n
 	GLCall(glBindBuffer(GL_ARRAY_BUFFER, 0));
 }
 
+
 void drawFluidGridWindow()
 {
 	if (scene.config.simulationMode == SimulationMode::FLUID_GRID)
@@ -853,10 +892,17 @@ void drawFluidGridWindow()
 			fluidGrid->addVelocityAt(pos.x * fluidGrid->getN(), pos.y * fluidGrid->getN(), vel.x, vel.y);
 		}
 
-		static glm::vec2 velRange = { 100, 100 };
+		ImGui::Text("Fan controls");
+		ImGui::Checkbox("Fan Active", &fan.active);
+		ImGui::DragFloat2("Fan Position", (float *)&fan.x, 0.05f, 0, 1);
+		ImGui::InputFloat("Fan Density", &fan.density);
+		ImGui::InputFloat2("Fan Velocity", (float *)&fan.velocityX);
+		
+		ImGui::Text("Randomness Controls");
 		static glm::vec2 denRange = { 100, 1000 };
-		ImGui::InputFloat2("Random velocity", (float *)&velRange);
+		static glm::vec2 velRange = { 100, 100 };
 		ImGui::InputFloat2("Random density", (float *)&denRange);
+		ImGui::InputFloat2("Random velocity", (float *)&velRange);
 		if (ImGui::Button("Add Random"))
 		{
 			clearNextSimulate = false;
@@ -875,6 +921,8 @@ void drawFluidGridWindow()
 				}
 			}
 		}
+
+
 		float width = 512;
 		if (ImGui::BeginTabBar("Heck yes"))
 		{
@@ -882,16 +930,16 @@ void drawFluidGridWindow()
 			{
 				ImGui::Image((ImTextureID)(long long)fluidGrid->getTextureDen()->getTextureID(),
 					{ width, width },
-					{ 1.0f, 1 },
-					{ 0.0f, 0 });
+					{ 0.0f, 1 },
+					{ 1.0f, 0 });
 				ImGui::EndTabItem();
 			}
 			if (ImGui::BeginTabItem("Velocity X"))
 			{
 				ImGui::Image((ImTextureID)(long long)fluidGrid->getTextureVelX()->getTextureID(),
 					{ width, width },
-					{ 1.0f, 1 },
-					{ 0.0f, 0 });
+					{ 0.0f, 1 },
+					{ 1.0f, 0 });
 				ImGui::EndTabItem();
 			}
 			if (ImGui::BeginTabItem("Velocity Y"))
@@ -940,7 +988,13 @@ void drawFluidGridWindow()
 			fluidGrid->initialize();
 		}
 
-		ImGui::DragFloat("Diffusion", fluidGrid->getDiffPointer(), 0.005f, 0.0f, 0.001f);
+
+		static float diffRatio = 0.56;
+		if (ImGui::DragFloat("Diffusion Ratio", &diffRatio, 0.01f, 0.0f, 1.0f))
+		{
+			*fluidGrid->getDiffPointer() = glm::mix(0.0f, 0.001f, diffRatio);
+		}
+		ImGui::LabelText("Diffusion Value", "%.5f", *fluidGrid->getDiffPointer());
 		ImGui::DragFloat("Viscosity", fluidGrid->getViscPointer(), 0.0001f, 0.0f, 0.005f);
 		ImGui::DragFloat("Velocity Multiplier", &scene.config.fluidGridConfig.velocityMultiplier, 0.1f, 0, 100.0f);
 		ImGui::DragFloat2("Velocity Clamp", (float *)&scene.config.fluidGridConfig.velocityClampRange, 0.1f, 0, 2.0f);
