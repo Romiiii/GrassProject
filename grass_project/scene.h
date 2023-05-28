@@ -99,6 +99,7 @@ class Scene {
 	glm::mat4 projection = glm::mat4(1);
 	glm::mat4 view = glm::mat4(1);
 	SceneObject *light = nullptr;
+	SceneObject* fanDebugIcon = nullptr;
 	/**
 	* \brief All variables that can be configured using the GUI
 	*/

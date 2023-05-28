@@ -410,18 +410,6 @@ void cursorInputCallback(GLFWwindow *window, double posX, double posY);
 */
 void cleanUp();
 
-struct Fan
-{
-	bool active = true;
-	float x = 0.2f;
-	float y = 0.2f;
-	float density = 250.0f;
-	float velocityX = 300.0f;
-	float velocityY = 0.0f;
-};
-
-Fan fan;
-
 void setWorldMinMax()
 {
 	/* Since we're making a spiral pattern, we can find the leftmost edge by taking the sqrt, giving us the width.
@@ -552,6 +540,7 @@ int main()
 
 
 		// FAN!
+		Fan &fan = scene.config.fluidGridConfig.fan;
 		if (fan.active)
 		{
 			int x = fluidGrid->getN() * fan.x;
@@ -800,6 +789,10 @@ void initSceneObjects(Patch &patch)
 		blades->model = translation;
 		scene.blades.push_back(blades);
 	}
+
+	SceneObjectArrays *fanDebugIcon = new SceneObjectArrays(trianglePositions, *lightShaderProgram);
+	scene.sceneObjects.push_back(fanDebugIcon);
+	scene.fanDebugIcon = fanDebugIcon;
 }
 
 void generatePerlinNoiseTexture()
@@ -892,8 +885,11 @@ void drawFluidGridWindow()
 			fluidGrid->addVelocityAt(pos.x * fluidGrid->getN(), pos.y * fluidGrid->getN(), vel.x, vel.y);
 		}
 
+		Fan& fan = scene.config.fluidGridConfig.fan;
+
 		ImGui::Text("Fan controls");
 		ImGui::Checkbox("Fan Active", &fan.active);
+		ImGui::Checkbox("Draw Fans", &scene.config.fluidGridConfig.shouldDrawFans);
 		ImGui::DragFloat2("Fan Position", (float *)&fan.x, 0.05f, 0, 1);
 		ImGui::InputFloat("Fan Density", &fan.density);
 		ImGui::InputFloat2("Fan Velocity", (float *)&fan.velocityX);

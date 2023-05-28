@@ -7,6 +7,16 @@
 
 class FluidGrid;
 
+struct Fan
+{
+	bool active = true;
+	float x = 0.2f;
+	float y = 0.2f;
+	float density = 250.0f;
+	float velocityX = 300.0f;
+	float velocityY = 0.0f;
+};
+
 struct FluidGridConfig
 {
 	Texture *  density            = nullptr;
@@ -16,6 +26,8 @@ struct FluidGridConfig
 	bool       visualizeDensity   = false;
 	float      velocityMultiplier = 2.7;
 	glm::vec2  velocityClampRange = {0.5, 0.5};
+	Fan fan;
+	bool shouldDrawFans = true;
 };
 
 class FluidGrid

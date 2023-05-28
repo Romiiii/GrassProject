@@ -177,4 +177,14 @@ static std::vector<std::string> facesNight
 	"assets/textures/skybox_night/hills_rt.png",
 	"assets/textures/skybox_night/hills_lf.png" };
 
+
+static std::vector<float> trianglePositions{	0.0f, 0.0f, 0.0f,
+												1.0f, 0.0f, 0.0f,
+												0.5f, 0.0f, 1.0f,
+												0.0f, 0.0f, 0.5f,
+												1.0f, 0.0f, 0.5f,
+												0.5f, 0.0f, 1.5f,
+};
+
+
 #endif // PRIMITIVES_H
