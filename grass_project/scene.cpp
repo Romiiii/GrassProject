@@ -1,14 +1,10 @@
 #include "scene.h"
 #include "glmutils.h"
 #include <glm\glm.hpp>
+#include "grass_math.h"
 
 void Scene::addSceneObject(SceneObject* sceneObject) {
 	sceneObjects.push_back(sceneObject);
-}
-
-float map(float s, float a1, float a2, float b1, float b2)
-{
-	return b1 + (s - a1) * (b2 - b1) / (a2 - a1);
 }
 
 void Scene::updateDynamic() {
@@ -47,7 +43,6 @@ void Scene::render() {
 			object->draw(*this);
 	}
 
-	
 	glEnable(GL_CULL_FACE);
 	for (int i = 0; i < config.numPatches; i++) {
 		patches[i]->draw(*this);

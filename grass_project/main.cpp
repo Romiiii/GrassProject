@@ -46,6 +46,7 @@ Velocity: 2.7
 #include "perlin_noise.h"
 #include "fluid_grid.h"
 #include "util.h"
+#include "grass_math.h"
 
 
 #define CHECKER_PATTERN_TEXTURE_WIDTH 512
@@ -484,6 +485,9 @@ int main()
 	scene.config.isPaused = false;
 	scene.config.currentTime = (float)glfwGetTime();
 	setWorldMinMax();
+	scene.worldRekt.center = { 0.0f, 0.0f, 0.0f };
+	scene.worldRekt.height = scene.worldRekt.width = (MAX_PATCHES) * scene.config.patchSize;
+
 	// Set num blades per patch
 	if (scene.config.numBladesPerPatch < 0)
 	{
@@ -1296,6 +1300,7 @@ void processInput(GLFWwindow *window)
 	static bool rWasPressed = false;
 	static bool pWasPressed = false;
 	static bool vWasPressed = false;
+	static bool scrollWasPressed = false;
 
 	// Stop camera movement if GUI is opened
 	if (isPaused)
@@ -1389,6 +1394,36 @@ void processInput(GLFWwindow *window)
 	if (glfwGetKey(window, GLFW_KEY_R) == GLFW_RELEASE)
 	{
 		rWasPressed = false;
+	}
+	if (glfwGetMouseButton(window, 2) == GLFW_PRESS)
+	{
+		if (!scrollWasPressed)
+		{
+			glm::mat4 inverseProjection = glm::inverse(scene.projection);
+			glm::mat4 inverseView = glm::inverse(scene.view);
+			Ray ray;
+			glm::vec4 withW = inverseView * (inverseProjection * glm::vec4{ 0.0f, 0.0f, 0.0f, 1.0f });
+			ray.origin = glm::vec3(withW) / withW.w;
+			glm::vec4 withW1 = inverseProjection *glm::vec4(0.0f, 0.0f, -1.0f, 1.0f);
+			glm::vec4 withW0 = withW1;
+			withW0.w = 0.0f;
+			ray.direction = glm::normalize(glm::vec3(inverseView * withW0));
+			printf("ray.origin: %f %f %f ray.direction: %f %f %f \n", ray.origin.x, ray.origin.y, ray.origin.z, ray.direction.x, ray.direction.y, ray.direction.z);
+			std::optional<glm::vec3> hitPos = ray.intersectsRectangle(scene.worldRekt);
+			if (hitPos.has_value())
+			{
+				printf("SUCCES \n");
+				//map(config.fluidGridConfig.fan.x, 0.0f, 1.0f, config.worldMin, config.worldMax);
+				scene.config.fluidGridConfig.fan.x = map(hitPos.value().x, scene.config.worldMin, scene.config.worldMax, 0.0, 1.0f);
+				scene.config.fluidGridConfig.fan.y = map(hitPos.value().z, scene.config.worldMin, scene.config.worldMax, 0.0, 1.0f);
+				printf("hitPos: %f %f \n", hitPos.value().x, hitPos.value().z);
+			}
+			scrollWasPressed = true;
+		}
+	}
+	if (glfwGetMouseButton(window, 3) == GLFW_RELEASE)
+	{
+		scrollWasPressed = false;
 	}
 
 	//// For debugging (so we can see if something happens!)

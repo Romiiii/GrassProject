@@ -6,6 +6,7 @@
 #include "shader.h"
 #include "perlin_noise.h"
 #include "fluid_grid.h"
+#include "grass_math.h"
 
 /**
 * \brief Sets the appearance of the skybox
@@ -104,6 +105,8 @@ class Scene {
 	* \brief All variables that can be configured using the GUI
 	*/
 	Config config;
+
+	Rectangle worldRekt;
 };
 
 #endif
