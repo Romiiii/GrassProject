@@ -189,6 +189,10 @@ void FluidGrid::initialize()
 
 float FluidGrid::totalDensity()
 {
+	assert(density);
+	if (!density) 
+		return -1.0f;
+
 	float sum = 0;
 	// Put something in the middle (for now)
 	for(size_t i = 0; i < N; i++)
@@ -311,12 +315,12 @@ void FluidGrid::project(float *velX, float *velY, float *p, float *div)
 #else
 	int   i, j, k;
 	float h;
-	h = 1.0 / N;
+	h = 1.0f / N;
 	for(i = 1; i <= N; i++)
 	{
 		for(j = 1; j <= N; j++)
 		{
-			div[INDEX(i, j)] = -0.5 * h * (velX[INDEX(i + 1, j)] - velX[INDEX(i - 1, j)] +
+			div[INDEX(i, j)] = -0.5f * h * (velX[INDEX(i + 1, j)] - velX[INDEX(i - 1, j)] +
 				velY[INDEX(i, j + 1)] - velY[INDEX(i, j - 1)]);
 			p[INDEX(i, j)] = 0;
 		}
@@ -339,8 +343,8 @@ void FluidGrid::project(float *velX, float *velY, float *p, float *div)
 	{
 		for(j = 1; j <= N; j++)
 		{
-			velX[INDEX(i, j)] -= 0.5 * (p[INDEX(i + 1, j)] - p[INDEX(i - 1, j)]) / h;
-			velY[INDEX(i, j)] -= 0.5 * (p[INDEX(i, j + 1)] - p[INDEX(i, j - 1)]) / h;
+			velX[INDEX(i, j)] -= 0.5f * (p[INDEX(i + 1, j)] - p[INDEX(i - 1, j)]) / h;
+			velY[INDEX(i, j)] -= 0.5f * (p[INDEX(i, j + 1)] - p[INDEX(i, j - 1)]) / h;
 		}
 	}
 	setBounds(1, velX);
@@ -364,10 +368,10 @@ void FluidGrid::setBounds(int b, float *x)
 		x[INDEX(i, 0)]     = b == 2 ? -x[INDEX(i, 1)] : x[INDEX(i, 1)];
 		x[INDEX(i, N + 1)] = b == 2 ? -x[INDEX(i, N)] : x[INDEX(i, N)];
 	}
-	x[INDEX(0, 0)]         = 0.5 * (x[INDEX(1, 0)] + x[INDEX(0, 1)]);
-	x[INDEX(0, N + 1)]     = 0.5 * (x[INDEX(1, N + 1)] + x[INDEX(0, N)]);
-	x[INDEX(N + 1, 0)]     = 0.5 * (x[INDEX(N, 0)] + x[INDEX(N + 1, 1)]);
-	x[INDEX(N + 1, N + 1)] = 0.5 * (x[INDEX(N, N + 1)] + x[INDEX(N + 1, N)]);
+	x[INDEX(0, 0)]         = 0.5f * (x[INDEX(1, 0)] + x[INDEX(0, 1)]);
+	x[INDEX(0, N + 1)]     = 0.5f * (x[INDEX(1, N + 1)] + x[INDEX(0, N)]);
+	x[INDEX(N + 1, 0)]     = 0.5f * (x[INDEX(N, 0)] + x[INDEX(N + 1, 1)]);
+	x[INDEX(N + 1, N + 1)] = 0.5f * (x[INDEX(N, N + 1)] + x[INDEX(N + 1, N)]);
 #endif
 }
 

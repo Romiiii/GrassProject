@@ -24,8 +24,8 @@ struct FluidGridConfig
 	Texture *  velY               = nullptr;
 	FluidGrid *fluidGrid          = nullptr;
 	bool       visualizeDensity   = false;
-	float      velocityMultiplier = 2.7;
-	glm::vec2  velocityClampRange = {0.5, 0.5};
+	float      velocityMultiplier = 2.7f;
+	glm::vec2  velocityClampRange = {0.5f, 0.5f};
 	Fan fan;
 	bool shouldDrawFans = true;
 };

@@ -418,12 +418,12 @@ void setWorldMinMax()
 		 start at (0, 0), so the left will have fewer patches for odd widths. We then negate it, because it's in the
 		 negative halfspace.
 	 */
-	scene.config.worldMin = -floor(sqrt(MAX_PATCHES) / 2) * scene.config.patchSize;
+	scene.config.worldMin = (float)(- floor(sqrt(MAX_PATCHES) / 2) * (double)scene.config.patchSize);
 
 	/* The process for the max is similar, though we take the ceiling rather than the floor. Because since we start at (0, 0) there are more
 		 patches to the right.
 	 */
-	scene.config.worldMax = ceil(sqrt(MAX_PATCHES) / 2) * scene.config.patchSize;
+	scene.config.worldMax = (float)(ceil(sqrt(MAX_PATCHES) / 2) * (double)scene.config.patchSize);
 }
 
 int main()
@@ -485,8 +485,11 @@ int main()
 	scene.config.isPaused = false;
 	scene.config.currentTime = (float)glfwGetTime();
 	setWorldMinMax();
-	scene.worldRekt.center = { 0.0f, 0.0f, 0.0f };
-	scene.worldRekt.height = scene.worldRekt.width = (MAX_PATCHES) * scene.config.patchSize;
+
+	float worldWidth = scene.config.worldMax - scene.config.worldMin;
+	float center = (scene.config.worldMax + scene.config.worldMin) / 2.0f;
+	scene.worldRekt.center = {center, 0.0f, center};
+	scene.worldRekt.height = scene.worldRekt.width = worldWidth;
 
 	// Set num blades per patch
 	if (scene.config.numBladesPerPatch < 0)
@@ -547,8 +550,8 @@ int main()
 		Fan &fan = scene.config.fluidGridConfig.fan;
 		if (fan.active)
 		{
-			int x = fluidGrid->getN() * fan.x;
-			int y = fluidGrid->getN() * fan.y;
+			int x = (int)(fluidGrid->getN() * fan.x);
+			int y = (int)(fluidGrid->getN() * fan.y);
 
 			fluidGrid->addVelocityAt(x, y, fan.velocityX, fan.velocityY);
 			fluidGrid->addDensityAt(x, y, fan.density);
@@ -861,6 +864,60 @@ void transferInstanceMatrixBuffer(glm::mat4 *modelMatrices, const unsigned int n
 	GLCall(glBindBuffer(GL_ARRAY_BUFFER, 0));
 }
 
+glm::vec2 getNormalizedMousePos() {
+	glm::vec2 cursorPos = { 0, 0 };
+	if (glfwGetInputMode(window, GLFW_CURSOR) == GLFW_CURSOR_NORMAL) {
+		int width, height;
+		glfwGetFramebufferSize(window, &width, &height);
+		glm::vec2 windowSize = { (float)width, (float)height };
+
+		// If it's not disabled, use the cursor position
+		double x, y;
+		glfwGetCursorPos(window, &x, &y);
+		cursorPos = { (float)x, (float)y };
+
+		cursorPos.x = (2.0f * x) / width - 1.0f;
+		cursorPos.y = 1.0f - (2.0f * y) / height;
+	}
+
+	cursorPos = glm::clamp(cursorPos, -1.0f, 1.0f);
+	return cursorPos;
+}
+
+Ray getMouseRay()
+{
+	Ray ray;
+
+	glm::vec2 cursorPos = getNormalizedMousePos();
+
+	glm::mat4 inverseProjection = glm::inverse(scene.projection);
+	glm::mat4 inverseView = glm::inverse(scene.view);
+
+	// Direction
+	glm::vec4 clipCoords = glm::vec4(cursorPos.x, cursorPos.y, -1.0f, 1.0f);
+	{
+		glm::vec4 eyeCoords = inverseProjection * clipCoords;
+		eyeCoords = { eyeCoords.x, eyeCoords.y, -1.0f, 0.0f };
+		ray.direction = glm::normalize(glm::vec3(inverseView * eyeCoords));
+	}
+	
+	// Origin
+	{
+		glm::vec4 eyeCoords = (inverseProjection * clipCoords);
+		eyeCoords = { eyeCoords.x, eyeCoords.y, 0, 1.0f };
+		ray.origin = glm::vec3(inverseView * eyeCoords);
+	}
+
+	return ray;
+}
+
+std::optional<glm::vec3> mouseHitsGround()
+{
+	Ray ray = getMouseRay();
+
+	return ray.intersectsRectangle(scene.worldRekt);
+}
+
 
 void drawFluidGridWindow()
 {
@@ -880,13 +937,19 @@ void drawFluidGridWindow()
 
 		if (ImGui::Button("Add Density"))
 		{
-			fluidGrid->addDensityAt(pos.x * fluidGrid->getN(), pos.y * fluidGrid->getN(), den);
+			fluidGrid->addDensityAt(
+				(int)(pos.x * fluidGrid->getN()), 
+				(int)(pos.y * fluidGrid->getN()), 
+				den);
 			clearNextSimulate = false;
 		}
 		if (ImGui::Button("Add Velocity"))
 		{
 			clearNextSimulate = false;
-			fluidGrid->addVelocityAt(pos.x * fluidGrid->getN(), pos.y * fluidGrid->getN(), vel.x, vel.y);
+			fluidGrid->addVelocityAt(
+				(int)(pos.x * fluidGrid->getN()),
+				(int)(pos.y * fluidGrid->getN()), 
+				vel.x, vel.y);
 		}
 
 		Fan& fan = scene.config.fluidGridConfig.fan;
@@ -989,7 +1052,7 @@ void drawFluidGridWindow()
 		}
 
 
-		static float diffRatio = 0.56;
+		static float diffRatio = 0.56f;
 		if (ImGui::DragFloat("Diffusion Ratio", &diffRatio, 0.01f, 0.0f, 1.0f))
 		{
 			*fluidGrid->getDiffPointer() = glm::mix(0.0f, 0.001f, diffRatio);
@@ -1182,9 +1245,9 @@ void drawSettingsWindow()
 
 	if (ImGui::CollapsingHeader("Camera Settings"))
 	{
-		ImGui::SliderFloat3("Camera Position", (float *)&camera.camPosition, -50, 50);
-		ImGui::SliderFloat("Yaw", &camera.yaw, -180, 180);
-		ImGui::SliderFloat("Pitch", &camera.pitch, -89.9f, 89.9f);
+		ImGui::InputFloat3("Camera Position", (float *)&camera.camPosition);
+		ImGui::InputFloat("Yaw", &camera.yaw);
+		ImGui::InputFloat("Pitch", &camera.pitch);
 	}
 
 
@@ -1239,6 +1302,42 @@ void drawGui()
 	//	ImGui::End();
 
 	//}
+	auto viewport = ImGui::GetMainViewport();
+
+	// Draw a little dot at the center of the screen
+	ImVec2 halfScreenSize = { viewport->Size.x / 2.0f, viewport->Size.x / 2.0f };
+	ImGui::SetNextWindowPos({ viewport->Pos.x + halfScreenSize.x, viewport->Pos.y + halfScreenSize.y });
+
+	ImGui::Begin("Target", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar);
+	ImGui::End();
+
+	// Hitpos debug
+	ImGui::SetNextWindowViewport(viewport->ID);
+	ImGui::SetNextWindowPos(viewport->Pos);
+	
+	ImGui::Begin("Look info", nullptr, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar);
+
+	glm::vec2 mousePos = getNormalizedMousePos();
+	Ray mouseRay = getMouseRay();
+	auto hitPos = mouseHitsGround();
+
+	ImGui::Text("Mouse Pos: (%.3f, %.3f)", mousePos.x, mousePos.y);
+	ImGui::Text("Origin: (%.3f, %.3f, %.3f)", mouseRay.origin.x, mouseRay.origin.y, mouseRay.origin.z);
+	ImGui::Text("Direction: (%.3f, %.3f, %.3f)", mouseRay.direction.x, mouseRay.direction.y, mouseRay.direction.z);
+	if (hitPos.has_value()) {
+		glm::vec3 pos = hitPos.value();
+		ImGui::Text("Hits: (%.3f, %.3f, %.3f)", pos.x, pos.y, pos.z);
+	}
+	else {
+		ImGui::Text("Hits: MISS");
+	}
+
+	ImGui::Text("WorldRekt: (%.3f, %.3f, %.3f)", scene.worldRekt.center.x, scene.worldRekt.center.y, scene.worldRekt.center.z);
+	ImGui::Text("    Size (% .3f, % .3f)", scene.worldRekt.width, scene.worldRekt.height);
+
+	ImGui::End();
+
+
 
 	drawFluidGridWindow();
 	drawSettingsWindow();
@@ -1399,24 +1498,16 @@ void processInput(GLFWwindow *window)
 	{
 		if (!scrollWasPressed)
 		{
-			glm::mat4 inverseProjection = glm::inverse(scene.projection);
-			glm::mat4 inverseView = glm::inverse(scene.view);
-			Ray ray;
-			glm::vec4 withW = inverseView * (inverseProjection * glm::vec4{ 0.0f, 0.0f, 0.0f, 1.0f });
-			ray.origin = glm::vec3(withW) / withW.w;
-			glm::vec4 withW1 = inverseProjection *glm::vec4(0.0f, 0.0f, -1.0f, 1.0f);
-			glm::vec4 withW0 = withW1;
-			withW0.w = 0.0f;
-			ray.direction = glm::normalize(glm::vec3(inverseView * withW0));
-			printf("ray.origin: %f %f %f ray.direction: %f %f %f \n", ray.origin.x, ray.origin.y, ray.origin.z, ray.direction.x, ray.direction.y, ray.direction.z);
-			std::optional<glm::vec3> hitPos = ray.intersectsRectangle(scene.worldRekt);
-			if (hitPos.has_value())
-			{
-				printf("SUCCES \n");
-				//map(config.fluidGridConfig.fan.x, 0.0f, 1.0f, config.worldMin, config.worldMax);
-				scene.config.fluidGridConfig.fan.x = map(hitPos.value().x, scene.config.worldMin, scene.config.worldMax, 0.0, 1.0f);
-				scene.config.fluidGridConfig.fan.y = map(hitPos.value().z, scene.config.worldMin, scene.config.worldMax, 0.0, 1.0f);
-				printf("hitPos: %f %f \n", hitPos.value().x, hitPos.value().z);
+			auto hitPosOptional = mouseHitsGround();
+
+			if (hitPosOptional.has_value()) {
+				glm::vec3 hitPos = hitPosOptional.value();
+				if (hitPos.x > scene.config.worldMin && hitPos.x < scene.config.worldMax &&
+					hitPos.y > scene.config.worldMin && hitPos.y < scene.config.worldMax)
+				{
+					scene.config.fluidGridConfig.fan.x = map(hitPos.x, scene.config.worldMin, scene.config.worldMax, 0.0, 1.0f);
+					scene.config.fluidGridConfig.fan.y = map(hitPos.z, scene.config.worldMin, scene.config.worldMax, 0.0, 1.0f);
+				}
 			}
 			scrollWasPressed = true;
 		}

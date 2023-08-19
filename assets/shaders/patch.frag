@@ -63,6 +63,8 @@ void main()
 	patchColor = VtxColor;
 	vec4 result = vec4(ambient, 1.0f) * patchColor + vec4(diffuse, 1.0f) * patchColor;
 	
+
+
 	FragColor = result;
 	
 }

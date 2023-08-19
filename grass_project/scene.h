@@ -56,7 +56,7 @@ struct Config {
 	FluidGridConfig fluidGridConfig;
 
 	int checkerSize = 32;
-	Texture* checkerPatternTexture;
+	Texture* checkerPatternTexture = nullptr;
 
 	int numBladesPerPatch = -1;
 	int numPatches = -1;
@@ -106,7 +106,7 @@ class Scene {
 	*/
 	Config config;
 
-	Rectangle worldRekt;
+	Rectangle worldRekt = {};
 };
 
 #endif
