@@ -350,6 +350,12 @@ void createInstanceMatrixBuffer(glm::mat4 *modelMatrices, const unsigned int max
 */
 void transferInstanceMatrixBuffer(glm::mat4 *modelMatrices, const unsigned int numInstances);
 
+glm::vec2 getNormalizedMousePos();
+
+Ray getMouseRay();
+
+std::optional<glm::vec3> mouseHitsGround();
+
 /**
  * \brief Draws the GUI
 */
@@ -410,6 +416,8 @@ void cursorInputCallback(GLFWwindow *window, double posX, double posY);
  * @brief Cleans up the scene.
 */
 void cleanUp();
+
+std::vector<glm::vec3> g_hitPoints;
 
 void setWorldMinMax()
 {
@@ -545,7 +553,6 @@ int main()
 			fluidGrid->clearCurrent();
 		}
 
-
 		// FAN!
 		Fan &fan = scene.config.fluidGridConfig.fan;
 		if (fan.active)
@@ -555,9 +562,24 @@ int main()
 
 			fluidGrid->addVelocityAt(x, y, fan.velocityX, fan.velocityY);
 			fluidGrid->addDensityAt(x, y, fan.density);
-
 		}
 
+		static bool rightClickPressed = false;
+		if (!rightClickPressed && glfwGetMouseButton(window, 1) == GLFW_PRESS)
+		{
+			rightClickPressed = true;
+
+			auto hit = mouseHitsGround();
+			if (hit.has_value())
+			{
+				g_hitPoints.push_back(hit.value());
+			}
+		}
+
+		if (glfwGetMouseButton(window, 1) == GLFW_RELEASE)
+		{
+			rightClickPressed = false;
+		}
 
 		clearNextSimulate = true;
 
@@ -586,6 +608,10 @@ int main()
 		scene.view = view;
 		scene.updateDynamic();
 		scene.render();
+
+		// Draw hitpoints
+		
+
 
 		drawGui();
 
@@ -1401,12 +1427,31 @@ void processInput(GLFWwindow *window)
 	static bool vWasPressed = false;
 	static bool scrollWasPressed = false;
 
+	// Input here is always available even when GUI is open.
+	if (glfwGetMouseButton(window, 2) == GLFW_PRESS)
+	{
+		if (!scrollWasPressed)
+		{
+			auto hit = mouseHitsGround();
+
+			if (hit.has_value()) {
+				glm::vec3 hitPos = hit.value();
+				scene.config.fluidGridConfig.fan.x = map(hitPos.x, scene.config.worldMin, scene.config.worldMax, 0.0, 1.0f);
+				scene.config.fluidGridConfig.fan.y = map(hitPos.z, scene.config.worldMin, scene.config.worldMax, 1.0, 0.0f);
+			}
+			scrollWasPressed = true;
+		}
+	}
+	if (glfwGetMouseButton(window, 2) == GLFW_RELEASE)
+	{
+		scrollWasPressed = false;
+	}
+
 	// Stop camera movement if GUI is opened
 	if (isPaused)
 		return;
 
-
-
+	// Input below here is disabled when GUI is open:
 	if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
 	{
 		camera.processKeyboard(cameraMovement::GLOBAL_UP, deltaTime);
@@ -1494,33 +1539,7 @@ void processInput(GLFWwindow *window)
 	{
 		rWasPressed = false;
 	}
-	if (glfwGetMouseButton(window, 2) == GLFW_PRESS)
-	{
-		if (!scrollWasPressed)
-		{
-			auto hitPosOptional = mouseHitsGround();
 
-			if (hitPosOptional.has_value()) {
-				glm::vec3 hitPos = hitPosOptional.value();
-				if (hitPos.x > scene.config.worldMin && hitPos.x < scene.config.worldMax &&
-					hitPos.y > scene.config.worldMin && hitPos.y < scene.config.worldMax)
-				{
-					scene.config.fluidGridConfig.fan.x = map(hitPos.x, scene.config.worldMin, scene.config.worldMax, 0.0, 1.0f);
-					scene.config.fluidGridConfig.fan.y = map(hitPos.z, scene.config.worldMin, scene.config.worldMax, 0.0, 1.0f);
-				}
-			}
-			scrollWasPressed = true;
-		}
-	}
-	if (glfwGetMouseButton(window, 3) == GLFW_RELEASE)
-	{
-		scrollWasPressed = false;
-	}
-
-	//// For debugging (so we can see if something happens!)
-	//if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS) {
-	//	
-	//}
 }
 
 /* Processes the cursor input and passes it to the camera.
