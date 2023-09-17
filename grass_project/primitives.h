@@ -178,12 +178,14 @@ static std::vector<std::string> facesNight
 	"assets/textures/skybox_night/hills_lf.png" };
 
 
-static std::vector<float> trianglePositions{	0.0f, 0.0f, 0.0f,
-												1.0f, 0.0f, 0.0f,
-												0.5f, 0.0f, 1.0f,
-												0.0f, 0.0f, 0.5f,
-												1.0f, 0.0f, 0.5f,
-												0.5f, 0.0f, 1.5f,
+static std::vector<float> fanDebugIconVertexPositions{	
+	-0.5f, 0.0f, 0.0f,
+	0.5f, 0.0f, 0.0f,
+	0.0f, 0.0f, 0.75f,
+
+	-0.5f, 0.0f, 0.25f,
+	0.5f, 0.0f, 0.25f,
+	0.0f, 0.0f, 1.0f,
 };
 
 

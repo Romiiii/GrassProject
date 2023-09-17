@@ -17,15 +17,21 @@ void Scene::updateDynamic() {
 		float velX = config.fluidGridConfig.fan.velocityX;
 		float velY = config.fluidGridConfig.fan.velocityY;
 
-		float minSize = 0.5f;
-		float maxSize = 3.0f;
+		float angle = glm::atan(velX, velY);
 
-		float angle = glm::atan(velX, -velY);
-		float magnitude = glm::length(glm::vec3(velX, 0.0f, velY));
-		float sizeZ = glm::clamp(map(magnitude, 50.0f, 350.0f, minSize, maxSize), minSize, maxSize);
+		float minSize = 0.25f;
+		float maxSize = 10.0f;
+
+		// TODO: REPLACE THIS DAMN RANDOM MAGIC NUMBERS
+		glm::vec2 direction;
+		direction.x = map(config.fluidGridConfig.fan.velocityX, .0f, 300.0f, 0.0f, 90.0f);
+		direction.y = map(config.fluidGridConfig.fan.velocityY, .0f, 300.0f, 0.0f, 90.0f);
+
+		float magnitude = glm::length(direction);
 
 		float density = config.fluidGridConfig.fan.density;
 		float sizeX = glm::clamp(map(density, 0.0f, 500.0f, minSize, maxSize), minSize, maxSize);
+		float sizeZ = glm::max(magnitude, minSize);
 
 		fanDebugIcon->model = glm::translate(glm::mat4(1), { fanX, 1.0f, -fanY }) * glm::rotateY(angle) * glm::scale(sizeX, 1.0f, sizeZ);
 		fanDebugIcon->isVisible = true;

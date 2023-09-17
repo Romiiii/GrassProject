@@ -416,7 +416,8 @@ void cursorInputCallback(GLFWwindow *window, double posX, double posY);
 */
 void cleanUp();
 
-std::vector<glm::vec3> g_hitPoints;
+glm::vec3 g_fanDragStart = {};
+bool g_fanIsDragging = false;
 
 void setWorldMinMax()
 {
@@ -563,22 +564,6 @@ int main()
 			fluidGrid->addDensityAt(x, y, fan.density);
 		}
 
-		static bool rightClickPressed = false;
-		if (!rightClickPressed && glfwGetMouseButton(window, 1) == GLFW_PRESS)
-		{
-			rightClickPressed = true;
-
-			auto hit = mouseHitsGround();
-			if (hit.has_value())
-			{
-				g_hitPoints.push_back(hit.value());
-			}
-		}
-
-		if (glfwGetMouseButton(window, 1) == GLFW_RELEASE)
-		{
-			rightClickPressed = false;
-		}
 
 		clearNextSimulate = true;
 
@@ -822,7 +807,7 @@ void initSceneObjects(Patch &patch)
 		scene.blades.push_back(blades);
 	}
 
-	SceneObjectArrays *fanDebugIcon = new SceneObjectArrays(trianglePositions, *lightShaderProgram);
+	SceneObjectArrays *fanDebugIcon = new SceneObjectArrays(fanDebugIconVertexPositions, *lightShaderProgram);
 	scene.sceneObjects.push_back(fanDebugIcon);
 	scene.fanDebugIcon = fanDebugIcon;
 }
@@ -1424,26 +1409,60 @@ void processInput(GLFWwindow *window)
 	static bool rWasPressed = false;
 	static bool pWasPressed = false;
 	static bool vWasPressed = false;
-	static bool scrollWasPressed = false;
+	static bool scrollIsPressed = false;
 
 	// Input here is always available even when GUI is open.
 	if (glfwGetMouseButton(window, 2) == GLFW_PRESS)
 	{
-		if (!scrollWasPressed)
+		if (!scrollIsPressed)
 		{
 			auto hit = mouseHitsGround();
 
 			if (hit.has_value()) {
 				glm::vec3 hitPos = hit.value();
-				scene.config.fluidGridConfig.fan.x = map(hitPos.x, scene.config.worldMin, scene.config.worldMax, 0.0, 1.0f);
-				scene.config.fluidGridConfig.fan.y = map(hitPos.z, scene.config.worldMin, scene.config.worldMax, 1.0, 0.0f);
+				
+				g_fanDragStart = hitPos;
+
+				g_fanIsDragging = true;
 			}
-			scrollWasPressed = true;
+			scrollIsPressed = true;
 		}
 	}
+
+	if (scrollIsPressed)
+	{
+		if (g_fanIsDragging)
+		{
+			auto hit = mouseHitsGround();
+			if (hit.has_value()) {
+				glm::vec3 hitPos = hit.value();
+
+				glm::vec3 difference = hit.value() - g_fanDragStart;
+				scene.config.fluidGridConfig.fan.x = map(g_fanDragStart.x, scene.config.worldMin, scene.config.worldMax, 0.0, 1.0f);
+				scene.config.fluidGridConfig.fan.y = map(g_fanDragStart.z, scene.config.worldMin, scene.config.worldMax, 1.0, 0.0f);
+				scene.config.fluidGridConfig.fan.velocityX = map(difference.x, .0f, 90.0f, 0.0f, 300.0f);
+				scene.config.fluidGridConfig.fan.velocityY = map(difference.z, .0f, 90.0f, 0.0f, 300.0f);
+			}
+		}
+	}
+
 	if (glfwGetMouseButton(window, 2) == GLFW_RELEASE)
 	{
-		scrollWasPressed = false;
+		if (scrollIsPressed)
+		{
+			auto hit = mouseHitsGround();
+
+			if (hit.has_value()) {
+				glm::vec3 hitPos = hit.value();
+				glm::vec3 difference = hit.value() - g_fanDragStart;
+				scene.config.fluidGridConfig.fan.x = map(g_fanDragStart.x, scene.config.worldMin, scene.config.worldMax, 0.0, 1.0f);
+				scene.config.fluidGridConfig.fan.y = map(g_fanDragStart.z, scene.config.worldMin, scene.config.worldMax, 1.0, 0.0f);
+				scene.config.fluidGridConfig.fan.velocityX = map(difference.x, .0f, 90.0f, 0.0f, 300.0f);
+				scene.config.fluidGridConfig.fan.velocityY = map(difference.z, .0f, 90.0f, 0.0f, 300.0f);
+			}
+			g_fanIsDragging = false;
+		}
+		scrollIsPressed = false;
 	}
 
 	// Stop camera movement if GUI is opened
