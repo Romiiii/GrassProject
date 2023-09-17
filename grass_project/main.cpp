@@ -72,7 +72,6 @@ const int MAX_BLADES_PER_PATCH = 4000;
  */
 const int MAX_PATCHES = 81;
 
-
 /**
  * \brief The scene currently loaded (We don't support multiple scenes, but we
  * could with this.)
@@ -1334,8 +1333,8 @@ void drawGui()
 	ImVec2 halfScreenSize = { viewport->Size.x / 2.0f, viewport->Size.x / 2.0f };
 	ImGui::SetNextWindowPos({ viewport->Pos.x + halfScreenSize.x, viewport->Pos.y + halfScreenSize.y });
 
-	ImGui::Begin("Target", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar);
-	ImGui::End();
+	//ImGui::Begin("Target", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar);
+	//ImGui::End();
 
 	// Hitpos debug
 	ImGui::SetNextWindowViewport(viewport->ID);
