@@ -13,7 +13,7 @@ struct Fan
 	float x = 0.2f;
 	float y = 0.2f;
 	float density = 250.0f;
-	float velocityX = 300.0f;
+	float velocityX = 150.0f;
 	float velocityY = 0.0f;
 };
 
