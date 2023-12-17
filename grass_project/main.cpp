@@ -1428,10 +1428,6 @@ void processInput(GLFWwindow *window)
 		}
 	}
 
-	const float worldSize = 90.0f;
-	const float halfWorldSize = worldSize / 2;
-	const float maximumVelocity = 150.0f;
-
 	if (scrollIsPressed)
 	{
 		if (g_fanIsDragging)
@@ -1441,8 +1437,10 @@ void processInput(GLFWwindow *window)
 				glm::vec3 difference = hit.value() - g_fanDragStart;
 				scene.config.fluidGridConfig.fan.x = map(g_fanDragStart.x, scene.config.worldMin, scene.config.worldMax, 0.0, 1.0f);
 				scene.config.fluidGridConfig.fan.y = map(g_fanDragStart.z, scene.config.worldMin, scene.config.worldMax, 1.0, 0.0f);
-				scene.config.fluidGridConfig.fan.velocityX = map(difference.x, -halfWorldSize, halfWorldSize, -maximumVelocity, maximumVelocity);
-				scene.config.fluidGridConfig.fan.velocityY = map(difference.z, -halfWorldSize, halfWorldSize, -maximumVelocity, maximumVelocity);
+				
+				float mappingValue = scene.config.fluidGridConfig.wholeWorldToVelocityMapping;
+				scene.config.fluidGridConfig.fan.velocityX = map(difference.x, 0, scene.worldRekt.width, 0, mappingValue);
+				scene.config.fluidGridConfig.fan.velocityY = map(difference.z, 0, scene.worldRekt.width, 0, mappingValue);
 			}
 		}
 	}
@@ -1457,8 +1455,10 @@ void processInput(GLFWwindow *window)
 				glm::vec3 difference = hit.value() - g_fanDragStart;
 				scene.config.fluidGridConfig.fan.x = map(g_fanDragStart.x, scene.config.worldMin, scene.config.worldMax, 0.0, 1.0f);
 				scene.config.fluidGridConfig.fan.y = map(g_fanDragStart.z, scene.config.worldMin, scene.config.worldMax, 1.0, 0.0f);
-				scene.config.fluidGridConfig.fan.velocityX = map(difference.x, -halfWorldSize, halfWorldSize, -maximumVelocity, maximumVelocity);
-				scene.config.fluidGridConfig.fan.velocityY = map(difference.z, -halfWorldSize, halfWorldSize, -maximumVelocity, maximumVelocity);
+
+				float mappingValue = scene.config.fluidGridConfig.wholeWorldToVelocityMapping;
+				scene.config.fluidGridConfig.fan.velocityX = map(difference.x, 0, scene.worldRekt.width, 0, mappingValue);
+				scene.config.fluidGridConfig.fan.velocityY = map(difference.z, 0, scene.worldRekt.width, 0, mappingValue);
 			}
 			g_fanIsDragging = false;
 		}

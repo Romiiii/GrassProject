@@ -22,11 +22,10 @@ void Scene::updateDynamic() {
 		float minSize = 0.25f;
 		float maxSize = 10.0f;
 
-		// TODO: REPLACE THIS DAMN RANDOM MAGIC NUMBERS
+		float mappingValue = config.fluidGridConfig.wholeWorldToVelocityMapping;
 		glm::vec2 direction;
-		direction.x = map(config.fluidGridConfig.fan.velocityX, .0f, 300.0f, 0.0f, 90.0f);
-		direction.y = map(config.fluidGridConfig.fan.velocityY, .0f, 300.0f, 0.0f, 90.0f);
-
+		direction.x = map(velX, .0f, mappingValue, 0.0f, worldRekt.width);
+		direction.y = map(velY, .0f, mappingValue, 0.0f, worldRekt.width);
 		float magnitude = glm::length(direction);
 
 		float density = config.fluidGridConfig.fan.density;

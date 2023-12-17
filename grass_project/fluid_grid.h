@@ -17,6 +17,7 @@ struct Fan
 	float velocityY = 0.0f;
 };
 
+
 struct FluidGridConfig
 {
 	Texture *  density            = nullptr;
@@ -28,6 +29,7 @@ struct FluidGridConfig
 	glm::vec2  velocityClampRange = {0.5f, 0.5f};
 	Fan fan;
 	bool shouldDrawFans = true;
+	float wholeWorldToVelocityMapping = 300.0;
 };
 
 class FluidGrid
