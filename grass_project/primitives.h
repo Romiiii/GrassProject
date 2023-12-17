@@ -183,9 +183,10 @@ static std::vector<float> fanDebugIconVertexPositions{
 	0.5f, 0.0f, 0.0f,
 	0.0f, 0.0f, 0.75f,
 
-	-0.5f, 0.0f, 0.25f,
-	0.5f, 0.0f, 0.25f,
-	0.0f, 0.0f, 1.0f,
+	// Second triangle slightly higher in Y to avoid Y-fighting
+	-0.5f, 0.01f, 0.25f,
+	0.5f, 0.01f, 0.25f,
+	0.0f, 0.01f, 1.0f,
 };
 
 

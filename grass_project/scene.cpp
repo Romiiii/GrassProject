@@ -58,4 +58,18 @@ void Scene::render() {
 	for (int i = 0; i < config.numPatches; i++) {
 		blades[i]->draw(*this);
 	}
+
+	{
+		glm::vec4 oldColor = config.lightColor;
+
+		glEnable(GL_BLEND);
+		config.lightColor = glm::vec4(1, 1, 1, 0.2f);
+
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		fanDebugIcon->draw(*this);
+		glDisable(GL_BLEND);
+
+		config.lightColor = oldColor;
+	}
+
 }

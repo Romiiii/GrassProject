@@ -458,7 +458,6 @@ int main()
 		return -1;
 	}
 
-
 	fluidGrid = new FluidGrid(128, 0, 0, &scene.config.fluidGridConfig);
 
 	initShadersAndTextures();
@@ -809,7 +808,6 @@ void initSceneObjects(Patch &patch)
 	}
 
 	SceneObjectArrays *fanDebugIcon = new SceneObjectArrays(fanDebugIconVertexPositions, *lightShaderProgram);
-	scene.sceneObjects.push_back(fanDebugIcon);
 	scene.fanDebugIcon = fanDebugIcon;
 }
 
