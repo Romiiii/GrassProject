@@ -49,6 +49,7 @@ struct Config {
 	float currentTime = 0;
 	bool isPaused = false;
 	float patchSize = 10;
+	float bladeHeight = 5;
 	glm::vec2 windDirection = glm::normalize(glm::vec2(0.5f, 0.0f));
 	float windStrength = 0.0f;//0.05f;
 

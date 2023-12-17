@@ -136,7 +136,7 @@ void SceneObject::createArrayBuffer(const std::vector<float>& vertexData) {
 /* Sets the specified attribute of the vertex shaderProgram
 	*/
 void SceneObject::setVertexShaderAttribute(
-	char *attributeName,
+	const char *attributeName,
 	const std::vector<float>& data, 
 	int dataSize, 
 	ShaderProgram& shaderProgram) {

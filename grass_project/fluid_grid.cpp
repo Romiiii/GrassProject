@@ -200,10 +200,6 @@ float FluidGrid::totalDensity()
 		for(size_t j = 0; j < N; j++)
 		{
 			sum += density[INDEX(j, i)];
-			if(density > 0)
-			{
-				int a = 5;
-			}
 		}
 	}
 

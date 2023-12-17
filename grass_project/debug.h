@@ -3,6 +3,7 @@
 
 #include <glad/glad.h>
 #include <iostream>
+#include <vector>
 
 /**
  * \brief An assert.
@@ -70,6 +71,14 @@ static bool GLLogCall(const char* function, const char* file, int line)
 		
 	}
 	return !hadErrors;
+}
+
+
+inline std::vector<std::string> g_debugStrings;
+
+inline void debugText(const std::string &str)
+{
+	g_debugStrings.push_back(str);
 }
 
 #endif

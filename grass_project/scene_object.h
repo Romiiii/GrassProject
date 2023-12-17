@@ -39,7 +39,7 @@ protected:
 	* \brief Sets the specified attribute of the vertex shaderProgram
 	*/
 	void setVertexShaderAttribute(
-		char* attributeName,
+		const char* attributeName,
 		const std::vector<float>& data,
 		int dataSize,
 		ShaderProgram& shaderProgram);

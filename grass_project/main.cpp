@@ -48,7 +48,6 @@ Velocity: 2.7
 #include "util.h"
 #include "grass_math.h"
 
-
 #define CHECKER_PATTERN_TEXTURE_WIDTH 512
 
 // Constants
@@ -609,6 +608,7 @@ int main()
 		}
 		lastFrame = currentFrame;
 		numFrames++;
+		g_debugStrings.clear();
 	}
 
 	cleanUp();
@@ -803,7 +803,7 @@ void initSceneObjects(Patch &patch)
 		SceneObjectInstanced *blades = new SceneObjectInstanced(
 			grassPositions, grassColors, grassIndices, grassNormals, instanceMatrixBuffer, *bladesShaderProgram, &grassUVs);
 		// Do not scale the blades
-		blades->model = translation;
+		blades->model = translation * glm::scale(1, scene.config.bladeHeight, 1);
 		scene.blades.push_back(blades);
 	}
 
@@ -1163,11 +1163,19 @@ void drawSettingsWindow()
 			scene.config.windY = scene.config.fluidGridConfig.velY;
 		}
 	}
-
+	
+	if (ImGui::SliderFloat("Blade height", &scene.config.bladeHeight, 0.1f, 10.0f))
+	{
+		for (int i = 0; i < MAX_PATCHES; i++)
+		{
+			glm::vec2 position = calculateSpiralPosition(i) * scene.config.patchSize;
+			glm::mat4 translation = glm::translate(position.x, 0, position.y);
+			scene.blades[i]->model = translation * glm::scale(1, scene.config.bladeHeight, 1);
+		}
+	}
 
 	if (ImGui::SliderFloat("PatchSize", &scene.config.patchSize, 1.0f, 100.0f))
 	{
-
 		switch (scene.config.bladeDistribution)
 		{
 		case BladeDistribution::ONE_DIRECTION:
@@ -1188,11 +1196,13 @@ void drawSettingsWindow()
 			glm::vec2 position = calculateSpiralPosition(i) * scene.config.patchSize;
 			glm::mat4 translation = glm::translate(position.x, 0, position.y);
 			scene.patches[i]->model = translation * glm::scale(scene.config.patchSize, scene.config.patchSize, scene.config.patchSize);
-			scene.blades[i]->model = translation;
+			scene.blades[i]->model = translation * glm::scale(1, scene.config.bladeHeight, 1);
 		}
 
 		setWorldMinMax();
 	}
+
+
 	drawTooltip("The sizes of each individual Patch. Same number of blades of grass.");
 
 	ImGui::SliderInt("Number of patches", &scene.config.numPatches, 1, MAX_PATCHES);
@@ -1323,7 +1333,7 @@ void drawGui()
 	// Hitpos debug
 	ImGui::SetNextWindowViewport(viewport->ID);
 	ImGui::SetNextWindowPos(viewport->Pos);
-	
+	ImGui::SetNextWindowSize({viewport->Size});
 	ImGui::Begin("Look info", nullptr, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar);
 
 	glm::vec2 mousePos = getNormalizedMousePos();
@@ -1340,9 +1350,14 @@ void drawGui()
 	else {
 		ImGui::Text("Hits: MISS");
 	}
+		
+	debugText(std::format("WorldRekt: ({:.2f}, {:.2f}, {:.2f})", scene.worldRekt.center.x, scene.worldRekt.center.y, scene.worldRekt.center.z));
+	debugText(std::format("    Size (% .3f, % .3f)", scene.worldRekt.width, scene.worldRekt.height));
 
-	ImGui::Text("WorldRekt: (%.3f, %.3f, %.3f)", scene.worldRekt.center.x, scene.worldRekt.center.y, scene.worldRekt.center.z);
-	ImGui::Text("    Size (% .3f, % .3f)", scene.worldRekt.width, scene.worldRekt.height);
+	for (const auto& str : g_debugStrings)
+	{
+		ImGui::Text(str.c_str());
+	}
 
 	ImGui::End();
 
@@ -1516,7 +1531,6 @@ void processInput(GLFWwindow *window)
 			if (mode == GL_LINE)
 			{
 				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
 			}
 			else
 			{

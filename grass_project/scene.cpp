@@ -2,6 +2,7 @@
 #include "glmutils.h"
 #include <glm\glm.hpp>
 #include "grass_math.h"
+#include <format>
 
 void Scene::addSceneObject(SceneObject* sceneObject) {
 	sceneObjects.push_back(sceneObject);
