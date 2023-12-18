@@ -1351,8 +1351,8 @@ void drawGui()
 		ImGui::Text("Hits: MISS");
 	}
 		
-	debugText(std::format("WorldRekt: ({:.2f}, {:.2f}, {:.2f})", scene.worldRekt.center.x, scene.worldRekt.center.y, scene.worldRekt.center.z));
-	debugText(std::format("    Size (% .3f, % .3f)", scene.worldRekt.width, scene.worldRekt.height));
+	debugText("WorldRekt: (%.2f, %.2f, %.2f)", scene.worldRekt.center.x, scene.worldRekt.center.y, scene.worldRekt.center.z);
+	debugText("    Size (% .3f, % .3f)", scene.worldRekt.width, scene.worldRekt.height);
 
 	for (const auto& str : g_debugStrings)
 	{

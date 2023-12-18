@@ -4,6 +4,7 @@
 #include <glad/glad.h>
 #include <iostream>
 #include <vector>
+#include <cstdarg>
 
 /**
  * \brief An assert.
@@ -76,9 +77,20 @@ static bool GLLogCall(const char* function, const char* file, int line)
 
 inline std::vector<std::string> g_debugStrings;
 
-inline void debugText(const std::string &str)
+inline void debugText(const char* fmt...)
 {
-	g_debugStrings.push_back(str);
+	va_list args;
+	va_start(args, fmt);
+
+	int size = vsnprintf(nullptr, 0, fmt, args);
+	char* buffer = new char[size + 1];
+	memset(buffer, 0, size + 1);
+	vsnprintf(buffer, size + 1, fmt, args);
+
+	va_end(args);
+
+	g_debugStrings.push_back(std::string(buffer));
+	delete[] buffer;
 }
 
 #endif
