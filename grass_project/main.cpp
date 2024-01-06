@@ -942,6 +942,86 @@ std::optional<glm::vec3> mouseHitsGround()
 	return ray.intersectsRectangle(scene.worldRekt);
 }
 
+void drawFanWindow()
+{
+	auto& conf = scene.config;
+	auto& fluidConf = conf.fluidGridConfig;
+
+	ImGui::Begin("Fans");
+	ImGui::Checkbox("Draw Fans", &scene.config.fluidGridConfig.shouldDrawFans);
+
+	for (int fanIndex = 0; fanIndex < fluidConf.fans.size(); fanIndex++)
+	{
+		Fan& fan = scene.config.fluidGridConfig.fans[fanIndex];
+
+		ImGui::PushID(fanIndex);
+		std::string headerName = "Fan " + std::to_string(fanIndex);
+
+		bool wasSelected = fluidConf.selectedFanIndex == fanIndex;
+
+
+		if (ImGui::CollapsingHeader(headerName.c_str()))
+		{
+			ImGui::BeginGroup();
+
+			if (wasSelected)
+			{
+				ImGui::PushStyleColor(ImGuiCol_FrameBg, { 1, 0, 0, 1 });
+			}
+
+			const char* select_btn_text = fluidConf.selectedFanIndex == fanIndex ? "Deselect" : "Select";
+
+			if (ImGui::Button(select_btn_text))
+			{
+				if (fluidConf.selectedFanIndex == fanIndex)
+				{
+					fluidConf.selectedFanIndex = -1;
+				}
+				else
+				{
+					fluidConf.selectedFanIndex = fanIndex;
+				}
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Delete"))
+			{
+				fluidConf.fans.erase(fluidConf.fans.begin() + fanIndex);
+
+				if (fluidConf.fans.size() == 0)
+				{
+					fluidConf.selectedFanIndex = -1;
+				}
+
+				// Are we deleting the selected one?
+				if (fluidConf.selectedFanIndex == fanIndex)
+				{
+					fluidConf.selectedFanIndex = -1;
+				}
+				// We are deleting something to the left of the selected
+				else if (fanIndex < fluidConf.selectedFanIndex)
+				{
+					fluidConf.selectedFanIndex--;
+				}
+			}
+
+
+			ImGui::Checkbox("Fan Active", &fan.active);
+			ImGui::DragFloat2("Fan Position", (float*)&fan.position, 0.05f, 0, 1);
+			ImGui::InputFloat("Fan Density", &fan.density);
+			ImGui::InputFloat2("Fan Velocity", (float*)&fan.velocity);
+
+			if (wasSelected)
+			{
+				ImGui::PopStyleColor();
+			}
+			ImGui::EndGroup();
+		}
+
+		ImGui::PopID();
+	}
+
+	ImGui::End();
+}
 
 void drawFluidGridWindow()
 {
@@ -986,82 +1066,16 @@ void drawFluidGridWindow()
 
 		}
 
-		if (ImGui::CollapsingHeader("Fans"))
+		static bool shouldDrawFanWindow = true;
+		if (ImGui::Button("Toggle Fan Window"))
 		{
-			ImGui::Indent();
-			ImGui::Checkbox("Draw Fans", &scene.config.fluidGridConfig.shouldDrawFans);
+			shouldDrawFanWindow = !shouldDrawFanWindow;
+		}
 
-			for (int fanIndex = 0; fanIndex < fluidConf.fans.size(); fanIndex++)
-			{
-				Fan& fan = scene.config.fluidGridConfig.fans[fanIndex];
+		if (shouldDrawFanWindow)
+		{
+			drawFanWindow();
 
-				ImGui::PushID(fanIndex);
-				std::string headerName = "Fan " + std::to_string(fanIndex);
-
-				bool wasSelected = fluidConf.selectedFanIndex == fanIndex;
-
-
-				if (ImGui::CollapsingHeader(headerName.c_str()))
-				{
-					ImGui::BeginGroup();
-
-					if (wasSelected)
-					{
-						ImGui::PushStyleColor(ImGuiCol_FrameBg, { 1, 0, 0, 1 });
-					}
-
-					const char* select_btn_text = fluidConf.selectedFanIndex == fanIndex ? "Deselect" : "Select";
-
-					if (ImGui::Button(select_btn_text))
-					{
-						if (fluidConf.selectedFanIndex == fanIndex)
-						{
-							fluidConf.selectedFanIndex = -1;
-						} 
-						else
-						{
-							fluidConf.selectedFanIndex = fanIndex;
-						} 
-					}
-					ImGui::SameLine();
-					if (ImGui::Button("Delete"))
-					{
-						fluidConf.fans.erase(fluidConf.fans.begin() + fanIndex);
-
-						if (fluidConf.fans.size() == 0)
-						{
-							fluidConf.selectedFanIndex = -1;
-						}
-						
-						// Are we deleting the selected one?
-						if (fluidConf.selectedFanIndex == fanIndex)
-						{
-							fluidConf.selectedFanIndex = -1;
-						}
-						// We are deleting something to the left of the selected
-						else if (fanIndex < fluidConf.selectedFanIndex)
-						{
-							fluidConf.selectedFanIndex--;
-						}
-					}
-
-
-					ImGui::Checkbox("Fan Active", &fan.active);
-					ImGui::DragFloat2("Fan Position", (float*)&fan.position, 0.05f, 0, 1);
-					ImGui::InputFloat("Fan Density", &fan.density);
-					ImGui::InputFloat2("Fan Velocity", (float*)&fan.velocity);
-
-					if (wasSelected)
-					{
-						ImGui::PopStyleColor();
-					}
-					ImGui::EndGroup();
-				}
-
-				ImGui::PopID();
-			}
-
-			ImGui::Unindent();
 		}
 
 		ImGui::Text("Randomness Controls");
@@ -1090,7 +1104,7 @@ void drawFluidGridWindow()
 
 
 		float width = 512;
-		if (ImGui::BeginTabBar("Heck yes"))
+		if (ImGui::BeginTabBar("Fluid Grid Textures"))
 		{
 			if (ImGui::BeginTabItem("Density"))
 			{
