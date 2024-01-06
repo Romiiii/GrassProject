@@ -1560,9 +1560,48 @@ void processInput(GLFWwindow* window)
 	static bool rWasPressed = false;
 	static bool pWasPressed = false;
 	static bool vWasPressed = false;
+	static bool upWasPressed = false;
+	static bool downWasPressed = false;
+
+	const float densityStep = 25;
 
 	handleScroll();
 
+	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+	{
+		if (!upWasPressed)
+		{
+			upWasPressed = true;
+
+			auto fan = getSelectedFan();
+			if (fan)
+			{
+				fan->density += densityStep;
+			}
+		}
+	}
+	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_RELEASE)
+	{
+		upWasPressed = false;
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+	{
+		if (!downWasPressed)
+		{
+			downWasPressed = true;
+
+			auto fan = getSelectedFan();
+			if (fan)
+			{
+				fan->density -= densityStep;
+			}
+		}
+	}
+	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_RELEASE)
+	{
+		downWasPressed = false;
+	}
 
 	if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
 	{
