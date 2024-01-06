@@ -108,6 +108,31 @@ class Scene {
 	Config config;
 
 	Rectangle worldRekt = {};
+
+	inline glm::vec2 mapPositionFromWorldSpace(glm::vec2 pos)
+	{
+		return {
+			map(pos.x, config.worldMin, config.worldMax, 0.0, 1.0f),
+			map(pos.y, config.worldMin, config.worldMax, 1.0, 0.0f)
+		};
+	}
+
+	inline glm::vec2 mapPositionToWorldSpace(glm::vec2 pos)
+	{
+		return map(pos, 0.0, 1.0f, config.worldMin, config.worldMax);
+	}
+
+	inline glm::vec2 mapVelocityFromWorldSpace(glm::vec2 dif)
+	{
+		return map(dif, 0, worldRekt.width, 0, config.fluidGridConfig.wholeWorldToVelocityMapping);
+	}
+
+	inline glm::vec2 mapVelocityToWorldSpace(glm::vec2 dif)
+	{
+		return map(dif, 0, this->config.fluidGridConfig.wholeWorldToVelocityMapping, 0, worldRekt.width);
+	}
+
+
 };
 
 #endif

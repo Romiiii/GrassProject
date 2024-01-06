@@ -2,43 +2,41 @@
 #include "glmutils.h"
 #include <glm\glm.hpp>
 #include "grass_math.h"
-#include <format>
 
 void Scene::addSceneObject(SceneObject* sceneObject) {
 	sceneObjects.push_back(sceneObject);
 }
 
+void setupFanDebugIconForFan(Scene* scene, Fan& fan)
+{
+	auto &config = scene->config;
+
+	// Position
+	auto fanPosition = scene->mapPositionToWorldSpace(fan.position);
+	fanPosition.y -= config.patchSize;
+	
+	// Rotation
+	float angle = glm::atan(fan.velocity.x, fan.velocity.y);
+
+	// Scaling
+	float mappingValue = config.fluidGridConfig.wholeWorldToVelocityMapping;
+	auto velocityWs = scene->mapVelocityToWorldSpace(fan.velocity);
+	float magnitude = glm::length(velocityWs);
+
+	float minSize = 0.25f;
+	float maxSize = 10.0f;
+	float sizeX = glm::clamp(map(fan.density, 0.0f, 500.0f, minSize, maxSize), minSize, maxSize);
+	float sizeZ = glm::max(magnitude, minSize);
+
+	scene->fanDebugIcon->model =
+		glm::translate(glm::mat4(1), { fanPosition.x, 1.0f, -fanPosition.y}) *
+		glm::rotateY(angle) *
+		glm::scale(sizeX, 1.0f, sizeZ);
+	scene->fanDebugIcon->isVisible = true;
+}
+
 void Scene::updateDynamic() {
 	light->model = glm::translate(glm::mat4(1), config.lightPosition);
-
-	if (config.fluidGridConfig.shouldDrawFans) {
-		float fanX = map(config.fluidGridConfig.fan.x, 0.0f, 1.0f, config.worldMin, config.worldMax);
-		float fanY = map(config.fluidGridConfig.fan.y, 0.0f, 1.0f, config.worldMin, config.worldMax) - config.patchSize;
-
-		float velX = config.fluidGridConfig.fan.velocityX;
-		float velY = config.fluidGridConfig.fan.velocityY;
-
-		float angle = glm::atan(velX, velY);
-
-		float minSize = 0.25f;
-		float maxSize = 10.0f;
-
-		float mappingValue = config.fluidGridConfig.wholeWorldToVelocityMapping;
-		glm::vec2 direction;
-		direction.x = map(velX, .0f, mappingValue, 0.0f, worldRekt.width);
-		direction.y = map(velY, .0f, mappingValue, 0.0f, worldRekt.width);
-		float magnitude = glm::length(direction);
-
-		float density = config.fluidGridConfig.fan.density;
-		float sizeX = glm::clamp(map(density, 0.0f, 500.0f, minSize, maxSize), minSize, maxSize);
-		float sizeZ = glm::max(magnitude, minSize);
-
-		fanDebugIcon->model = glm::translate(glm::mat4(1), { fanX, 1.0f, -fanY }) * glm::rotateY(angle) * glm::scale(sizeX, 1.0f, sizeZ);
-		fanDebugIcon->isVisible = true;
-	}
-	else {
-		fanDebugIcon->isVisible = false;
-	}
 }
 
 void Scene::render() {
@@ -59,14 +57,23 @@ void Scene::render() {
 		blades[i]->draw(*this);
 	}
 
+	if(config.fluidGridConfig.shouldDrawFans)
 	{
 		glm::vec4 oldColor = config.lightColor;
 
 		glEnable(GL_BLEND);
-		config.lightColor = glm::vec4(1, 1, 1, 0.2f);
-
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		fanDebugIcon->draw(*this);
+
+		for (size_t fanIndex = 0; fanIndex < config.fluidGridConfig.fans.size(); fanIndex++)
+		{
+			config.lightColor = config.fluidGridConfig.selectedFanIndex == fanIndex ?
+				glm::vec4(1.0, 0, 0, 0.2f) : glm::vec4(1, 1, 1, 0.2f);
+
+			Fan& fan = config.fluidGridConfig.fans[fanIndex];
+			setupFanDebugIconForFan(this, fan);
+			fanDebugIcon->draw(*this);
+		}
+
 		glDisable(GL_BLEND);
 
 		config.lightColor = oldColor;

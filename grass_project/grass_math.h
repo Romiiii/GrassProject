@@ -25,4 +25,9 @@ inline float map(float s, float a1, float a2, float b1, float b2)
 	return b1 + (s - a1) * (b2 - b1) / (a2 - a1);
 }
 
+inline glm::vec2 map(glm::vec2 s, float a1, float a2, float b1, float b2)
+{
+	return { map(s.x, a1, a2, b1, b2), map(s.y, a1, a2, b1, b2) };
+}
+
 #endif

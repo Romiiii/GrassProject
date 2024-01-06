@@ -89,87 +89,87 @@ Patch patch;
 /**
  * \brief Vertex shader for the blades
 */
-Shader *bladesVertexShader;
+Shader* bladesVertexShader;
 
 /**
  * \brief Fragment shader for the blades
 */
-Shader *bladesFragmentShader;
+Shader* bladesFragmentShader;
 
 /**
  * \brief Shader program for blades rendering
 */
-ShaderProgram *bladesShaderProgram;
+ShaderProgram* bladesShaderProgram;
 
 /**
  * \brief Vertex shader for the patch
 */
-Shader *patchVertexShader;
+Shader* patchVertexShader;
 
 /**
  * \brief Fragment shader for the patch.
  */
-Shader *patchFragmentShader;
+Shader* patchFragmentShader;
 
 /**
  * \brief Shader program for patch rendering
 */
-ShaderProgram *patchShaderProgram;
+ShaderProgram* patchShaderProgram;
 
 /**
  * \brief Vertex shader for the Skybox
 */
-Shader *skyboxVertexShader;
+Shader* skyboxVertexShader;
 
 /**
  * \brief Fragment shader for the skybox
 */
-Shader *skyboxFragmentShader;
+Shader* skyboxFragmentShader;
 
 /**
  * \brief Shader program for Skybox rendering
 */
-ShaderProgram *skyboxShaderProgram;
+ShaderProgram* skyboxShaderProgram;
 
 /**
  * \brief Vertex shader for the Light objects
 */
-Shader *lightVertexShader;
+Shader* lightVertexShader;
 
 /**
  * \brief Fragment shader for the blades
 */
-Shader *lightFragmentShader;
+Shader* lightFragmentShader;
 
 /**
  * \brief Shader program for light object rendering
 */
-ShaderProgram *lightShaderProgram;
+ShaderProgram* lightShaderProgram;
 
 /**
  * \brief Perlin noise compute shader
 */
-Shader *perlinNoiseComputeShader;
+Shader* perlinNoiseComputeShader;
 
 /**
  * \brief Perlin noise compute shader program
 */
-ShaderProgram *perlinNoiseComputeShaderProgram;
+ShaderProgram* perlinNoiseComputeShaderProgram;
 
 /**
  * \brief Checker pattern compute shader
 */
-Shader *checkerPatternComputeShader;
+Shader* checkerPatternComputeShader;
 
 /**
  * \brief Checker pattern compute shader program
 */
-ShaderProgram *checkerPatternComputeShaderProgram;
+ShaderProgram* checkerPatternComputeShaderProgram;
 
 /**
  * \brief Fluid grid
 */
-FluidGrid *fluidGrid;
+FluidGrid* fluidGrid;
 
 /**
  * \brief Id of the instance matrix buffer for rendering blade-instances
@@ -184,40 +184,40 @@ bool clearNextSimulate = true;
 /**
  * \brief Skybox day texture
 */
-Texture *cubemapTextureDay;
+Texture* cubemapTextureDay;
 
 /**
  * \brief Skybox night texture
  */
-Texture *cubemapTextureNight;
+Texture* cubemapTextureNight;
 
 
 /**
  * \brief Checker pattern texture
 */
-Texture *checkerPatternTexture;
+Texture* checkerPatternTexture;
 
 /**
  * \brief Perlin noise texture
 */
-Texture *perlinNoiseTexture;
+Texture* perlinNoiseTexture;
 
 
 /**
  * \brief PerlinSeed texture
 */
-Texture *perlinNoiseSeedTexture;
+Texture* perlinNoiseSeedTexture;
 
 /**
  * \brief Perlin noise texture data, used for uploading perlin noise data
 */
-float *perlinNoiseTextureData;
+float* perlinNoiseTextureData;
 
 /**
  * \brief Perlin noise seed texture data, used for uploading perlin noise
  * seed data.
 */
-float *perlinNoiseSeedTextureData;
+float* perlinNoiseSeedTextureData;
 
 //
 // Camera setup
@@ -276,19 +276,19 @@ long numFrames = 0;
 /**
  * \brief The window being rendered to
 */
-GLFWwindow *window;
+GLFWwindow* window;
 
 /**
  * \brief Initialize the window
  * \return Return the created window
 */
-GLFWwindow *initGLFWWindow();
+GLFWwindow* initGLFWWindow();
 
 /**
  * \brief Initialize ImGUI
  * \param window Window to initialize for
 */
-void initIMGUI(GLFWwindow *window);
+void initIMGUI(GLFWwindow* window);
 
 /**
  * \brief Initialize shaders, textures, and the Z buffer
@@ -303,7 +303,7 @@ void generateCheckerPatternTexture();
 /**
 * Generates a checker pattern on the GPU.
 */
-void checkerPattern2DGPU(ShaderProgram *computeShaderProgram, GLuint computeShaderTexture, int checkerSize);
+void checkerPattern2DGPU(ShaderProgram* computeShaderProgram, GLuint computeShaderTexture, int checkerSize);
 
 /**
  * \brief Set the wind textures based on the simulation mode that is used.
@@ -327,7 +327,7 @@ glm::vec2 calculateSpiralPosition(int n);
  * \brief Initialize the scene.
  * \param patch Patch object to use to creates patches.
 */
-void initSceneObjects(Patch &patch);
+void initSceneObjects(Patch& patch);
 
 /**
  * \brief Generate perlin noise.
@@ -339,14 +339,14 @@ void generatePerlinNoiseTexture();
  * @param modelMatrices The matrix data.
  * @param maxBlades The maximum number of blades.
 */
-void createInstanceMatrixBuffer(glm::mat4 *modelMatrices, const unsigned int maxBlades);
+void createInstanceMatrixBuffer(glm::mat4* modelMatrices, const unsigned int maxBlades);
 
 /**
  * @brief Transfers the instance matrix buffer to the GPU.
  * @param modelMatrices The matrix data to transfer.
  * @param numInstances The number of instances.
 */
-void transferInstanceMatrixBuffer(glm::mat4 *modelMatrices, const unsigned int numInstances);
+void transferInstanceMatrixBuffer(glm::mat4* modelMatrices, const unsigned int numInstances);
 
 glm::vec2 getNormalizedMousePos();
 
@@ -362,7 +362,7 @@ void drawGui();
 /**
  * \brief Draws the tooltip
 */
-void drawTooltip(const char *desc);
+void drawTooltip(const char* desc);
 
 /**
  * @brief Restrict the cursor to a range.
@@ -375,7 +375,7 @@ void drawTooltip(const char *desc);
  * @param x The restricted x.
  * @param y The restricted y.
 */
-void cursorInRange(float screenX, float screenY, int screenW, int screenH, float min, float max, float &x, float &y);
+void cursorInRange(float screenX, float screenY, int screenW, int screenH, float min, float max, float& x, float& y);
 
 /**
  * @brief The GLFW callback for screen resize. Resizes the viewport.
@@ -383,13 +383,13 @@ void cursorInRange(float screenX, float screenY, int screenW, int screenH, float
  * @param width New width.
  * @param height New height.
 */
-void framebufferSizeCallback(GLFWwindow *window, int width, int height);
+void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 
 /**
  * @brief Process input for a window
  * @param window Window to process input for
 */
-void processInput(GLFWwindow *window);
+void processInput(GLFWwindow* window);
 
 /**
  * @brief GLFW key input callback
@@ -400,7 +400,7 @@ void processInput(GLFWwindow *window);
  * @param action Was the key pressed or released?
  * @param mods Any key modifiers?
 */
-void keyInputCallback(GLFWwindow *window, int button, int other, int action, int mods);
+void keyInputCallback(GLFWwindow* window, int button, int other, int action, int mods);
 
 /**
  * @brief GLFW cursor input callback
@@ -408,12 +408,16 @@ void keyInputCallback(GLFWwindow *window, int button, int other, int action, int
  * @param posX The new x position of the cursor
  * @param posY The new y position of the cursor
 */
-void cursorInputCallback(GLFWwindow *window, double posX, double posY);
+void cursorInputCallback(GLFWwindow* window, double posX, double posY);
 
 /**
  * @brief Cleans up the scene.
 */
 void cleanUp();
+
+
+// INPUT STUFF
+bool g_ctrlIsPressed = false;
 
 glm::vec3 g_fanDragStart = {};
 bool g_fanIsDragging = false;
@@ -425,7 +429,7 @@ void setWorldMinMax()
 		 start at (0, 0), so the left will have fewer patches for odd widths. We then negate it, because it's in the
 		 negative halfspace.
 	 */
-	scene.config.worldMin = (float)(- floor(sqrt(MAX_PATCHES) / 2) * (double)scene.config.patchSize);
+	scene.config.worldMin = (float)(-floor(sqrt(MAX_PATCHES) / 2) * (double)scene.config.patchSize);
 
 	/* The process for the max is similar, though we take the ceiling rather than the floor. Because since we start at (0, 0) there are more
 		 patches to the right.
@@ -494,8 +498,19 @@ int main()
 
 	float worldWidth = scene.config.worldMax - scene.config.worldMin;
 	float center = (scene.config.worldMax + scene.config.worldMin) / 2.0f;
-	scene.worldRekt.center = {center, 0.0f, center};
+	scene.worldRekt.center = { center, 0.0f, center };
 	scene.worldRekt.height = scene.worldRekt.width = worldWidth;
+
+	Fan fan{};
+	fan.active = true;
+	fan.position.x = 0.2f;
+	fan.position.y = 0.2f;
+	fan.density = 250.0f;
+	fan.velocity.x = 150.0f;
+	fan.velocity.y = 0.0f;
+	scene.config.fluidGridConfig.selectedFanIndex = 0;
+
+	scene.config.fluidGridConfig.fans.push_back(fan);
 
 	// Set num blades per patch
 	if (scene.config.numBladesPerPatch < 0)
@@ -552,17 +567,20 @@ int main()
 		}
 
 		// FAN!
-		Fan &fan = scene.config.fluidGridConfig.fan;
-		if (fan.active)
+		for (size_t fanIndex = 0; fanIndex < scene.config.fluidGridConfig.fans.size(); fanIndex++)
 		{
-			int x = (int)(fluidGrid->getN() * fan.x);
-			int y = (int)(fluidGrid->getN() * fan.y);
+			Fan& fan = scene.config.fluidGridConfig.fans[fanIndex];
+			if (!fan.active)
+			{
+				continue;
+			}
 
-			// MAYBE INVERT VelocityY :(
-			fluidGrid->addVelocityAt(x, y, fan.velocityX, -fan.velocityY);
+			int x = (int)(fluidGrid->getN() * fan.position.x);
+			int y = (int)(fluidGrid->getN() * fan.position.y);
+
+			fluidGrid->addVelocityAt(x, y, fan.velocity.x, -fan.velocity.y);
 			fluidGrid->addDensityAt(x, y, fan.density);
 		}
-
 
 		clearNextSimulate = true;
 
@@ -592,9 +610,6 @@ int main()
 		scene.updateDynamic();
 		scene.render();
 
-		// Draw hitpoints
-		
-
 
 		drawGui();
 
@@ -615,7 +630,7 @@ int main()
 	return 0;
 }
 
-GLFWwindow *initGLFWWindow()
+GLFWwindow* initGLFWWindow()
 {
 	// GLFW: initialize and configure
 	glfwInit();
@@ -629,7 +644,7 @@ GLFWwindow *initGLFWWindow()
 #endif
 
 	// GLFW window creation
-	GLFWwindow *window = glfwCreateWindow(INIT_SCR_WIDTH, INIT_SCR_HEIGHT, "GrassProject", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(INIT_SCR_WIDTH, INIT_SCR_HEIGHT, "GrassProject", NULL, NULL);
 	if (window == NULL)
 	{
 		std::cout << "Failed to create GLFW window" << std::endl;
@@ -761,7 +776,7 @@ glm::vec2 calculateSpiralPosition(int n)
 	return { k, k - (m - n - t) };
 }
 
-void initSceneObjects(Patch &patch)
+void initSceneObjects(Patch& patch)
 {
 	patch.init(MAX_BLADES_PER_PATCH, patchShaderProgram);
 
@@ -780,10 +795,10 @@ void initSceneObjects(Patch &patch)
 
 	createInstanceMatrixBuffer(patch.getBladeMatrices(), MAX_BLADES_PER_PATCH);
 
-	SceneObjectArrays *skybox = new SceneObjectArrays(cubePositions, *skyboxShaderProgram);
+	SceneObjectArrays* skybox = new SceneObjectArrays(cubePositions, *skyboxShaderProgram);
 	scene.sceneObjects.push_back(skybox);
 
-	SceneObjectArrays *light = new SceneObjectArrays(cubePositions, *lightShaderProgram);
+	SceneObjectArrays* light = new SceneObjectArrays(cubePositions, *lightShaderProgram);
 	scene.sceneObjects.push_back(light);
 	scene.light = light;
 	scene.light->isVisible = false;
@@ -792,7 +807,7 @@ void initSceneObjects(Patch &patch)
 	{
 		// Position of the entire thing
 		glm::vec2 position = calculateSpiralPosition(i) * scene.config.patchSize;
-		SceneObjectIndexed *patchSceneObject = new SceneObjectIndexed(
+		SceneObjectIndexed* patchSceneObject = new SceneObjectIndexed(
 			grassPatchPositions, grassPatchColors, grassPatchIndices, grassPatchNormals, *patchShaderProgram);
 		glm::mat4 translation = glm::translate(position.x, 0, position.y);
 		// Set the patch object
@@ -800,14 +815,14 @@ void initSceneObjects(Patch &patch)
 		scene.patches.push_back(patchSceneObject);
 
 		// Set the blades on the patch
-		SceneObjectInstanced *blades = new SceneObjectInstanced(
+		SceneObjectInstanced* blades = new SceneObjectInstanced(
 			grassPositions, grassColors, grassIndices, grassNormals, instanceMatrixBuffer, *bladesShaderProgram, &grassUVs);
 		// Do not scale the blades
 		blades->model = translation * glm::scale(1, scene.config.bladeHeight, 1);
 		scene.blades.push_back(blades);
 	}
 
-	SceneObjectArrays *fanDebugIcon = new SceneObjectArrays(fanDebugIconVertexPositions, *lightShaderProgram);
+	SceneObjectArrays* fanDebugIcon = new SceneObjectArrays(fanDebugIconVertexPositions, *lightShaderProgram);
 	scene.fanDebugIcon = fanDebugIcon;
 }
 
@@ -828,7 +843,7 @@ void generateCheckerPatternTexture()
 	checkerPattern2DGPU(checkerPatternComputeShaderProgram, scene.config.checkerPatternTexture->getTextureID(), scene.config.checkerSize);
 }
 
-void checkerPattern2DGPU(ShaderProgram *computeShaderProgram, GLuint computeShaderTexture, int checkerSize)
+void checkerPattern2DGPU(ShaderProgram* computeShaderProgram, GLuint computeShaderTexture, int checkerSize)
 {
 	computeShaderProgram->use();
 
@@ -839,7 +854,7 @@ void checkerPattern2DGPU(ShaderProgram *computeShaderProgram, GLuint computeShad
 	GLCall(glDispatchCompute(CHECKER_PATTERN_TEXTURE_WIDTH / 16, CHECKER_PATTERN_TEXTURE_WIDTH / 16, 1));
 }
 
-void initIMGUI(GLFWwindow *window)
+void initIMGUI(GLFWwindow* window)
 {
 	// IMGUI init
 	IMGUI_CHECKVERSION();
@@ -848,7 +863,7 @@ void initIMGUI(GLFWwindow *window)
 	// Setup Dear ImGui style
 	ImGui::StyleColorsDark();
 
-	ImGuiIO &io = ImGui::GetIO();
+	ImGuiIO& io = ImGui::GetIO();
 	(void)io;
 	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
 	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
@@ -860,13 +875,13 @@ void initIMGUI(GLFWwindow *window)
 	ImGui_ImplOpenGL3_Init("#version 330 core");
 }
 
-void createInstanceMatrixBuffer(glm::mat4 *modelMatrices, const unsigned int numInstances)
+void createInstanceMatrixBuffer(glm::mat4* modelMatrices, const unsigned int numInstances)
 {
 	GLCall(glGenBuffers(1, &instanceMatrixBuffer));
 	transferInstanceMatrixBuffer(modelMatrices, numInstances);
 }
 
-void transferInstanceMatrixBuffer(glm::mat4 *modelMatrices, const unsigned int numInstances)
+void transferInstanceMatrixBuffer(glm::mat4* modelMatrices, const unsigned int numInstances)
 {
 	GLCall(glBindBuffer(GL_ARRAY_BUFFER, instanceMatrixBuffer));
 	GLCall(glBufferData(GL_ARRAY_BUFFER, numInstances * sizeof(glm::mat4), modelMatrices, GL_STATIC_DRAW));
@@ -885,8 +900,8 @@ glm::vec2 getNormalizedMousePos() {
 		glfwGetCursorPos(window, &x, &y);
 		cursorPos = { (float)x, (float)y };
 
-		cursorPos.x = (2.0f * x) / width - 1.0f;
-		cursorPos.y = 1.0f - (2.0f * y) / height;
+		cursorPos.x = (2.0f * (float)x) / width - 1.0f;
+		cursorPos.y = 1.0f - (2.0f * (float)y) / height;
 	}
 
 	cursorPos = glm::clamp(cursorPos, -1.0f, 1.0f);
@@ -895,7 +910,7 @@ glm::vec2 getNormalizedMousePos() {
 
 Ray getMouseRay()
 {
-	Ray ray;
+	Ray ray = {};
 
 	glm::vec2 cursorPos = getNormalizedMousePos();
 
@@ -909,7 +924,7 @@ Ray getMouseRay()
 		eyeCoords = { eyeCoords.x, eyeCoords.y, -1.0f, 0.0f };
 		ray.direction = glm::normalize(glm::vec3(inverseView * eyeCoords));
 	}
-	
+
 	// Origin
 	{
 		glm::vec4 eyeCoords = (inverseProjection * clipCoords);
@@ -930,51 +945,96 @@ std::optional<glm::vec3> mouseHitsGround()
 
 void drawFluidGridWindow()
 {
-	if (scene.config.simulationMode == SimulationMode::FLUID_GRID)
+	auto& conf = scene.config;
+	auto& fluidConf = conf.fluidGridConfig;
+	if (conf.simulationMode == SimulationMode::FLUID_GRID)
 	{
 		ImGui::Begin("Fluid Grid");
-		static glm::vec2 pos = { 0.5f, 0.5f };
-		static glm::vec2 vel = {};
-		static float     den = {};
-		ImGui::DragFloat2("Position", (float *)&pos, 0.05f, 0, 1);
-		ImGui::InputFloat("Density", &den);
-		ImGui::InputFloat2("Velocity", (float *)&vel);
+
 		if (clearNextSimulate)
 		{
 			fluidGrid->clearCurrent();
 		}
-
-		if (ImGui::Button("Add Density"))
+		if (ImGui::CollapsingHeader("Add Impulse"))
 		{
-			fluidGrid->addDensityAt(
-				(int)(pos.x * fluidGrid->getN()), 
-				(int)(pos.y * fluidGrid->getN()), 
-				den);
-			clearNextSimulate = false;
+
+			static glm::vec2 pos = { 0.5f, 0.5f };
+			static glm::vec2 vel = {};
+			static float     den = {};
+			ImGui::DragFloat2("Position", (float*)&pos, 0.05f, 0, 1);
+			ImGui::InputFloat("Density", &den);
+			ImGui::SameLine();
+			if (ImGui::Button("Add Density"))
+			{
+				fluidGrid->addDensityAt(
+					(int)(pos.x * fluidGrid->getN()),
+					(int)(pos.y * fluidGrid->getN()),
+					den);
+				clearNextSimulate = false;
+			}
+			ImGui::InputFloat2("Velocity", (float*)&vel);
+			ImGui::SameLine();
+
+			if (ImGui::Button("Add Velocity"))
+			{
+				fluidGrid->addVelocityAt(
+					(int)(pos.x * fluidGrid->getN()),
+					(int)(pos.y * fluidGrid->getN()),
+					vel.x, vel.y);
+				clearNextSimulate = false;
+			}
+
 		}
-		if (ImGui::Button("Add Velocity"))
+
+		if (ImGui::CollapsingHeader("Fans"))
 		{
-			clearNextSimulate = false;
-			fluidGrid->addVelocityAt(
-				(int)(pos.x * fluidGrid->getN()),
-				(int)(pos.y * fluidGrid->getN()), 
-				vel.x, vel.y);
+
+			ImGui::Checkbox("Draw Fans", &scene.config.fluidGridConfig.shouldDrawFans);
+
+			for (int fanIndex = 0; fanIndex < fluidConf.fans.size(); fanIndex++)
+			{
+				Fan& fan = scene.config.fluidGridConfig.fans[fanIndex];
+
+				ImGui::PushID(fanIndex);
+				std::string headerName = "Fan " + std::to_string(fanIndex);
+
+				bool wasSelected = fluidConf.selectedFanIndex == fanIndex;
+
+
+				if (ImGui::CollapsingHeader(headerName.c_str()))
+				{
+					ImGui::BeginGroup();
+
+					if (wasSelected)
+					{
+						ImGui::PushStyleColor(ImGuiCol_FrameBg, { 1, 0, 0, 1 });
+					}
+					if (ImGui::Button("Select"))
+					{
+						fluidConf.selectedFanIndex = fanIndex;
+					}
+					ImGui::Checkbox("Fan Active", &fan.active);
+					ImGui::DragFloat2("Fan Position", (float*)&fan.position, 0.05f, 0, 1);
+					ImGui::InputFloat("Fan Density", &fan.density);
+					ImGui::InputFloat2("Fan Velocity", (float*)&fan.velocity);
+
+					if (wasSelected)
+					{
+						ImGui::PopStyleColor();
+					}
+					ImGui::EndGroup();
+				}
+
+				ImGui::PopID();
+			}
+
 		}
-
-		Fan& fan = scene.config.fluidGridConfig.fan;
-
-		ImGui::Text("Fan controls");
-		ImGui::Checkbox("Fan Active", &fan.active);
-		ImGui::Checkbox("Draw Fans", &scene.config.fluidGridConfig.shouldDrawFans);
-		ImGui::DragFloat2("Fan Position", (float *)&fan.x, 0.05f, 0, 1);
-		ImGui::InputFloat("Fan Density", &fan.density);
-		ImGui::InputFloat2("Fan Velocity", (float *)&fan.velocityX);
 
 		ImGui::Text("Randomness Controls");
 		static glm::vec2 denRange = { 100, 1000 };
 		static glm::vec2 velRange = { 100, 100 };
-		ImGui::InputFloat2("Random density", (float *)&denRange);
-		ImGui::InputFloat2("Random velocity", (float *)&velRange);
+		ImGui::InputFloat2("Random density", (float*)&denRange);
+		ImGui::InputFloat2("Random velocity", (float*)&velRange);
 		if (ImGui::Button("Add Random"))
 		{
 			clearNextSimulate = false;
@@ -1027,33 +1087,7 @@ void drawFluidGridWindow()
 #ifdef _DEBUG
 		ImGui::Text("Total Density %.1f", fluidGrid->totalDensity());
 #endif
-		/*
-		 *
-		if(ImGui::Button("Step through fluid simulation"))
-		{
-			if(clearNextSimulate)
-			{
-				fluidGrid->clearCurrent();
-			}
-			clearNextSimulate = true;
-			fluidGrid->simulate();
-		}
 
-		if(ImGui::Button("Step through fluid simulation fasssst"))
-		{
-			if(clearNextSimulate)
-			{
-				fluidGrid->clearCurrent();
-			}
-			clearNextSimulate = true;
-
-			for(int i = 0; i < 9; i++)
-			{
-				fluidGrid->simulate();
-				fluidGrid->clearCurrent();
-			}
-		}
-		 */
 
 		if (ImGui::Button("Reset"))
 		{
@@ -1069,7 +1103,7 @@ void drawFluidGridWindow()
 		ImGui::LabelText("Diffusion Value", "%.5f", *fluidGrid->getDiffPointer());
 		ImGui::DragFloat("Viscosity", fluidGrid->getViscPointer(), 0.0001f, 0.0f, 0.005f);
 		ImGui::DragFloat("Velocity Multiplier", &scene.config.fluidGridConfig.velocityMultiplier, 0.1f, 0, 100.0f);
-		ImGui::DragFloat2("Velocity Clamp", (float *)&scene.config.fluidGridConfig.velocityClampRange, 0.1f, 0, 2.0f);
+		ImGui::DragFloat2("Velocity Clamp", (float*)&scene.config.fluidGridConfig.velocityClampRange, 0.1f, 0, 2.0f);
 
 		ImGui::End();
 	}
@@ -1081,7 +1115,6 @@ void drawSettingsWindow()
 
 	ImGui::Text("Application average %.3f ms/frame (%.1f FPS) Framecount %lld Time %.0f",
 		1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate, numFrames, glfwGetTime());
-
 	ImGui::Text("Simulation Mode Settings");
 	if (ImGui::RadioButton("Perlin Noise", scene.config.simulationMode == SimulationMode::PERLIN_NOISE))
 	{
@@ -1163,7 +1196,7 @@ void drawSettingsWindow()
 			scene.config.windY = scene.config.fluidGridConfig.velY;
 		}
 	}
-	
+
 	if (ImGui::SliderFloat("Blade height", &scene.config.bladeHeight, 0.1f, 10.0f))
 	{
 		for (int i = 0; i < MAX_PATCHES; i++)
@@ -1217,7 +1250,7 @@ void drawSettingsWindow()
 		ImGui::SliderFloat("Wind Strength", &scene.config.windStrength, 0, 0.5f);
 		drawTooltip("Strength of the wind");
 
-		ImGui::DragFloat2("Wind Direction", (float *)&scene.config.windDirection,
+		ImGui::DragFloat2("Wind Direction", (float*)&scene.config.windDirection,
 			0.1f, -1.0f, 1.0f);
 		drawTooltip("Direction of the wind");
 	}
@@ -1264,7 +1297,7 @@ void drawSettingsWindow()
 
 	if (ImGui::CollapsingHeader("Camera Settings"))
 	{
-		ImGui::InputFloat3("Camera Position", (float *)&camera.camPosition);
+		ImGui::InputFloat3("Camera Position", (float*)&camera.camPosition);
 		ImGui::InputFloat("Yaw", &camera.yaw);
 		ImGui::InputFloat("Pitch", &camera.pitch);
 	}
@@ -1276,8 +1309,8 @@ void drawSettingsWindow()
 	{
 		ImGui::Checkbox("Show Light", &scene.light->isVisible);
 		ImGui::SliderFloat("Ambient Light Strength", &scene.config.ambientStrength, 0.0f, 1.0f);
-		ImGui::DragFloat3("Light Position", (float *)&scene.config.lightPosition, 0.1f, -100, 100);
-		ImGui::ColorEdit4("Light Color", (float *)&scene.config.lightColor);
+		ImGui::DragFloat3("Light Position", (float*)&scene.config.lightPosition, 0.1f, -100, 100);
+		ImGui::ColorEdit4("Light Color", (float*)&scene.config.lightColor);
 		ImGui::SliderFloat("Light Intensity", &scene.config.lightIntensity, 0.0f, 10);
 
 		ImGui::Separator();
@@ -1333,7 +1366,7 @@ void drawGui()
 	// Hitpos debug
 	ImGui::SetNextWindowViewport(viewport->ID);
 	ImGui::SetNextWindowPos(viewport->Pos);
-	ImGui::SetNextWindowSize({viewport->Size});
+	ImGui::SetNextWindowSize({ viewport->Size });
 	ImGui::Begin("Look info", nullptr, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar);
 
 	glm::vec2 mousePos = getNormalizedMousePos();
@@ -1350,7 +1383,7 @@ void drawGui()
 	else {
 		ImGui::Text("Hits: MISS");
 	}
-		
+
 	debugText("WorldRekt: (%.2f, %.2f, %.2f)", scene.worldRekt.center.x, scene.worldRekt.center.y, scene.worldRekt.center.z);
 	debugText("    Size (% .3f, % .3f)", scene.worldRekt.width, scene.worldRekt.height);
 
@@ -1373,18 +1406,18 @@ void drawGui()
 	// Update and Render additional Platform Windows
 	// (Platform functions may change the current OpenGL context, so we save/restore it to make it easier to paste this code elsewhere.
 	//  For this specific demo app we could also call glfwMakeContextCurrent(window) directly)
-	ImGuiIO &io = ImGui::GetIO();
+	ImGuiIO& io = ImGui::GetIO();
 	(void)io;
 	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 	{
-		GLFWwindow *backup_current_context = glfwGetCurrentContext();
+		GLFWwindow* backup_current_context = glfwGetCurrentContext();
 		ImGui::UpdatePlatformWindows();
 		ImGui::RenderPlatformWindowsDefault();
 		glfwMakeContextCurrent(backup_current_context);
 	}
 }
 
-void drawTooltip(const char *desc)
+void drawTooltip(const char* desc)
 {
 	if (ImGui::IsItemHovered())
 	{
@@ -1398,7 +1431,7 @@ void drawTooltip(const char *desc)
 
 void cursorInRange(
 	float screenX, float screenY, int screenW, int screenH,
-	float min, float     max, float &x, float &y)
+	float min, float max, float& x, float& y)
 {
 	float sum = max - min;
 	float xInRange = (float)screenX / (float)screenW * sum - sum / 2.0f;
@@ -1407,14 +1440,97 @@ void cursorInRange(
 	y = -yInRange; // Flip screen space on the y-axis
 }
 
-void framebufferSizeCallback(GLFWwindow *window, int width, int height)
+void framebufferSizeCallback(GLFWwindow* window, int width, int height)
 {
 	// Makes sure the viewport matches the new window dimensions; note that width and
 	// height will be significantly larger than specified on retina displays.
 	glViewport(0, 0, width, height);
 }
 
-void processInput(GLFWwindow *window)
+
+
+// RETURNS NULL IF NONE IS SELECTED
+Fan* getSelectedFan()
+{
+	// Ensure we have a fan selected
+	int fanIndex = scene.config.fluidGridConfig.selectedFanIndex;
+	if (fanIndex == -1)
+		return nullptr;
+
+	Fan* fan = &scene.config.fluidGridConfig.fans[fanIndex];
+	return fan;
+}
+
+void handleScroll()
+{
+	static bool scrollIsPressed = false;
+
+	debugText("Ctrl: %d", g_ctrlIsPressed);
+	{
+		auto tmpFan = getSelectedFan();
+		auto ws = scene.mapPositionToWorldSpace(tmpFan->position);
+		debugText("Fan is at: (%.2f, %.2f) / (%.2f, %.2f)", tmpFan->position.x, tmpFan->position.y, ws.x, ws.y);
+	}
+
+
+	{
+		auto mousePos = getNormalizedMousePos();
+		debugText("MousePos in scroll: (%.2f, %.2f)", mousePos.x, mousePos.y);
+	}
+	// Is button down
+	if (glfwGetMouseButton(window, 2) == GLFW_PRESS)
+	{
+
+		// First button down first time after having released
+		if (!scrollIsPressed)
+		{
+			auto hit = mouseHitsGround();
+ 			if (hit.has_value())
+			{
+				// We hit something
+				glm::vec3 hitPos = hit.value();
+				if (g_ctrlIsPressed)
+				{
+					// Create new fan and select it
+					Fan fan{};
+					fan.density = 250.0f;
+					fan.position = scene.mapPositionFromWorldSpace({ hitPos.x, hitPos.z });
+					scene.config.fluidGridConfig.fans.push_back(fan);
+					scene.config.fluidGridConfig.selectedFanIndex = (int)scene.config.fluidGridConfig.fans.size() - 1;
+				}
+				else if (Fan* fan = getSelectedFan())
+				{
+					fan->position = scene.mapPositionFromWorldSpace({ hitPos.x, hitPos.z });
+				}
+
+				g_fanDragStart = hitPos;
+				g_fanIsDragging = true;
+			}
+
+			scrollIsPressed = true;
+		}
+		else
+		{
+			Fan* fan = getSelectedFan();
+			if (fan && scrollIsPressed && g_fanIsDragging)
+			{
+				auto hit = mouseHitsGround();
+				if (hit.has_value()) {
+					auto dif = hit.value() - g_fanDragStart;
+					fan->velocity = scene.mapVelocityFromWorldSpace({dif.x, dif.z});
+				}
+			}
+		}
+	}
+
+	if (glfwGetMouseButton(window, 2) == GLFW_RELEASE)
+	{
+		scrollIsPressed = false;
+		g_fanIsDragging = false;
+	}
+}
+
+void processInput(GLFWwindow* window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
@@ -1423,61 +1539,20 @@ void processInput(GLFWwindow *window)
 	static bool rWasPressed = false;
 	static bool pWasPressed = false;
 	static bool vWasPressed = false;
-	static bool scrollIsPressed = false;
 
-	// Input here is always available even when GUI is open.
-	if (glfwGetMouseButton(window, 2) == GLFW_PRESS)
+	handleScroll();
+
+
+	if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
 	{
-		if (!scrollIsPressed)
+		if (!g_ctrlIsPressed)
 		{
-			auto hit = mouseHitsGround();
-
-			if (hit.has_value()) {
-				glm::vec3 hitPos = hit.value();
-				
-				g_fanDragStart = hitPos;
-
-				g_fanIsDragging = true;
-			}
-			scrollIsPressed = true;
+			g_ctrlIsPressed = true;
 		}
 	}
-
-	if (scrollIsPressed)
+	if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_RELEASE)
 	{
-		if (g_fanIsDragging)
-		{
-			auto hit = mouseHitsGround();
-			if (hit.has_value()) {
-				glm::vec3 difference = hit.value() - g_fanDragStart;
-				scene.config.fluidGridConfig.fan.x = map(g_fanDragStart.x, scene.config.worldMin, scene.config.worldMax, 0.0, 1.0f);
-				scene.config.fluidGridConfig.fan.y = map(g_fanDragStart.z, scene.config.worldMin, scene.config.worldMax, 1.0, 0.0f);
-				
-				float mappingValue = scene.config.fluidGridConfig.wholeWorldToVelocityMapping;
-				scene.config.fluidGridConfig.fan.velocityX = map(difference.x, 0, scene.worldRekt.width, 0, mappingValue);
-				scene.config.fluidGridConfig.fan.velocityY = map(difference.z, 0, scene.worldRekt.width, 0, mappingValue);
-			}
-		}
-	}
-
-	if (glfwGetMouseButton(window, 2) == GLFW_RELEASE)
-	{
-		if (scrollIsPressed)
-		{
-			auto hit = mouseHitsGround();
-
-			if (hit.has_value()) {
-				glm::vec3 difference = hit.value() - g_fanDragStart;
-				scene.config.fluidGridConfig.fan.x = map(g_fanDragStart.x, scene.config.worldMin, scene.config.worldMax, 0.0, 1.0f);
-				scene.config.fluidGridConfig.fan.y = map(g_fanDragStart.z, scene.config.worldMin, scene.config.worldMax, 1.0, 0.0f);
-
-				float mappingValue = scene.config.fluidGridConfig.wholeWorldToVelocityMapping;
-				scene.config.fluidGridConfig.fan.velocityX = map(difference.x, 0, scene.worldRekt.width, 0, mappingValue);
-				scene.config.fluidGridConfig.fan.velocityY = map(difference.z, 0, scene.worldRekt.width, 0, mappingValue);
-			}
-			g_fanIsDragging = false;
-		}
-		scrollIsPressed = false;
+		g_ctrlIsPressed = false;
 	}
 
 	// Stop camera movement if GUI is opened
@@ -1556,6 +1631,7 @@ void processInput(GLFWwindow *window)
 	{
 		tWasPressed = false;
 	}
+
 	if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
 	{
 		if (!rWasPressed)
@@ -1577,7 +1653,7 @@ void processInput(GLFWwindow *window)
 /* Processes the cursor input and passes it to the camera.
  *  Based on the tutorial on: https://learnopengl.com/Getting-started/Camera
  */
-void cursorInputCallback(GLFWwindow *window, double xpos, double ypos)
+void cursorInputCallback(GLFWwindow* window, double xpos, double ypos)
 {
 	if (firstMouse)
 	{
@@ -1597,7 +1673,7 @@ void cursorInputCallback(GLFWwindow *window, double xpos, double ypos)
 	camera.processMouseMovement(xoffset, yoffset);
 }
 
-void keyInputCallback(GLFWwindow *window, int button,
+void keyInputCallback(GLFWwindow* window, int button,
 	int         other, int  action, int mods)
 {
 	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)

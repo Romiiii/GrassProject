@@ -10,11 +10,9 @@ class FluidGrid;
 struct Fan
 {
 	bool active = true;
-	float x = 0.2f;
-	float y = 0.2f;
-	float density = 250.0f;
-	float velocityX = 150.0f;
-	float velocityY = 0.0f;
+	glm::vec2 position;
+	glm::vec2 velocity;
+	float density;
 };
 
 
@@ -27,9 +25,10 @@ struct FluidGridConfig
 	bool       visualizeDensity   = false;
 	float      velocityMultiplier = 2.7f;
 	glm::vec2  velocityClampRange = {0.5f, 0.5f};
-	Fan fan;
 	bool shouldDrawFans = true;
 	float wholeWorldToVelocityMapping = 300.0;
+	std::vector<Fan> fans;
+	int selectedFanIndex = -1;
 };
 
 class FluidGrid
