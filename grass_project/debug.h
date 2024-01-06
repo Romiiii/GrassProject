@@ -88,8 +88,8 @@ inline void debugText(const char* fmt...)
 
 	int size = vsnprintf(nullptr, 0, fmt, args);
 	char* buffer = new char[size + 1];
-	memset(buffer, 0, size + 1);
-	vsnprintf(buffer, size + 1, fmt, args);
+	memset(buffer, 0, (size_t)size + 1);
+	vsnprintf(buffer, (size_t)size + 1, fmt, args);
 
 	va_end(args);
 
