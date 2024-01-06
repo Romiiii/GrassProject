@@ -1465,22 +1465,9 @@ void handleScroll()
 {
 	static bool scrollIsPressed = false;
 
-	debugText("Ctrl: %d", g_ctrlIsPressed);
-	{
-		auto tmpFan = getSelectedFan();
-		auto ws = scene.mapPositionToWorldSpace(tmpFan->position);
-		debugText("Fan is at: (%.2f, %.2f) / (%.2f, %.2f)", tmpFan->position.x, tmpFan->position.y, ws.x, ws.y);
-	}
-
-
-	{
-		auto mousePos = getNormalizedMousePos();
-		debugText("MousePos in scroll: (%.2f, %.2f)", mousePos.x, mousePos.y);
-	}
 	// Is button down
 	if (glfwGetMouseButton(window, 2) == GLFW_PRESS)
 	{
-
 		// First button down first time after having released
 		if (!scrollIsPressed)
 		{
