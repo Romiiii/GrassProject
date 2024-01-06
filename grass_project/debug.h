@@ -18,9 +18,13 @@
  /**
  * \brief Wraps an OpenGL call in error handling, for debugging.
  */
+#if _DEBUG
 #define GLCall(x) GLClearError();\
 	x;\
 	ASSERT(GLLogCall(#x, __FILE__, __LINE__))
+#else
+#define GLCall(x) x
+#endif
 
 /**
  * \brief Clears the OpenGL error stack.
