@@ -969,9 +969,9 @@ void drawFanWindow()
 				ImGui::PushStyleColor(ImGuiCol_FrameBg, { 1, 0, 0, 1 });
 			}
 
-			const char* select_btn_text = fluidConf.selectedFanIndex == fanIndex ? "Deselect" : "Select";
+			const char* selectBtnText = fluidConf.selectedFanIndex == fanIndex ? "Deselect" : "Select";
 
-			if (ImGui::Button(select_btn_text))
+			if (ImGui::Button(selectBtnText))
 			{
 				if (fluidConf.selectedFanIndex == fanIndex)
 				{
