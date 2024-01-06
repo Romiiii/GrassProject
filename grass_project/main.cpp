@@ -1009,9 +1009,19 @@ void drawFluidGridWindow()
 					{
 						ImGui::PushStyleColor(ImGuiCol_FrameBg, { 1, 0, 0, 1 });
 					}
-					if (ImGui::Button("Select"))
+
+					const char* select_btn_text = fluidConf.selectedFanIndex == fanIndex ? "Deselect" : "Select";
+
+					if (ImGui::Button(select_btn_text))
 					{
-						fluidConf.selectedFanIndex = fanIndex;
+						if (fluidConf.selectedFanIndex == fanIndex)
+						{
+							fluidConf.selectedFanIndex = -1;
+						} 
+						else
+						{
+							fluidConf.selectedFanIndex = fanIndex;
+						} 
 					}
 					ImGui::SameLine();
 					if (ImGui::Button("Delete"))
