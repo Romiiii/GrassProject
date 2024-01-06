@@ -988,7 +988,7 @@ void drawFluidGridWindow()
 
 		if (ImGui::CollapsingHeader("Fans"))
 		{
-
+			ImGui::Indent();
 			ImGui::Checkbox("Draw Fans", &scene.config.fluidGridConfig.shouldDrawFans);
 
 			for (int fanIndex = 0; fanIndex < fluidConf.fans.size(); fanIndex++)
@@ -1013,6 +1013,29 @@ void drawFluidGridWindow()
 					{
 						fluidConf.selectedFanIndex = fanIndex;
 					}
+					ImGui::SameLine();
+					if (ImGui::Button("Delete"))
+					{
+						fluidConf.fans.erase(fluidConf.fans.begin() + fanIndex);
+
+						if (fluidConf.fans.size() == 0)
+						{
+							fluidConf.selectedFanIndex = -1;
+						}
+						
+						// Are we deleting the selected one?
+						if (fluidConf.selectedFanIndex == fanIndex)
+						{
+							fluidConf.selectedFanIndex = -1;
+						}
+						// We are deleting something to the left of the selected
+						else if (fanIndex < fluidConf.selectedFanIndex)
+						{
+							fluidConf.selectedFanIndex--;
+						}
+					}
+
+
 					ImGui::Checkbox("Fan Active", &fan.active);
 					ImGui::DragFloat2("Fan Position", (float*)&fan.position, 0.05f, 0, 1);
 					ImGui::InputFloat("Fan Density", &fan.density);
@@ -1028,6 +1051,7 @@ void drawFluidGridWindow()
 				ImGui::PopID();
 			}
 
+			ImGui::Unindent();
 		}
 
 		ImGui::Text("Randomness Controls");
