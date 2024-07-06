@@ -1415,7 +1415,12 @@ void drawGui()
 	ImGui::SetNextWindowViewport(viewport->ID);
 	ImGui::SetNextWindowPos(viewport->Pos);
 	ImGui::SetNextWindowSize({ viewport->Size });
-	ImGui::Begin("Look info", nullptr, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar);
+	ImGuiWindowFlags flags = ImGuiWindowFlags_NoBackground |
+		ImGuiWindowFlags_NoResize |
+		ImGuiWindowFlags_NoMove |
+		ImGuiWindowFlags_NoTitleBar |
+		ImGuiWindowFlags_NoInputs;
+	ImGui::Begin("Look info", nullptr, flags);
 
 	glm::vec2 mousePos = getNormalizedMousePos();
 	Ray mouseRay = getMouseRay();
@@ -1443,7 +1448,6 @@ void drawGui()
 	ImGui::End();
 
 
-
 	drawFluidGridWindow();
 	drawSettingsWindow();
 
@@ -1459,6 +1463,7 @@ void drawGui()
 	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 	{
 		GLFWwindow* backup_current_context = glfwGetCurrentContext();
+
 		ImGui::UpdatePlatformWindows();
 		ImGui::RenderPlatformWindowsDefault();
 		glfwMakeContextCurrent(backup_current_context);
@@ -1520,7 +1525,7 @@ void handleScroll()
 		if (!scrollIsPressed)
 		{
 			auto hit = mouseHitsGround();
- 			if (hit.has_value())
+			if (hit.has_value())
 			{
 				// We hit something
 				glm::vec3 hitPos = hit.value();
@@ -1552,7 +1557,7 @@ void handleScroll()
 				auto hit = mouseHitsGround();
 				if (hit.has_value()) {
 					auto dif = hit.value() - g_fanDragStart;
-					fan->velocity = scene.mapVelocityFromWorldSpace({dif.x, dif.z});
+					fan->velocity = scene.mapVelocityFromWorldSpace({ dif.x, dif.z });
 				}
 			}
 		}
