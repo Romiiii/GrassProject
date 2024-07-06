@@ -64,12 +64,13 @@ const unsigned int INIT_SCR_HEIGHT = 1000;
 /**
  * \brief Blades density
  */
-const int MAX_BLADES_PER_PATCH = 4000;
+const int MAX_BLADES_PER_PATCH = 0;
 
 /**
  * \brief Max number patches
  */
-const int MAX_PATCHES = 81;
+const int MAX_PATCHES = 0;
+
 
 /**
  * \brief The scene currently loaded (We don't support multiple scenes, but we
@@ -415,7 +416,6 @@ void cursorInputCallback(GLFWwindow* window, double posX, double posY);
 */
 void cleanUp();
 
-
 // INPUT STUFF
 bool g_ctrlIsPressed = false;
 
@@ -435,6 +435,41 @@ void setWorldMinMax()
 		 patches to the right.
 	 */
 	scene.config.worldMax = (float)(ceil(sqrt(MAX_PATCHES) / 2) * (double)scene.config.patchSize);
+}
+
+void simulateGrass()
+{
+	if (clearNextSimulate)
+	{
+		fluidGrid->clearCurrent();
+	}
+
+	// FAN!
+	for (size_t fanIndex = 0; fanIndex < scene.config.fluidGridConfig.fans.size(); fanIndex++)
+	{
+		Fan& fan = scene.config.fluidGridConfig.fans[fanIndex];
+		if (!fan.active)
+		{
+			continue;
+		}
+
+		int x = (int)(fluidGrid->getN() * fan.position.x);
+		int y = (int)(fluidGrid->getN() * fan.position.y);
+
+		fluidGrid->addVelocityAt(x, y, fan.velocity.x, -fan.velocity.y);
+		fluidGrid->addDensityAt(x, y, fan.density);
+	}
+
+	clearNextSimulate = true;
+
+	if (!scene.config.isPaused)
+	{
+		fluidGrid->simulate(gameDeltaTime);
+	}
+}
+
+bool shouldSimulateGrass() {
+	return scene.config.numPatches > 0 && scene.config.numBladesPerPatch > 0;
 }
 
 int main()
@@ -561,33 +596,12 @@ int main()
 
 		processInput(window);
 
-		if (clearNextSimulate)
+
+		if (shouldSimulateGrass())
 		{
-			fluidGrid->clearCurrent();
+			simulateGrass();
 		}
 
-		// FAN!
-		for (size_t fanIndex = 0; fanIndex < scene.config.fluidGridConfig.fans.size(); fanIndex++)
-		{
-			Fan& fan = scene.config.fluidGridConfig.fans[fanIndex];
-			if (!fan.active)
-			{
-				continue;
-			}
-
-			int x = (int)(fluidGrid->getN() * fan.position.x);
-			int y = (int)(fluidGrid->getN() * fan.position.y);
-
-			fluidGrid->addVelocityAt(x, y, fan.velocity.x, -fan.velocity.y);
-			fluidGrid->addDensityAt(x, y, fan.density);
-		}
-
-		clearNextSimulate = true;
-
-		if (!scene.config.isPaused)
-		{
-			fluidGrid->simulate(gameDeltaTime);
-		}
 
 		// Clear the color depth buffer (aka z-buffer) every new frame
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -1157,12 +1171,8 @@ void drawFluidGridWindow()
 	}
 }
 
-void drawSettingsWindow()
+void drawGrassSimulationGUI()
 {
-	ImGui::Begin("Settings");
-
-	ImGui::Text("Application average %.3f ms/frame (%.1f FPS) Framecount %lld Time %.0f",
-		1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate, numFrames, glfwGetTime());
 	ImGui::Text("Simulation Mode Settings");
 	if (ImGui::RadioButton("Perlin Noise", scene.config.simulationMode == SimulationMode::PERLIN_NOISE))
 	{
@@ -1286,8 +1296,7 @@ void drawSettingsWindow()
 
 	drawTooltip("The sizes of each individual Patch. Same number of blades of grass.");
 
-	ImGui::SliderInt("Number of patches", &scene.config.numPatches, 1, MAX_PATCHES);
-	//ImGui::DragInt("Number blades per patch", &scene.config.numBladesPerPatch, 0, MAX_BLADES_PER_PATCH);
+	ImGui::SliderInt("Number of patches", &scene.config.numPatches, 0, MAX_PATCHES);
 	ImGui::DragInt("Number blades per patch", &scene.config.numBladesPerPatch, 1, 0, MAX_BLADES_PER_PATCH);
 	scene.config.numBladesPerPatch = glm::clamp(scene.config.numBladesPerPatch, 0, (int)MAX_BLADES_PER_PATCH);
 	ImGui::SliderFloat("Sway Reach", &scene.config.swayReach, 0.0f, 2.0f);
@@ -1342,6 +1351,19 @@ void drawSettingsWindow()
 		drawTooltip("Checker size for fun. Only powers of two look nice.");
 	}
 
+}
+
+void drawSettingsWindow()
+{
+	ImGui::Begin("Settings");
+
+	ImGui::Text("Application average %.3f ms/frame (%.1f FPS) Framecount %lld Time %.0f",
+		1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate, numFrames, glfwGetTime());
+
+	if (shouldSimulateGrass())
+	{
+		drawGrassSimulationGUI();
+	}
 
 	if (ImGui::CollapsingHeader("Camera Settings"))
 	{
@@ -1349,9 +1371,6 @@ void drawSettingsWindow()
 		ImGui::InputFloat("Yaw", &camera.yaw);
 		ImGui::InputFloat("Pitch", &camera.pitch);
 	}
-
-
-
 
 	if (ImGui::CollapsingHeader("Light Settings"))
 	{
@@ -1393,22 +1412,26 @@ void drawGui()
 	ImGui::NewFrame();
 
 	// Hitbox info text stuff
-	glm::vec2 mousePos = getNormalizedMousePos();
-	Ray mouseRay = getMouseRay();
-	auto hitPos = mouseHitsGround();
 
-	debugText("Mouse Pos: (%.3f, %.3f)", mousePos.x, mousePos.y);
-	debugText("Origin: (%.3f, %.3f, %.3f)", mouseRay.origin.x, mouseRay.origin.y, mouseRay.origin.z);
-	debugText("Direction: (%.3f, %.3f, %.3f)", mouseRay.direction.x, mouseRay.direction.y, mouseRay.direction.z);
-	if (hitPos.has_value()) {
-		glm::vec3 pos = hitPos.value();
-		debugText("Hits: (%.3f, %.3f, %.3f)", pos.x, pos.y, pos.z);
+	if (shouldSimulateGrass())
+	{
+		glm::vec2 mousePos = getNormalizedMousePos();
+		Ray mouseRay = getMouseRay();
+		auto hitPos = mouseHitsGround();
+
+		debugText("Mouse Pos: (%.3f, %.3f)", mousePos.x, mousePos.y);
+		debugText("Origin: (%.3f, %.3f, %.3f)", mouseRay.origin.x, mouseRay.origin.y, mouseRay.origin.z);
+		debugText("Direction: (%.3f, %.3f, %.3f)", mouseRay.direction.x, mouseRay.direction.y, mouseRay.direction.z);
+		if (hitPos.has_value()) {
+			glm::vec3 pos = hitPos.value();
+			debugText("Hits: (%.3f, %.3f, %.3f)", pos.x, pos.y, pos.z);
+		}
+		else {
+			debugText("Hits: MISS");
+		}
+		debugText("WorldRekt: (%.2f, %.2f, %.2f)", scene.worldRekt.center.x, scene.worldRekt.center.y, scene.worldRekt.center.z);
+		debugText("    Size (% .3f, % .3f)", scene.worldRekt.width, scene.worldRekt.height);
 	}
-	else {
-		debugText("Hits: MISS");
-	}
-	debugText("WorldRekt: (%.2f, %.2f, %.2f)", scene.worldRekt.center.x, scene.worldRekt.center.y, scene.worldRekt.center.z);
-	debugText("    Size (% .3f, % .3f)", scene.worldRekt.width, scene.worldRekt.height);
 
 	// Debug text window
 
@@ -1420,7 +1443,10 @@ void drawGui()
 	}
 	ImGui::End();
 
-	drawFluidGridWindow();
+	if (shouldSimulateGrass())
+	{
+		drawFluidGridWindow();
+	}
 	drawSettingsWindow();
 
 	ImGui::Render();
@@ -1490,51 +1516,53 @@ void handleScroll()
 {
 	static bool scrollIsPressed = false;
 
-	// Is button down
 	if (glfwGetMouseButton(window, 2) == GLFW_PRESS)
 	{
-		// First button down first time after having released
-		if (!scrollIsPressed)
+		if (shouldSimulateGrass())
 		{
-			auto hit = mouseHitsGround();
-			if (hit.has_value())
+			// Is button down
+				// First button down first time after having released
+			if (!scrollIsPressed)
 			{
-				// We hit something
-				glm::vec3 hitPos = hit.value();
-				if (g_ctrlIsPressed)
+				if (auto hit = mouseHitsGround(); hit.has_value())
 				{
-					// Create new fan and select it
-					Fan fan{};
-					fan.density = 250.0f;
-					fan.position = scene.mapPositionFromWorldSpace({ hitPos.x, hitPos.z });
-					scene.config.fluidGridConfig.fans.push_back(fan);
-					scene.config.fluidGridConfig.selectedFanIndex = (int)scene.config.fluidGridConfig.fans.size() - 1;
-				}
-				else if (Fan* fan = getSelectedFan())
-				{
-					fan->position = scene.mapPositionFromWorldSpace({ hitPos.x, hitPos.z });
+					// We hit something
+					glm::vec3 hitPos = hit.value();
+					if (g_ctrlIsPressed)
+					{
+						// Create new fan and select it
+						Fan fan{};
+						fan.density = 250.0f;
+						fan.position = scene.mapPositionFromWorldSpace({ hitPos.x, hitPos.z });
+						scene.config.fluidGridConfig.fans.push_back(fan);
+						scene.config.fluidGridConfig.selectedFanIndex = (int)scene.config.fluidGridConfig.fans.size() - 1;
+					}
+					else if (Fan* fan = getSelectedFan())
+					{
+						fan->position = scene.mapPositionFromWorldSpace({ hitPos.x, hitPos.z });
+					}
+
+					g_fanDragStart = hitPos;
+					g_fanIsDragging = true;
 				}
 
-				g_fanDragStart = hitPos;
-				g_fanIsDragging = true;
+				scrollIsPressed = true;
 			}
-
-			scrollIsPressed = true;
-		}
-		else
-		{
-			Fan* fan = getSelectedFan();
-			if (fan && scrollIsPressed && g_fanIsDragging)
+			else
 			{
-				auto hit = mouseHitsGround();
-				if (hit.has_value()) {
-					auto dif = hit.value() - g_fanDragStart;
-					fan->velocity = scene.mapVelocityFromWorldSpace({ dif.x, dif.z });
+				Fan* fan = getSelectedFan();
+				if (fan && scrollIsPressed && g_fanIsDragging)
+				{
+					auto hit = mouseHitsGround();
+					if (hit.has_value()) {
+						auto dif = hit.value() - g_fanDragStart;
+						fan->velocity = scene.mapVelocityFromWorldSpace({ dif.x, dif.z });
+					}
 				}
 			}
 		}
+
 	}
-
 	if (glfwGetMouseButton(window, 2) == GLFW_RELEASE)
 	{
 		scrollIsPressed = false;
