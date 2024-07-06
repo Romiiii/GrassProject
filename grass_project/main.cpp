@@ -1390,63 +1390,35 @@ void drawSettingsWindow()
 
 void drawGui()
 {
-	// Slider will be 65% of the window width (this is the default)
 	ImGui::NewFrame();
 
-	//if(scene.config.isPaused)
-	//{
-	//	ImGui::Begin("IsPaused");
-
-	//	ImGui::Text("Is Paused");
-
-	//	ImGui::End();
-
-	//}
-	auto viewport = ImGui::GetMainViewport();
-
-	// Draw a little dot at the center of the screen
-	ImVec2 halfScreenSize = { viewport->Size.x / 2.0f, viewport->Size.x / 2.0f };
-	ImGui::SetNextWindowPos({ viewport->Pos.x + halfScreenSize.x, viewport->Pos.y + halfScreenSize.y });
-
-	//ImGui::Begin("Target", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar);
-	//ImGui::End();
-
-	// Hitpos debug
-	ImGui::SetNextWindowViewport(viewport->ID);
-	ImGui::SetNextWindowPos(viewport->Pos);
-	ImGui::SetNextWindowSize({ viewport->Size });
-	ImGuiWindowFlags flags = ImGuiWindowFlags_NoBackground |
-		ImGuiWindowFlags_NoResize |
-		ImGuiWindowFlags_NoMove |
-		ImGuiWindowFlags_NoTitleBar |
-		ImGuiWindowFlags_NoInputs;
-	ImGui::Begin("Look info", nullptr, flags);
-
+	// Hitbox info text stuff
 	glm::vec2 mousePos = getNormalizedMousePos();
 	Ray mouseRay = getMouseRay();
 	auto hitPos = mouseHitsGround();
 
-	ImGui::Text("Mouse Pos: (%.3f, %.3f)", mousePos.x, mousePos.y);
-	ImGui::Text("Origin: (%.3f, %.3f, %.3f)", mouseRay.origin.x, mouseRay.origin.y, mouseRay.origin.z);
-	ImGui::Text("Direction: (%.3f, %.3f, %.3f)", mouseRay.direction.x, mouseRay.direction.y, mouseRay.direction.z);
+	debugText("Mouse Pos: (%.3f, %.3f)", mousePos.x, mousePos.y);
+	debugText("Origin: (%.3f, %.3f, %.3f)", mouseRay.origin.x, mouseRay.origin.y, mouseRay.origin.z);
+	debugText("Direction: (%.3f, %.3f, %.3f)", mouseRay.direction.x, mouseRay.direction.y, mouseRay.direction.z);
 	if (hitPos.has_value()) {
 		glm::vec3 pos = hitPos.value();
-		ImGui::Text("Hits: (%.3f, %.3f, %.3f)", pos.x, pos.y, pos.z);
+		debugText("Hits: (%.3f, %.3f, %.3f)", pos.x, pos.y, pos.z);
 	}
 	else {
-		ImGui::Text("Hits: MISS");
+		debugText("Hits: MISS");
 	}
-
 	debugText("WorldRekt: (%.2f, %.2f, %.2f)", scene.worldRekt.center.x, scene.worldRekt.center.y, scene.worldRekt.center.z);
 	debugText("    Size (% .3f, % .3f)", scene.worldRekt.width, scene.worldRekt.height);
+
+	// Debug text window
+
+	ImGui::Begin("Debug text", nullptr, 0);
 
 	for (const auto& str : g_debugStrings)
 	{
 		ImGui::Text(str.c_str());
 	}
-
 	ImGui::End();
-
 
 	drawFluidGridWindow();
 	drawSettingsWindow();
