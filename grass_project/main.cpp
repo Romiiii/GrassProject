@@ -47,6 +47,7 @@ Velocity: 2.7
 #include "fluid_grid.h"
 #include "util.h"
 #include "grass_math.h"
+#include "logger.h"
 
 #define CHECKER_PATTERN_TEXTURE_WIDTH 512
 
@@ -474,6 +475,8 @@ bool shouldSimulateGrass() {
 
 int main()
 {
+	Logger::init("log.log");
+	LOG_INFO("Al%daaaaaa %s %d", 1, "Excellent", 54);
 	window = initGLFWWindow();
 
 	assert(window != NULL);
@@ -481,7 +484,7 @@ int main()
 	// GLAD: load all OpenGL function pointers
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
-		std::cout << "ERROR:: Failed to initialize GLAD" << std::endl;
+		LOG_FATAL("ERROR::Failed to initialize GLAD");
 		return -1;
 	}
 
@@ -492,7 +495,7 @@ int main()
 
 	if (!(major >= 4 && minor >= 3))
 	{
-		std::cout << "ERROR:: Wrong OpenGL version" << std::endl;
+		LOG_FATAL("ERROR:: Wrong OpenGL version");
 		return -1;
 	}
 
@@ -674,6 +677,7 @@ GLFWwindow* initGLFWWindow()
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	glfwSetKeyCallback(window, keyInputCallback);
 
+	Logger::deinit();
 	return window;
 }
 
