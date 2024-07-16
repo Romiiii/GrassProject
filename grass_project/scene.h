@@ -44,8 +44,8 @@ enum class SimulationMode {
 struct Config {
 	SimulationMode simulationMode = SimulationMode::FLUID_GRID;
 	float swayReach = 0.5f;
-	Texture *windX = nullptr;
-	Texture *windY = nullptr;
+	Texture* windX = nullptr;
+	Texture* windY = nullptr;
 	float currentTime = 0;
 	bool isPaused = false;
 	float patchSize = 10;
@@ -81,8 +81,8 @@ struct Config {
 * patches, blades, textures and lights. Updates and renders the scene accordingly.
 */
 class Scene {
-	public:
-	void addSceneObject(SceneObject *sceneObject);
+public:
+	void addSceneObject(SceneObject* sceneObject);
 	/**
 	* Updates the dynamic scene objects, based on the user's settings.
 	* Currently only updates lights based on the position the user set.
@@ -90,17 +90,17 @@ class Scene {
 	void updateDynamic();
 	void render();
 
-	std::vector<SceneObject *> sceneObjects;
-	std::vector<SceneObject *> patches;
-	std::vector<SceneObject *> blades;
+	std::vector<SceneObject*> sceneObjects;
+	std::vector<SceneObject*> patches;
+	std::vector<SceneObject*> blades;
 
-	Texture *currentSkyboxTexture = nullptr;
-	Texture *cubemapTextureDay = nullptr;
-	Texture *cubemapTextureNight = nullptr;
+	Texture* currentSkyboxTexture = nullptr;
+	Texture* cubemapTextureDay = nullptr;
+	Texture* cubemapTextureNight = nullptr;
 
 	glm::mat4 projection = glm::mat4(1);
 	glm::mat4 view = glm::mat4(1);
-	SceneObject *light = nullptr;
+	SceneObject* light = nullptr;
 	SceneObject* fanDebugIcon = nullptr;
 	/**
 	* \brief All variables that can be configured using the GUI

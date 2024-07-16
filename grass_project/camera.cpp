@@ -18,17 +18,17 @@ void Camera::processKeyboard(cameraMovement direction, float deltaTime) {
 		camForward.y, camForward.z));
 	float cameraSpeed;
 	if (sprinting) {
-		 cameraSpeed = sprintSpeed * deltaTime;
+		cameraSpeed = sprintSpeed * deltaTime;
 	}
 	else {
 		cameraSpeed = movementSpeed * deltaTime;
 	}
 	if (direction == cameraMovement::GLOBAL_UP) {
-		glm::vec3 newCamPosition = camPosition + glm::vec3(0, 1 ,0) * cameraSpeed;
+		glm::vec3 newCamPosition = camPosition + glm::vec3(0, 1, 0) * cameraSpeed;
 		camPosition = newCamPosition;
 	}
 	if (direction == cameraMovement::GLOBAL_DOWN) {
-		glm::vec3 newCamPosition = camPosition + glm::vec3(0, -1 ,0) * cameraSpeed;
+		glm::vec3 newCamPosition = camPosition + glm::vec3(0, -1, 0) * cameraSpeed;
 		camPosition = newCamPosition;
 	}
 	if (direction == cameraMovement::FORWARD) {
@@ -40,10 +40,10 @@ void Camera::processKeyboard(cameraMovement direction, float deltaTime) {
 		camPosition = newCamPosition;
 	}
 	if (direction == cameraMovement::LEFT) {
-		camPosition -= glm::cross(forwardInXYZ,	glm::vec3(0, 1, 0)) * cameraSpeed;
+		camPosition -= glm::cross(forwardInXYZ, glm::vec3(0, 1, 0)) * cameraSpeed;
 	}
 	if (direction == cameraMovement::RIGHT) {
-		camPosition += glm::cross(forwardInXYZ,	glm::vec3(0, 1, 0)) * cameraSpeed;
+		camPosition += glm::cross(forwardInXYZ, glm::vec3(0, 1, 0)) * cameraSpeed;
 	}
 
 	camPosition.y = glm::max(camPosition.y, groundY);

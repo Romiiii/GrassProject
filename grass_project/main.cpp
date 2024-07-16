@@ -72,7 +72,6 @@ const int MAX_BLADES_PER_PATCH = 0;
  */
 const int MAX_PATCHES = 0;
 
-
 /**
  * \brief The scene currently loaded (We don't support multiple scenes, but we
  * could with this.)
@@ -476,7 +475,7 @@ bool shouldSimulateGrass() {
 int main()
 {
 	Logger::init("log.log");
-	LOG_INFO("Al%daaaaaa %s %d", 1, "Excellent", 54);
+	LOG_INFO("Starting");
 	window = initGLFWWindow();
 
 	assert(window != NULL);
@@ -484,7 +483,7 @@ int main()
 	// GLAD: load all OpenGL function pointers
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
-		LOG_FATAL("ERROR::Failed to initialize GLAD");
+		LOG_FATAL("Failed to initialize GLAD");
 		return -1;
 	}
 
@@ -495,7 +494,7 @@ int main()
 
 	if (!(major >= 4 && minor >= 3))
 	{
-		LOG_FATAL("ERROR:: Wrong OpenGL version");
+		LOG_FATAL("Wrong OpenGL version");
 		return -1;
 	}
 
@@ -558,7 +557,9 @@ int main()
 
 	if (scene.config.numBladesPerPatch > MAX_BLADES_PER_PATCH)
 	{
-		std::cout << "[WARNING]: Num blades per patch should be between 0 and " << MAX_BLADES_PER_PATCH << " but was " << scene.config.numBladesPerPatch << ". Clamping." << std::endl;
+		LOG_WARNING("Num blades per patch should be between 0 and %d but was %d. Clamping.",
+			MAX_BLADES_PER_PATCH,
+			scene.config.numBladesPerPatch);
 		scene.config.numBladesPerPatch = glm::clamp(scene.config.numBladesPerPatch, 0, MAX_BLADES_PER_PATCH);
 	}
 
@@ -568,11 +569,13 @@ int main()
 	}
 	if (scene.config.numPatches > MAX_PATCHES)
 	{
-		std::cout << "[WARNING]: Num patches should be between 0 and " << MAX_PATCHES << " but was " << scene.config.numPatches << ". Clamping." << std::endl;
+		LOG_WARNING("Num patches should be between 0 and %d but was %d. Clamping.",
+			MAX_PATCHES, scene.config.numPatches);
 		scene.config.numPatches = glm::clamp(scene.config.numPatches, 0, MAX_PATCHES);
 	}
 
 
+	LOG_INFO("Starting main loop");
 	while (!glfwWindowShouldClose(window))
 	{
 		if (!scene.config.isPaused)
@@ -604,7 +607,6 @@ int main()
 		{
 			simulateGrass();
 		}
-
 
 		// Clear the color depth buffer (aka z-buffer) every new frame
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -664,7 +666,7 @@ GLFWwindow* initGLFWWindow()
 	GLFWwindow* window = glfwCreateWindow(INIT_SCR_WIDTH, INIT_SCR_HEIGHT, "GrassProject", NULL, NULL);
 	if (window == NULL)
 	{
-		std::cout << "Failed to create GLFW window" << std::endl;
+		LOG_FATAL("Failed to create GLFW window");
 		glfwTerminate();
 		return NULL;
 	}
@@ -1354,7 +1356,6 @@ void drawGrassSimulationGUI()
 		}
 		drawTooltip("Checker size for fun. Only powers of two look nice.");
 	}
-
 }
 
 void drawSettingsWindow()
