@@ -31,24 +31,24 @@ Velocity: 2.7
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 
-#include "patch.h"
-#include "shader.h"
-#include "shader_program.h"
-#include "glmutils.h"
-#include "primitives.h"
+#include "grass_simulation/fluid_grid.h"
+#include "grass_simulation/patch.h"
+#include "grass_simulation/perlin_noise.h"
+#include "grass_simulation/grass_math.h"
+
+#include "rendering/primitives.h"
+#include "rendering/scene_object_arrays.h"
+#include "rendering/scene_object_indexed.h"
+#include "rendering/scene_object_instanced.h"
+#include "rendering/shader.h"
+#include "rendering/shader_program.h"
+#include "rendering/glmutils.h"
+
 #include "camera.h"
 #include "debug.h"
 #include "scene.h"
-#include "scene_object.h"
-#include "scene_object_instanced.h"
-#include "scene_object_indexed.h"
-#include "scene_object_arrays.h"
-#include "perlin_noise.h"
-#include "fluid_grid.h"
 #include "util.h"
-#include "grass_math.h"
 #include "logger.h"
-
 #define CHECKER_PATTERN_TEXTURE_WIDTH 512
 
 // Constants
@@ -81,7 +81,7 @@ Scene scene;
 /**
  * \brief The patch creator
  */
-Patch patch;
+Patch patchTemplate;
 
 //
 // Shaders
@@ -478,7 +478,7 @@ int main()
 	LOG_INFO("Starting");
 	auto startTime = glfwGetTime();
 
-	window = initGLFWWindow();
+	initGLFWWindow();
 
 
 	assert(window != NULL);
@@ -504,7 +504,7 @@ int main()
 	fluidGrid = new FluidGrid(128, 0, 0, &scene.config.fluidGridConfig);
 
 	initShadersAndTextures();
-	initSceneObjects(patch);
+	initSceneObjects(patchTemplate);
 
 	if (scene.config.simulationMode == SimulationMode::CHECKER_PATTERN)
 	{
@@ -667,7 +667,7 @@ GLFWwindow* initGLFWWindow()
 #endif
 
 	// GLFW window creation
-	GLFWwindow* window = glfwCreateWindow(INIT_SCR_WIDTH, INIT_SCR_HEIGHT, "GrassProject", NULL, NULL);
+	window = glfwCreateWindow(INIT_SCR_WIDTH, INIT_SCR_HEIGHT, "GrassProject", NULL, NULL);
 	if (window == NULL)
 	{
 		LOG_FATAL("Failed to create GLFW window");
@@ -1218,24 +1218,24 @@ void drawGrassSimulationGUI()
 		scene.config.bladeDistribution == BladeDistribution::HARRY_STYLES_WITH_RANDOS))
 	{
 		scene.config.bladeDistribution = BladeDistribution::HARRY_STYLES_WITH_RANDOS;
-		patch.initHarryEdwardStylesBladeMatrices(scene.config.patchSize);
-		transferInstanceMatrixBuffer(patch.getBladeMatrices(), MAX_BLADES_PER_PATCH);
+		patchTemplate.initHarryEdwardStylesBladeMatrices(scene.config.patchSize);
+		transferInstanceMatrixBuffer(patchTemplate.getBladeMatrices(), MAX_BLADES_PER_PATCH);
 	}
 	ImGui::SameLine();
 	drawTooltip("Blades are placed uniformly on the patch with random rotations.");
 	if (ImGui::RadioButton("Harry Styles", scene.config.bladeDistribution == BladeDistribution::HARRY_STYLES))
 	{
 		scene.config.bladeDistribution = BladeDistribution::HARRY_STYLES;
-		patch.initHarryEdwardStylesBladeMatrices(scene.config.patchSize, false);
-		transferInstanceMatrixBuffer(patch.getBladeMatrices(), MAX_BLADES_PER_PATCH);
+		patchTemplate.initHarryEdwardStylesBladeMatrices(scene.config.patchSize, false);
+		transferInstanceMatrixBuffer(patchTemplate.getBladeMatrices(), MAX_BLADES_PER_PATCH);
 	}
 	ImGui::SameLine();
 	drawTooltip("Blades are placed uniformly on the patch without random rotations.");
 	if (ImGui::RadioButton("One Direction", scene.config.bladeDistribution == BladeDistribution::ONE_DIRECTION))
 	{
 		scene.config.bladeDistribution = BladeDistribution::ONE_DIRECTION;
-		patch.initOneDirectionBladeMatrices(scene.config.patchSize);
-		transferInstanceMatrixBuffer(patch.getBladeMatrices(), MAX_BLADES_PER_PATCH);
+		patchTemplate.initOneDirectionBladeMatrices(scene.config.patchSize);
+		transferInstanceMatrixBuffer(patchTemplate.getBladeMatrices(), MAX_BLADES_PER_PATCH);
 	}
 	drawTooltip("Blades are placed in a line in the middle of the patch without random rotations.");
 
@@ -1280,17 +1280,17 @@ void drawGrassSimulationGUI()
 		switch (scene.config.bladeDistribution)
 		{
 		case BladeDistribution::ONE_DIRECTION:
-			patch.initOneDirectionBladeMatrices(scene.config.patchSize);
+			patchTemplate.initOneDirectionBladeMatrices(scene.config.patchSize);
 			break;
 		case BladeDistribution::HARRY_STYLES_WITH_RANDOS:
-			patch.initHarryEdwardStylesBladeMatrices(scene.config.patchSize, true);
+			patchTemplate.initHarryEdwardStylesBladeMatrices(scene.config.patchSize, true);
 			break;
 		case BladeDistribution::HARRY_STYLES:
-			patch.initHarryEdwardStylesBladeMatrices(scene.config.patchSize, false);
+			patchTemplate.initHarryEdwardStylesBladeMatrices(scene.config.patchSize, false);
 			break;
 		}
 
-		transferInstanceMatrixBuffer(patch.getBladeMatrices(), MAX_BLADES_PER_PATCH);
+		transferInstanceMatrixBuffer(patchTemplate.getBladeMatrices(), MAX_BLADES_PER_PATCH);
 
 		for (int i = 0; i < MAX_PATCHES; i++)
 		{

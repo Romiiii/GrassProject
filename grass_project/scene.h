@@ -2,11 +2,11 @@
 #define SCENE_H 
 
 #include <vector>
-#include "scene_object.h"
-#include "shader.h"
-#include "perlin_noise.h"
-#include "fluid_grid.h"
-#include "grass_math.h"
+#include "rendering/scene_object.h"
+#include "rendering/shader.h"
+#include "grass_simulation/perlin_noise.h"
+#include "grass_simulation/fluid_grid.h"
+#include "grass_simulation/grass_math.h"
 
 /**
 * \brief Sets the appearance of the skybox

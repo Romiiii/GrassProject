@@ -1,7 +1,7 @@
 #include "scene.h"
-#include "glmutils.h"
+#include "rendering/glmutils.h"
 #include <glm\glm.hpp>
-#include "grass_math.h"
+#include "grass_simulation/grass_math.h"
 
 void Scene::addSceneObject(SceneObject* sceneObject) {
 	sceneObjects.push_back(sceneObject);
@@ -9,12 +9,12 @@ void Scene::addSceneObject(SceneObject* sceneObject) {
 
 void setupFanDebugIconForFan(Scene* scene, Fan& fan)
 {
-	auto &config = scene->config;
+	auto& config = scene->config;
 
 	// Position
 	auto fanPosition = scene->mapPositionToWorldSpace(fan.position);
 	fanPosition.y -= config.patchSize;
-	
+
 	// Rotation
 	float angle = glm::atan(fan.velocity.x, fan.velocity.y);
 
@@ -29,7 +29,7 @@ void setupFanDebugIconForFan(Scene* scene, Fan& fan)
 	float sizeZ = glm::max(magnitude, minSize);
 
 	scene->fanDebugIcon->model =
-		glm::translate(glm::mat4(1), { fanPosition.x, 1.0f, -fanPosition.y}) *
+		glm::translate(glm::mat4(1), { fanPosition.x, 1.0f, -fanPosition.y }) *
 		glm::rotateY(angle) *
 		glm::scale(sizeX, 1.0f, sizeZ);
 	scene->fanDebugIcon->isVisible = true;
@@ -52,12 +52,12 @@ void Scene::render() {
 		patches[i]->draw(*this);
 	}
 	glDisable(GL_CULL_FACE);
-	
+
 	for (int i = 0; i < config.numPatches; i++) {
 		blades[i]->draw(*this);
 	}
 
-	if(config.fluidGridConfig.shouldDrawFans)
+	if (config.fluidGridConfig.shouldDrawFans)
 	{
 		glm::vec4 oldColor = config.lightColor;
 

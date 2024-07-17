@@ -1,8 +1,8 @@
 #include "patch.h"
 #include "util.h"
-#include "scene_object.h"
-#include "primitives.h"
-#include "scene_object_indexed.h"
+#include "rendering/scene_object.h"
+#include "rendering/primitives.h"
+#include "rendering/scene_object_indexed.h"
 #include <algorithm>
 #include <stdlib.h>     /* srand, rand */
 
@@ -45,11 +45,11 @@ void Patch::initHarryEdwardStylesBladeMatrices(float patchSize, bool useRandomRo
 			float randomRotY = generateRandomNumber(-swayY, swayY);
 			bladeMatrices[x] *= glm::rotateX(randomRotX) * glm::rotateY(randomRotY);
 		}
-		
+
 	}
 }
 void Patch::initOneDirectionBladeMatrices(float patchSize) {
-	
+
 	float upperBoundX = std::max({ grassPatchPositions[0], grassPatchPositions[3], grassPatchPositions[6], grassPatchPositions[9] });
 	float lowerBoundX = std::min({ grassPatchPositions[0], grassPatchPositions[3], grassPatchPositions[6], grassPatchPositions[9] });
 

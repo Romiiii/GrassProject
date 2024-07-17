@@ -9,13 +9,14 @@
 
 #include <GLFW/glfw3.h>
 
-
 namespace Logger
 {
 	static Log logger;
 
 	const char* severityToString(Severity severity);
-	std::string getFilename(const std::string const& path);
+	std::string getFilename(const std::string& path);
+
+#pragma warning (disable : 5281)
 
 	void init(const char* path)
 	{
@@ -83,7 +84,7 @@ namespace Logger
 		delete[] msgBuffer;
 	}
 
-	std::string getFilename(const std::string const& path)
+	std::string getFilename(const std::string& path)
 	{
 		return path.substr(path.find_last_of("/\\") + 1);
 	}

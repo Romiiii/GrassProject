@@ -3,16 +3,16 @@
 
 #define PERLIN_NOISE_TEXTURE_WIDTH 512
 
-#include "texture.h"
-#include "shader_program.h"
+#include "rendering/texture.h"
+#include "rendering/shader_program.h"
 
 /**
 * Settings the user can use to manipulate the generated perlin noise.
 * makeChecker :			If set to true no perlin noise will be generated and a
 *						checkerboard pattern will be drawn for debug purposes.
-* octaves		: 
+* octaves		:
 * bias			:
-* textureScale:	Dictates the sample scale used to sample the 
+* textureScale:	Dictates the sample scale used to sample the
 *						perlin noise texture. Effectively zooming in and
 *						out on the texture.
 */

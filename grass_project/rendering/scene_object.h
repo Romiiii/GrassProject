@@ -48,8 +48,6 @@ protected:
 	unsigned int VBO = 0;
 	unsigned int vertexCount = 0;
 	ShaderProgram& shaderProgram;
-
-
 };
 
 #endif

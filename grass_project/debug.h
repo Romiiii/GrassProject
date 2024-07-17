@@ -5,6 +5,7 @@
 #include <iostream>
 #include <vector>
 #include <cstdarg>
+#include "logger.h"
 
 /**
  * \brief An assert.
@@ -26,9 +27,9 @@
 #define GLCall(x) x
 #endif
 
-/**
- * \brief Clears the OpenGL error stack.
- */
+ /**
+  * \brief Clears the OpenGL error stack.
+  */
 static void GLClearError()
 {
 	while (glGetError() != GL_NO_ERROR);
@@ -38,7 +39,7 @@ static void GLClearError()
  * \brief A lookup table for converting error codes to readable names.
  * Remember to subtract the base value (0x500) to get to the correct index.
  */
-static const char *errorCodeToErrorNameLookupTable[] = {
+static const char* errorCodeToErrorNameLookupTable[] = {
 	"GL_INVALID_ENUM",
 	"GL_INVALID_VALUE",
 	"GL_INVALID_OPERATION",
@@ -62,18 +63,12 @@ static bool GLLogCall(const char* function, const char* file, int line)
 	while (GLenum error = glGetError())
 	{
 		hadErrors = true;
-		std::cout << "[OpenGL Error] (";
-		if (error <= 0x507)
-		{
-			const char *errorName = errorCodeToErrorNameLookupTable[error - 0x0500];
-			std::cout << errorName;
-		}
-		else
-		{
-			std::cout << error;
-		}
-		std::cout << "):" << function << " " << file << ":" << line << std::endl;		
-		
+		bool hasErrorLookup = 0x0500 <= error && error <= 0x507;
+		const char* errorStr = hasErrorLookup ?
+			errorCodeToErrorNameLookupTable[error - 0x0500] :
+			std::to_string(error).c_str();
+
+		LOG_ERROR("[OpenGL] %s:%s (%s) %s", errorStr, error);
 	}
 	return !hadErrors;
 }
