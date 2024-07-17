@@ -683,7 +683,6 @@ GLFWwindow* initGLFWWindow()
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	glfwSetKeyCallback(window, keyInputCallback);
 
-	Logger::deinit();
 	return window;
 }
 

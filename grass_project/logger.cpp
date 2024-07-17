@@ -6,6 +6,7 @@
 #define NOGDI
 #include <windows.h>
 #include <cassert>
+#include <cstdio>
 
 #include <GLFW/glfw3.h>
 
@@ -20,8 +21,9 @@ namespace Logger
 
 	void init(const char* path)
 	{
-		logger.file = fopen(path, "w");
+		logger.file = fopen(path, "wb");
 		logger.path = path;
+		assert(!setvbuf(logger.file, nullptr, _IONBF, 0));
 	}
 
 	void deinit()
@@ -29,7 +31,7 @@ namespace Logger
 		fclose(logger.file);
 	}
 
-	void _log(Severity severity, const char* file, int line, const char* message...)
+	void _log(Severity severity, const char* file, int line, const char* message, ...)
 	{
 		assert(logger.file);
 
@@ -75,9 +77,9 @@ namespace Logger
 
 		// Output
 		OutputDebugString(mainBuffer);
-		printf(mainBuffer);
 		fputs(mainBuffer, logger.file);
 		fflush(logger.file);
+		printf(mainBuffer);
 		logger.entries.push_back(entry);
 
 		delete[] mainBuffer;
@@ -106,5 +108,7 @@ namespace Logger
 		default:
 			break;
 		}
+
+		return "Unknown";
 	}
 }
