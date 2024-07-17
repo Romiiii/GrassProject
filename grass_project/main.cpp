@@ -476,7 +476,10 @@ int main()
 {
 	Logger::init("log.log");
 	LOG_INFO("Starting");
+	auto startTime = glfwGetTime();
+
 	window = initGLFWWindow();
+
 
 	assert(window != NULL);
 
@@ -574,7 +577,7 @@ int main()
 		scene.config.numPatches = glm::clamp(scene.config.numPatches, 0, MAX_PATCHES);
 	}
 
-
+	LOG_INFO("Initializing application took %.2fms", (glfwGetTime() - startTime) * 100);
 	LOG_INFO("Starting main loop");
 	while (!glfwWindowShouldClose(window))
 	{
@@ -646,6 +649,7 @@ int main()
 	}
 
 	cleanUp();
+	Logger::deinit();
 	return 0;
 }
 

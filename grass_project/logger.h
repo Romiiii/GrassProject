@@ -46,9 +46,7 @@ namespace Logger
 #endif
 
 #define LOG_INFO(...) Logger::_log(Logger::Severity::INFO,  __FILE__, __LINE__, __VA_ARGS__)
-
 #define LOG_WARNING(...) Logger::_log(Logger::Severity::WARNING,  __FILE__, __LINE__, __VA_ARGS__)
-
 #define LOG_ERROR(...) Logger::_log(Logger::Severity::ERROR,  __FILE__, __LINE__, __VA_ARGS__)
 #define LOG_FATAL(...) Logger::_log(Logger::Severity::FATAL,  __FILE__, __LINE__, __VA_ARGS__)
 

@@ -44,7 +44,8 @@ namespace Logger
 		va_start(arguments, message);
 
 		int msgLength = vsnprintf(nullptr, 0, message, arguments);
-		auto msgBuffer = new char[msgLength + 1];
+		auto msgBuffer = new char[msgLength + 2];
+		msgBuffer[msgLength + 1] = 0;
 		vsnprintf(msgBuffer, msgLength + 1, message, arguments);
 
 		va_end(arguments);
@@ -55,7 +56,8 @@ namespace Logger
 			msgBuffer);
 
 		// Avoid allocations idiot
-		auto mainBuffer = new char[length + 1];
+		auto mainBuffer = new char[length + 2];
+		mainBuffer[length + 1] = 0;
 
 		snprintf(mainBuffer, length + 1, format,
 			now.year, now.month, now.day, now.hour, now.minute, now.second, now.millisecond,
@@ -70,13 +72,12 @@ namespace Logger
 		entry.lineNumber = line;
 		entry.file = std::string(filename);
 
-
 		// Output
 		OutputDebugString(mainBuffer);
 		printf(mainBuffer);
 		fputs(mainBuffer, logger.file);
+		fflush(logger.file);
 		logger.entries.push_back(entry);
-
 
 		delete[] mainBuffer;
 		delete[] msgBuffer;
