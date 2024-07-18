@@ -13,7 +13,7 @@ get_target_property(MY_PROJECT_SOURCES grass_project SOURCES)
 source_group(" " FILES ${MY_PROJECT_SOURCES})
 
 # Put things in fitting groups
-source_group(Shaders FILES ${shaders})
+source_group(GrassSimulation FILES ${grass_simulation_src})
 source_group(Rendering FILES ${rendering_src})
 source_group(Shaders FILES ${shaders})
 
@@ -29,7 +29,7 @@ target_compile_definitions(grass_project PUBLIC "_CRT_SECURE_NO_WARNINGS")
 
 ## copy shaders to build folder
 #file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/blades.vert DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-#file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/blades.frag DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+#file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/blades.frag DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
 #file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/patch.vert DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 #file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/patch.frag DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 #file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/skybox.vert DESTINATION ${CMAKE_CURRENT_BINARY_DIR})

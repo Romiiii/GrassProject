@@ -57,13 +57,12 @@ void Camera::processKeyboard(cameraMovement direction, float deltaTime) {
 	* \param constrainPitch - whether pitch should be constrained to
 	*						   prevent the screen from flipping or not
 	*/
-void Camera::processMouseMovement(float xoffset, float yoffset,
-	GLboolean constrainPitch) {
-	xoffset *= mouseSensitivity;
-	yoffset *= mouseSensitivity;
+void Camera::processMouseMovement(glm::vec2 offset, GLboolean constrainPitch) {
+	offset.x *= mouseSensitivity;
+	offset.y *= mouseSensitivity;
 
-	yaw += xoffset;
-	pitch += yoffset;
+	yaw += offset.x;
+	pitch += offset.y;
 
 
 	// Make sure that when pitch is out of bounds, screen doesn't get flipped

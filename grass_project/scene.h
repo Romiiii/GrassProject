@@ -102,6 +102,9 @@ public:
 	glm::mat4 view = glm::mat4(1);
 	SceneObject* light = nullptr;
 	SceneObject* fanDebugIcon = nullptr;
+
+	ShaderProgram* lightShaderProgram;
+
 	/**
 	* \brief All variables that can be configured using the GUI
 	*/

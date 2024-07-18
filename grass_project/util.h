@@ -40,4 +40,6 @@ inline DateTime nowDateTime() {
 
 	return dateTime;
 }
+
+#define UNUSED(x) (void)(x)
 #endif

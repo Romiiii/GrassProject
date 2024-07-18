@@ -14,9 +14,9 @@
 
 #include <vector>
 
-/** Defines several possible options for camera movement.
- * Used as abstraction to stay away from window-system specific input methods.
- */
+ /** Defines several possible options for camera movement.
+  * Used as abstraction to stay away from window-system specific input methods.
+  */
 enum class cameraMovement {
 	FORWARD,
 	BACKWARD,
@@ -51,8 +51,7 @@ public:
 	 * \param constrainPitch - whether pitch should be constrained to
 	 *						   prevent the screen from flipping or not
 	 */
-	void processMouseMovement(float xoffset, float yoffset,
-		GLboolean constrainPitch = true);
+	void processMouseMovement(glm::vec2 offset, GLboolean constrainPitch = true);
 
 	glm::vec3 getCamForward();
 	glm::vec3 getCamPosition();
@@ -63,7 +62,7 @@ public:
 
 	// Angles are Euler Angles
 
-	/* 
+	/*
 	* Yaw is initialized to -90.0 degrees since a yaw of 0.0
 	* results in a direction vector pointing to the right so
 	* we initially rotate a bit to the left.
